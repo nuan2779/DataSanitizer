@@ -164,31 +164,3 @@ class DataCleaner:
                     method = config.get("method", "standard")
                 )
         return self.df    
-
-if __name__ == "__main__":
-    # Tạo 1 bảng dữ liệu giả lập bị lỗi (có ô trống NaN, có outlier 999, có chữ)
-    test_data = {
-        "tuoi": [20, 22, np.nan, 24, 26, 999],  # Có NaN và outlier 999
-        "gioi_tinh": ["Nam", "Nu", "Nu", "Nam", "Nam", "Nu"],  # Cột chữ
-        "luong": [1000, 1200, 1100, 1300, 1250, 1150]
-    }
-    df = pd.DataFrame(test_data)
-    print("--- DỮ LIỆU BAN ĐẦU ---")
-    print(df)
-
-    # Thử chạy qua Pipeline
-    cleaner = DataCleaner(df)
-    pipeline = [
-        # Bước 1: Xóa outlier 999 trước
-        {"step_type": "outlier", "config": {"columns": ["tuoi"], "method": "iqr", "handling": "remove"}},
-        
-        # Bước 2: Điền giá trị trung bình sau (lúc này 999 đã biến mất)
-        {"step_type": "missing_values", "config": {"columns": ["tuoi"], "strategy": "mean"}},
-        
-        {"step_type": "encoding", "config": {"columns": ["gioi_tinh"], "method": "label"}},
-        {"step_type": "scaling", "config": {"columns": ["luong"], "method": "min_max"}}
-    ]
-
-    result = cleaner.execute_pipeline(pipeline)
-    print("\n--- DỮ LIỆU SAU KHI LÀM SẠCH ---")
-    print(result)
