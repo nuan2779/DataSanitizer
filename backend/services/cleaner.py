@@ -133,6 +133,28 @@ class DataCleaner:
         self.df[valid_cols] = scaler.fit_transform(self.df[valid_cols])
 
         return self
+    # Chuẩn hóa dữ liệu rác
+    def standardize_nulls(self):
+        junk_null_markers = ["N/A", "NA", "n/a", "na", "?", "-", "none", "null", "NULL", ""]
+        self.df = self.df.replace(junk_null_markers, np.nan)
+        return self
+    def clean_and_cast_numeric(self, columns: List[str]):
+        for col in columns:
+            if col not in self.df.columns:
+                continue
+            if self.df[col].dtype == "object":
+                cleaned = self.df[col].astype(str).str.strip()
+                cleaned = cleaned.str.replace(r"[^\d.]", "", regex=True)
+                self.df[col] = pd.to_numeric(cleaned, errors="coerce")
+        return self
+    #Làm tròn số
+    def round_feature(self, columns: List[str], decimals: int=0, to_integer: bool = False):
+        for col in columns:
+            if col in self.df.columns and pd.api.types.is_numeric_dtype(self.df[col]):
+                self.df[col] = self.df[col].round(decimals)
+                if to_integer and self.df[col].isnull().sum() == 0:
+                    self.df[col] = self.df[col].astype(int)
+        return self
     # Thực thi pipeline
     def execute_pipeline(self, pipeline_steps: List[Dict[str, Any]]) -> pd.DataFrame:
 
@@ -163,4 +185,16 @@ class DataCleaner:
                     columns = config.get("columns", []),
                     method = config.get("method", "standard")
                 )
-        return self.df    
+            elif step_type == "standardize_nulls":
+                self.standardize_nulls()
+            elif step_type == "clean_numeric":
+                self.clean_and_cast_numeric(
+                    columns=config.get("columns",[])
+                )
+            elif step_type == "round":
+                self.round_feature(
+                    columns = config.get("columns",[]),
+                    decimals= int(config.get("decimal",0)),
+                    to_integer= bool(config.get("to_integer", False))
+                )
+        return self.df
