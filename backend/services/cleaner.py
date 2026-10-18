@@ -6,6 +6,33 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
 class DataCleaner:
     def __init__(self, df: pd.DataFrame):
         self.df = df.copy()
+        #Lưu lại kích thước ban đầu
+        self.initial_shape = df.shape
+        #Danh sách từng hành động đã thực hiện
+        self.audit_log: List[Dict[str, Any]] = []
+
+    #ghi chép log và xuất báo cáo
+    def _log(self, action: str, description: str, details: Optional[Dict[str,Any]] = None):
+        self.audit_log.append({
+            "step": len(self.audit_log) + 1,
+            "action": action,
+            "description": description,
+            "details": details or {}
+        })
+    def get_audit_summary(self) -> Dict[str, Any]:
+        #Xuất bản báo cáo
+        rows_diff = self.initial_shape[0] - len(self.df)
+        cols_diff = len(self.df.columns) - self.initial_shape[1]
+        return {
+            "initial_rows": self.initial_shape[0],
+            "final_rows": len(self.df),
+            "rows_removed": rows_diff,
+            "initial_columns": self.initial_shape[1],
+            "final_columns": len(self.df.columns),
+            "columns_added_or_removed": cols_diff,
+            "total_steps": len(self.audit_log),
+            "history": self.audit_log
+        }
     #Xử lí giá trị thiếu
 
     def handle_missing_values(
@@ -39,10 +66,10 @@ class DataCleaner:
         elif strategy == "median":
             for col in target_cols:
                 if pd.api.types.is_numeric_dtype(self.df[col]):
-                    self.df[col] = self.df[target_cols].fillna(self.df[col].median())
+                    self.df[col] = self.df[col].fillna(self.df[col].median())
         elif strategy == "mode":
             for col in target_cols:
-                mode_val = self.df[col].model()
+                mode_val = self.df[col].mode()
                 if not mode_val.empty:
                     self.df[col] = self.df[col].fillna(mode_val[0])
         elif strategy == "interpolate":
@@ -52,6 +79,8 @@ class DataCleaner:
                     self.df[col] = self.df[col].interpolate(method="linear")
         elif strategy == "constant" and fill_value is not None:
             self.df[target_cols] = self.df[target_cols].fillna(fill_value)
+
+        self._log("missing_values", f"Đã điền ô trống theo phương pháp '{strategy}' cho các cột: {target_cols}")
         return self
 
     # Xử lí ngoại lai
@@ -75,6 +104,8 @@ class DataCleaner:
         - remove : xóa các dòng ngoại lai
         - cap: cắt ngọn- giá trị quá lớn gần bằng trần, quá nhỏ gần bằng sàn    
         '''
+        rows_before = len(self.df)
+
         for col in columns:
             if not pd.api.types.is_numeric_dtype(self.df[col]):
                 continue
@@ -99,6 +130,9 @@ class DataCleaner:
                 self.df = self.df[condition]
             elif handling == "cap":
                 self.df[col] = np.clip(self.df[col], lower, upper)
+
+        rows_removed = rows_before - len(self.df)
+        self._log("outlier", f"Đã loại bỏ {rows_removed} dòng ngoại lại ở các cột: {columns}")
         return self
 
     # Mã hóa phân loại
@@ -114,6 +148,7 @@ class DataCleaner:
 
             elif method == "one_hot":
                 self.df = pd.get_dummies(self.df, columns=[col], prefix=col, drop_first=True)
+        self._log("encoding", f"Đã mã hóa phân loại (phương pháp '{method}') cho các cột: {columns}")
         return self
 
     # Chuẩn hóa dữ liệu
@@ -131,12 +166,17 @@ class DataCleaner:
 
         scaler = StandardScaler() if method == "standard" else MinMaxScaler()
         self.df[valid_cols] = scaler.fit_transform(self.df[valid_cols])
-
+        self._log("scaling", f"Đã chuẩn hóa thang đo (phương pháp '{method}') cho các cột: {valid_cols}")
         return self
     # Chuẩn hóa dữ liệu rác
     def standardize_nulls(self):
         junk_null_markers = ["N/A", "NA", "n/a", "na", "?", "-", "none", "null", "NULL", ""]
+        nulls_before = int(self.df.isnull().sum().sum())
         self.df = self.df.replace(junk_null_markers, np.nan)
+        nulls_after = int(self.df.isnull().sum().sum())
+        junk_count = nulls_after - nulls_before
+
+        self._log("standardize_nulls", f"Đã chuẩn hóa {junk_count} ô chứa các ký tự rác thành chuẩn")
         return self
     def clean_and_cast_numeric(self, columns: List[str]):
         for col in columns:
@@ -146,6 +186,7 @@ class DataCleaner:
                 cleaned = self.df[col].astype(str).str.strip()
                 cleaned = cleaned.str.replace(r"[^\d.]", "", regex=True)
                 self.df[col] = pd.to_numeric(cleaned, errors="coerce")
+        self._log("clean_numeric", f"Đã bóc tách ký tự tiền tệ và ép kiểu số cho các cột: {columns}")
         return self
     #Làm tròn số
     def round_feature(self, columns: List[str], decimals: int=0, to_integer: bool = False):
@@ -154,6 +195,7 @@ class DataCleaner:
                 self.df[col] = self.df[col].round(decimals)
                 if to_integer and self.df[col].isnull().sum() == 0:
                     self.df[col] = self.df[col].astype(int)
+        self._log("round", f"Đã làm tròn về {decimals} chữ số thập phân cho các cột: {columns}")
         return self
     # Thực thi pipeline
     def execute_pipeline(self, pipeline_steps: List[Dict[str, Any]]) -> pd.DataFrame:
@@ -194,7 +236,7 @@ class DataCleaner:
             elif step_type == "round":
                 self.round_feature(
                     columns = config.get("columns",[]),
-                    decimals= int(config.get("decimal",0)),
+                    decimals= int(config.get("decimals",0)),
                     to_integer= bool(config.get("to_integer", False))
                 )
         return self.df
