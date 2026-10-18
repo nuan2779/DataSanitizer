@@ -1,4 +1,3 @@
-
 ## Overview
 **DataSanitizer** is a web-based application designed to automate data preprocessing and cleaning tasks. In Data Science projects, data preparation often consumes up to 80% of the workflow. DataSanitizer solves this by providing an intuitive interface where users can upload raw datasets (CSV/Excel) and receive clean, model-ready data in seconds.
 
@@ -29,15 +28,21 @@ The system provides a robust data processing pipeline with 4 main modules:
 datasanitizer-project/
 │
 ├── backend/
-│   ├── main.py             # Main FastAPI server configuration
-│   ├── routers/            # API endpoints (upload, clean, download)
-│   └── services/
-│       └── cleaner.py      # Pandas logic for data processing
+│   ├── main.py             # FastAPI server, CORS config, and static files mount
+│   ├── api/                # API endpoints separation (formerly routers)
+│   │   └── endpoints/      # e.g., upload.py, clean.py, download.py
+│   ├── core/               # App configuration (config.py), constants, logging
+│   ├── schemas/            # Pydantic models for Request/Response validation
+│   ├── services/
+│   │   ├── cleaner.py      # Pandas logic for data processing
+│   │   └── profiler.py     # Logic for data profiling/statistics
+│   └── tests/              # Pytest files for testing Pandas logic
 │
-├── frontend/
+├── frontend/               # Served as Static Files by FastAPI
 │   ├── index.html          # Main web interface
-│   ├── style.css
-│   └── script.js
+│   └── assets/             
+│       ├── css/style.css
+│       └── js/script.js
 │
 ├── data/                   # (Ignored by Git)
 │   ├── raw/                # Uploaded raw files
@@ -46,3 +51,4 @@ datasanitizer-project/
 ├── .gitignore
 ├── requirements.txt
 └── README.md
+```
