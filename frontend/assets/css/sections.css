@@ -1,0 +1,197 @@
+.upload-zone {
+    text-align: center;
+}
+
+.upload-label {
+    display: block;
+    border: 1.5px dashed var(--border-color);
+    border-radius: var(--radius-box);
+    padding: 36px 20px;
+    cursor: pointer;
+    background-color: #fafafa;
+    transition: all 0.2s;
+}
+
+.upload-label:hover {
+    border-color: var(--accent);
+    background-color: #f8fafc;
+}
+
+.upload-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.text-link {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.upload-subtitle {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+.selected-file {
+    margin-top: 12px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--success);
+}
+
+.upload-actions {
+    margin-top: 16px;
+}
+
+/* Thống kê & Bảng */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-top: 4px;
+    display: block;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.data-table th, .data-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.data-table th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.data-table tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Pipeline Grid */
+.pipeline-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.pipeline-config, .pipeline-queue {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.pipeline-config h3, .queue-header h3, .audit-log-box h3, .export-info h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.queue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pipeline-list, .audit-list {
+    list-style: none;
+    max-height: 350px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+
+.pipeline-item, .audit-item {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    font-size: 13px;
+}
+
+.step-title {
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.step-detail {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.btn-remove-step {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 20px;
+    background: #fafafa;
+    border: 1px dashed var(--border-color);
+    border-radius: 6px;
+}
+
+/* Export Box */
+.export-box {
+    margin-top: 24px;
+    padding: 20px;
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.export-info p {
+    font-size: 13px;
+    color: #166534;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 10px;
+}
