@@ -1,7 +1,102 @@
 
+import re
 import pandas as pd
+
 from backend.services.cleaner import DataCleaner
 
+
+# ==========================================
+# 1. CURRENCY DETECTION
+# ==========================================
+
+# Supported examples:
+# $1,200.50
+# 1,500 đ
+# 2500 VND
+# 2300
+
+CURRENCY_FORMAT = re.compile(
+    r"^\s*\$?\s*"
+    r"(?:\d{1,3}(?:,\d{3})+|\d+)"
+    r"(?:\.\d+)?"
+    r"\s*(?:đ|₫|vnd|vnđ)?\s*$",
+    re.IGNORECASE
+)
+
+CURRENCY_MARKER = re.compile(
+    r"^\s*\$|(?:đ|₫|vnd|vnđ)\s*$",
+    re.IGNORECASE
+)
+
+AMBIGUOUS_FORMAT = re.compile(
+    r"^\s*\$?\s*\d{1,3}\.\d{3}"
+    r"\s*(?:đ|₫|vnd|vnđ)?\s*$",
+    re.IGNORECASE
+)
+
+
+def find_currency_columns(df: pd.DataFrame):
+    """
+    Detect currency-like columns without
+    modifying ordinary categorical columns.
+    """
+
+    currency_columns = []
+
+    object_columns = df.select_dtypes(
+        include=["object", "string", "category"]
+    ).columns.tolist()
+
+    for col in object_columns:
+
+        values = (
+            df[col]
+            .dropna()
+            .astype(str)
+            .str.strip()
+        )
+
+        if values.empty:
+            continue
+
+        valid_values = values.map(
+            lambda x: bool(CURRENCY_FORMAT.fullmatch(x))
+        )
+
+        currency_markers = values.map(
+            lambda x: bool(CURRENCY_MARKER.search(x))
+        )
+
+        # At least one value must be clearly
+        # recognizable as currency.
+        if not (
+            valid_values.any()
+            and currency_markers.any()
+        ):
+            continue
+
+        # Reject mixed or unsupported formats
+        # rather than silently corrupting data.
+        if not valid_values.all():
+            raise ValueError(
+                f"Unsupported currency format in column: {col}"
+            )
+
+        if values.map(
+            lambda x: bool(AMBIGUOUS_FORMAT.fullmatch(x))
+        ).any():
+            raise ValueError(
+                f"Ambiguous decimal format in column: {col}"
+            )
+
+        currency_columns.append(col)
+
+    return currency_columns
+
+
+# ==========================================
+# 2. MAIN ADAPTER
+# ==========================================
 
 def clean_dataframe(
     df: pd.DataFrame,
@@ -9,37 +104,113 @@ def clean_dataframe(
 ) -> pd.DataFrame:
 
     # STEP 1: Get cleaning options
-    missing_method = options.get("missing_method", "median")
-    outlier_method = options.get("outlier_method", "none")
-    encoding_method = options.get("encoding_method", "none")
-    scaling_method = options.get("scaling_method", "none")
+    missing_method = options.get(
+        "missing_method", "median"
+    )
 
-    # STEP 2: Validate methods
-    if missing_method not in [
+    outlier_method = options.get(
+        "outlier_method", "none"
+    )
+
+    encoding_method = options.get(
+        "encoding_method", "none"
+    )
+
+    scaling_method = options.get(
+        "scaling_method", "none"
+    )
+
+    # ======================================
+    # STEP 2: Validate options
+    # ======================================
+
+    valid_missing = [
         "mean",
         "median",
         "mode",
         "drop_rows",
         "drop_columns",
-         "interpolate"
-    ]:
+        "interpolation"
+    ]
+
+    if missing_method not in valid_missing:
         raise ValueError(
             "Unsupported missing value method"
         )
 
+    if outlier_method not in [
+        "none", "iqr", "zscore"
+    ]:
+        raise ValueError(
+            "Unsupported outlier method"
+        )
 
+    if encoding_method not in [
+        "none", "onehot", "label"
+    ]:
+        raise ValueError(
+            "Unsupported encoding method"
+        )
 
-    if outlier_method not in ["none", "iqr", "zscore"]:
-        raise ValueError("Unsupported outlier method")
+    if scaling_method not in [
+        "none", "minmax", "standard"
+    ]:
+        raise ValueError(
+            "Unsupported scaling method"
+        )
 
+    # ======================================
+    # STEP 3: Currency cleaning
+    # ======================================
 
-    if encoding_method not in ["none", "onehot", "label"]:
-        raise ValueError("Unsupported encoding method")
+    # Avoid modifying original DataFrame
+    df = df.copy()
 
-    if scaling_method not in ["none", "minmax", "standard"]:
-        raise ValueError("Unsupported scaling method")
+    # Detect currency columns
+    currency_columns = find_currency_columns(df)
 
-    # STEP 3: Identify columns
+    if currency_columns:
+
+        # DataCleaner's numeric cleaner handles
+        # object dtype, so convert string/category
+        # columns to object before processing.
+        for col in currency_columns:
+            df[col] = df[col].astype(object)
+
+        currency_cleaner = DataCleaner(df)
+
+        currency_pipeline = [
+            {
+                "step_type": "clean_numeric",
+                "config": {
+                    "columns": currency_columns
+                }
+            }
+        ]
+
+        df = currency_cleaner.execute_pipeline(
+            currency_pipeline
+        )
+
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError(
+                "Currency cleaning must return a DataFrame"
+            )
+
+        # Verify that currency conversion worked
+        for col in currency_columns:
+            if not pd.api.types.is_numeric_dtype(df[col]):
+                raise ValueError(
+                    f"Cannot convert currency column: {col}"
+                )
+
+    # ======================================
+    # STEP 4: Identify column types
+    # ======================================
+
+    # Important: detect columns AFTER
+    # currency conversion.
+
     numeric_columns = df.select_dtypes(
         include="number"
     ).columns.tolist()
@@ -48,9 +219,11 @@ def clean_dataframe(
         include=["object", "category", "string"]
     ).columns.tolist()
 
-    pipeline_steps = [{"step_type": "standardize_nulls", "config": {}},
-{"step_type": "clean_numeric", "config": {"columns": numeric_columns}},]
-    # STEP 4: Missing value handling
+    pipeline_steps = []
+
+    # ======================================
+    # STEP 5: Missing Values
+    # ======================================
 
     strategy_mapping = {
         "mean": "mean",
@@ -58,30 +231,29 @@ def clean_dataframe(
         "mode": "mode",
         "drop_rows": "drop_row",
         "drop_columns": "drop_col",
-        "interpolate": "interpolate"
+        "interpolation": "interpolate"
     }
 
-    # Find columns containing missing values
     missing_columns = [
         col for col in df.columns
         if df[col].isna().any()
     ]
 
-    # Select columns for each strategy
     if missing_method in [
         "mean",
         "median",
         "interpolation"
     ]:
+
         target_columns = [
             col for col in numeric_columns
             if col in missing_columns
         ]
 
     else:
+
         target_columns = missing_columns
 
-    # Create missing value pipeline step
     if target_columns:
 
         pipeline_steps.append({
@@ -92,7 +264,7 @@ def clean_dataframe(
             }
         })
 
-    # Update columns when using Drop Columns
+    # Update columns after Drop Columns
     if missing_method == "drop_columns":
 
         remaining_columns = [
@@ -115,13 +287,16 @@ def clean_dataframe(
             if col in remaining_columns
         ]
 
+    # ======================================
+    # STEP 6: Outlier Detection
+    # ======================================
 
-
-    # STEP 5: Outlier handling
     if outlier_method in ["iqr", "zscore"]:
 
         if not numeric_columns:
-            raise ValueError("No numeric columns for outlier handling")
+            raise ValueError(
+                "No numeric columns for outlier detection"
+            )
 
         method_mapping = {
             "iqr": "iqr",
@@ -129,7 +304,8 @@ def clean_dataframe(
         }
 
         threshold = (
-            1.5 if outlier_method == "iqr" else 3.0
+            1.5 if outlier_method == "iqr"
+            else 3.0
         )
 
         pipeline_steps.append({
@@ -142,7 +318,9 @@ def clean_dataframe(
             }
         })
 
-    # STEP 6: Categorical Encoding
+    # ======================================
+    # STEP 7: Encoding
+    # ======================================
 
     if encoding_method in ["onehot", "label"]:
 
@@ -151,7 +329,7 @@ def clean_dataframe(
                 "No categorical columns for encoding"
             )
 
-        method_mapping = {
+        encoding_mapping = {
             "onehot": "one_hot",
             "label": "label"
         }
@@ -160,15 +338,20 @@ def clean_dataframe(
             "step_type": "encoding",
             "config": {
                 "columns": categorical_columns,
-                "method": method_mapping[encoding_method]
+                "method": encoding_mapping[encoding_method]
             }
         })
 
-    # STEP 7: Feature Scaling
+    # ======================================
+    # STEP 8: Scaling
+    # ======================================
+
     if scaling_method in ["minmax", "standard"]:
 
         if not numeric_columns:
-            raise ValueError("No numeric columns for scaling")
+            raise ValueError(
+                "No numeric columns for scaling"
+            )
 
         pipeline_steps.append({
             "step_type": "scaling",
@@ -178,13 +361,23 @@ def clean_dataframe(
             }
         })
 
-    # STEP 8: Execute DataCleaner
+    # ======================================
+    # STEP 9: Execute DataCleaner
+    # ======================================
+
     cleaner = DataCleaner(df.copy())
 
-    cleaned_df = cleaner.execute_pipeline(pipeline_steps)
+    cleaned_df = cleaner.execute_pipeline(
+        pipeline_steps
+    )
 
-    # STEP 9: Validate output
     if not isinstance(cleaned_df, pd.DataFrame):
-        raise TypeError("DataCleaner must return a DataFrame")
+        raise TypeError(
+            "DataCleaner must return a DataFrame"
+        )
+
+    # ======================================
+    # STEP 10: Return cleaned dataset
+    # ======================================
 
     return cleaned_df

@@ -1,7 +1,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from backend.routers.profile import router as profile_router
 from backend.routers.upload import router as upload_router
 from backend.routers.clean import router as clean_router
 from backend.routers.download import router as download_router
@@ -32,7 +32,7 @@ app.add_middleware(
 app.include_router(upload_router, prefix="/api")
 app.include_router(clean_router, prefix="/api")
 app.include_router(download_router, prefix="/api")
-
+app.include_router(profile_router, prefix="/api")
 @app.get("/")
 def home():
     return {
