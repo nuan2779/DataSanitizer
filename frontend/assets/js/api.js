@@ -50,7 +50,7 @@ export async function executePipelineAPI(fileId, pipeline) {
         },
         body: JSON.stringify({
             file_id: fileId,
-            pipeline: pipeline // Khớp chính xác với key "pipeline" của Backend
+            pipeline: pipeline 
         })
     });
 
@@ -62,6 +62,6 @@ export async function executePipelineAPI(fileId, pipeline) {
 
 // Xuất dữ liệu sạch (.csv hoặc .json)
 export function downloadExportFileAPI(fileId, format = "csv") {
-    const downloadUrl = `${API_BASE_URL}/download/${encodeURIComponent(fileId)}?format=${format}`;
+    const downloadUrl = `${API_BASE_URL}/download/${encodeURIComponent(fileId)}?file_format=${format}`;
     window.open(downloadUrl, "_blank");
 }
