@@ -6,10 +6,15 @@ def generate_profile(df: pd.DataFrame, file_id: str, filename: str,
     '''
     Quét toàn bộ dataframe và tạo bản báo cáo:
     - Tổng dòng, tổng cột
+    - Đếm số dòng trùng lặp
+    - Cảnh cáo các cặp có cột tương quan quá cao
     - Mỗi cột: kiểu dữ liệu, số ô null, %null, số giá trị unique, và 5 giá trị mẫu
     '''
     total_rows = len(df)
     total_columns = len(df.columns)
+
+    duplicate_rows_count = int(df.duplicated().sum())
+    duplicate_percentage = round((duplicate_rows_count / total_rows * 100),2) if total_rows > 0 else 0.0
 
     columns_summary: List[Dict[str, Any]] = []
 
@@ -29,11 +34,36 @@ def generate_profile(df: pd.DataFrame, file_id: str, filename: str,
         })
     columns_summary.sort(key=lambda x: x["null_percentage"], reverse = True)
 
+    #quét tìm các cặp có độ tương quan cao ( |r| >= 0.85)
+    high_correlations: List[Dict[str, Any]] = []
+    numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
+
+    #Nếu có 2 cột trở lên mới tính tương quan
+    if len(numeric_cols) >= 2:
+        corr_matrix = df[numeric_cols].corr()
+        for i in range(len(numeric_cols)):
+            for j in range (i+1, len(numeric_cols)):
+                col_a = numeric_cols[i]
+                col_b = numeric_cols[j]
+                val = corr_matrix.loc[col_a,col_b]
+
+                if pd.notnull(val) and abs(val) >= 0.85:
+                    high_correlations.append({
+                        "column_1": col_a,
+                        "column_2": col_b,
+                        "correlation": round(float(val), 2),
+                        "warning": f"Hai cột '{col_a}' và '{col_b}' có độ tương quan rất cao ({round(float(val), 2)}). Cân nhắc loại bớt 1 cột để tránh đa cộng tuyến."
+                    })
     return {
     "file_id": file_id,
     "filename": filename,
     "total_rows": total_rows,
     "total_columns": total_columns,
+    "duplicate_rows": {
+        "count": duplicate_rows_count,
+        "percentage": duplicate_percentage
+    },
+    "high_correlations": high_correlations,
     "columns": columns_summary
     }
 
@@ -69,3 +99,22 @@ def profile_single_column(df: pd.DataFrame, col_name: str) -> Dict[str, Any]:
             "max": float(clean_series.max()) if not clean_series.empty else None,
             "outlier_count": int(((clean_series < q1 - 1.5 * iqr) | (clean_series > q3 + 1.5 * iqr)).sum())}
     return info
+
+if __name__ == "__main__":
+    import json
+
+    # Tạo bảng mẫu có:
+    # 1. Hai dòng giống hệt nhau (Dòng 0 và Dòng 4 - Dòng trùng lặp)
+    # 2. Hai cột 'tuoi' và 'nam_sinh' tương quan ngược chiều 100% (r = -1.0)
+    test_df = pd.DataFrame({
+        "ho_ten": ["An", "Binh", "Cuong", "Dung", "An"],
+        "tuoi": [20, 25, 30, 22, 20],
+        "nam_sinh": [2004, 1999, 1994, 2002, 2004],  # Tương quan hoàn hảo với cột tuoi
+        "luong": [1000, 1500, 2000, 1200, 1000]
+    })
+
+    print("==================================================")
+    print("TEST PHÁT HIỆN TRÙNG LẶP & CẢNH BÁO TƯƠNG QUAN CAO")
+    print("==================================================")
+    report = generate_profile(test_df, file_id="demo123", filename="test.csv")
+    print(json.dumps(report, indent=2, ensure_ascii=False))
