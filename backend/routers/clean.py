@@ -102,7 +102,6 @@ def clean_file(request: CleanRequest):
     output_path = (
         PROCESSED_DIR / f"{request.file_id}.csv"
     )
-    cleaned_df.to_csv(output_path, index=False)
     try:
         cleaned_df.to_csv(
             output_path,

@@ -13,10 +13,6 @@ PROCESSED_DIR = (
     / "data"
     / "processed"
 )
-
-
-@router.get("/download/{file_id}")
-
 @router.get("/download/{file_id}")
 def download_file(
     file_id: UUID,

@@ -32,22 +32,6 @@ async def upload_file(file: UploadFile = File(...)):
             status_code=413,
             detail="File must be 10 MB or smaller"
         )
-
-    # Check empty file
-    if not content:
-        raise HTTPException(
-            status_code=400,
-            detail="Uploaded file is empty"
-        )
-
-    # Check Excel ZIP structure
-    if extension == ".xlsx":
-        if not is_zipfile(BytesIO(content)):
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid Excel file"
-            )
-
     # Check empty file
     if not content:
         raise HTTPException(

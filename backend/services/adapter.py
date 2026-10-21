@@ -21,7 +21,7 @@ def clean_dataframe(
         "mode",
         "drop_rows",
         "drop_columns",
-         "interpolation"
+         "interpolate"
     ]:
         raise ValueError(
             "Unsupported missing value method"
@@ -48,7 +48,8 @@ def clean_dataframe(
         include=["object", "category", "string"]
     ).columns.tolist()
 
-    pipeline_steps = []
+    pipeline_steps = [{"step_type": "standardize_nulls", "config": {}},
+{"step_type": "clean_numeric", "config": {"columns": numeric_columns}},]
     # STEP 4: Missing value handling
 
     strategy_mapping = {
@@ -57,7 +58,7 @@ def clean_dataframe(
         "mode": "mode",
         "drop_rows": "drop_row",
         "drop_columns": "drop_col",
-        "interpolation": "interpolate"
+        "interpolate": "interpolate"
     }
 
     # Find columns containing missing values
