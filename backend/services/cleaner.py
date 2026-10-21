@@ -205,6 +205,36 @@ class DataCleaner:
                     self.df[col] = self.df[col].astype(int)
         self._log("round", f"Đã làm tròn về {decimals} chữ số thập phân cho các cột: {columns}")
         return self
+    #Tối ưu hóa dung lượng
+    def optimize_memory(self):
+        start_mem = self.df.memory_usage(deep=True).sum() / (1024 ** 2)
+        for col in self.df.columns:
+            col_type = self.df[col].dtype
+            if pd.api.types.is_integer_dtype(col_type):
+                c_min = self.df[col].min()
+                c_max = self.df[col].max()
+                if c_min >= np.iinfo(np.int8).min and c_max <= np.iinfo(np.int8).max:
+                    self.df[col] = self.df[col].astype(np.int8)
+                elif c_min >= np.iinfo(np.int16).min and c_max <= np.iinfo(np.int16).max:
+                    self.df[col] = self.df[col].astype(np.int16)
+                elif c_min >= np.iinfo(np.int32).min and c_max <= np.iinfo(np.int32).max:
+                    self.df[col] = self.df[col].astype(np.int32)
+            elif pd.api.types.is_float_dtype(col_type):
+                self.df[col] = self.df[col].astype(np.float32)
+            elif col_type == "object":
+                num_unique = self.df[col].nunique()
+                num_total = len(self.df[col])
+                if num_total > 0 and (num_unique / num_total) < 0.5 :
+                    self.df[col] = self.df[col].astype("category")
+        #tính dung lượng
+        end_mem = self.df.memory_usage(deep=True).sum() / (1024**2)
+        reduction = ((start_mem - end_mem) / start_mem * 100) if start_mem > 0 else 0.0
+
+        self._log(
+            "optimize_memory",
+            f"Đã tối ưu RAM: giảm từ {start_mem:.2f} MB xuống {end_mem:.2f} MB (tiết kiệm {reduction:.1f}% RAM)."
+        )
+        return self
     # Thực thi pipeline
     def execute_pipeline(self, pipeline_steps: List[Dict[str, Any]]) -> pd.DataFrame:
 
@@ -252,4 +282,6 @@ class DataCleaner:
                     subset=config.get("subset"),
                     keep=config.get("keep","first")
                     )
+            elif step_type == "optimize_memory":
+                self.optimize_memory()
         return self.df
