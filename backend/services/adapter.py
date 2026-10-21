@@ -5,9 +5,7 @@ import pandas as pd
 from backend.services.cleaner import DataCleaner
 
 
-# ==========================================
 # 1. CURRENCY DETECTION
-# ==========================================
 
 # Supported examples:
 # $1,200.50
@@ -94,9 +92,7 @@ def find_currency_columns(df: pd.DataFrame):
     return currency_columns
 
 
-# ==========================================
 # 2. MAIN ADAPTER
-# ==========================================
 
 def clean_dataframe(
     df: pd.DataFrame,
@@ -120,9 +116,9 @@ def clean_dataframe(
         "scaling_method", "none"
     )
 
-    # ======================================
+
     # STEP 2: Validate options
-    # ======================================
+
 
     valid_missing = [
         "mean",
@@ -159,13 +155,14 @@ def clean_dataframe(
             "Unsupported scaling method"
         )
 
-    # ======================================
+
     # STEP 3: Currency cleaning
-    # ======================================
+
 
     # Avoid modifying original DataFrame
     df = df.copy()
-
+    cleaner = DataCleaner(df)
+    df = cleaner.standardize_nulls().df
     # Detect currency columns
     currency_columns = find_currency_columns(df)
 
@@ -204,9 +201,9 @@ def clean_dataframe(
                     f"Cannot convert currency column: {col}"
                 )
 
-    # ======================================
+
     # STEP 4: Identify column types
-    # ======================================
+
 
     # Important: detect columns AFTER
     # currency conversion.
@@ -219,11 +216,11 @@ def clean_dataframe(
         include=["object", "category", "string"]
     ).columns.tolist()
 
-    pipeline_steps = []
+    pipeline_steps = [{"step_type": "standardize_nulls", "config": {}},
+{"step_type": "clean_numeric", "config": {"columns": numeric_columns}},]
 
-    # ======================================
+
     # STEP 5: Missing Values
-    # ======================================
 
     strategy_mapping = {
         "mean": "mean",
@@ -231,7 +228,7 @@ def clean_dataframe(
         "mode": "mode",
         "drop_rows": "drop_row",
         "drop_columns": "drop_col",
-        "interpolation": "interpolate"
+        "interpolate": "interpolate"
     }
 
     missing_columns = [
@@ -287,9 +284,7 @@ def clean_dataframe(
             if col in remaining_columns
         ]
 
-    # ======================================
     # STEP 6: Outlier Detection
-    # ======================================
 
     if outlier_method in ["iqr", "zscore"]:
 
@@ -318,9 +313,7 @@ def clean_dataframe(
             }
         })
 
-    # ======================================
     # STEP 7: Encoding
-    # ======================================
 
     if encoding_method in ["onehot", "label"]:
 
@@ -342,9 +335,7 @@ def clean_dataframe(
             }
         })
 
-    # ======================================
     # STEP 8: Scaling
-    # ======================================
 
     if scaling_method in ["minmax", "standard"]:
 
@@ -361,9 +352,9 @@ def clean_dataframe(
             }
         })
 
-    # ======================================
+
     # STEP 9: Execute DataCleaner
-    # ======================================
+
 
     cleaner = DataCleaner(df.copy())
 
@@ -376,8 +367,5 @@ def clean_dataframe(
             "DataCleaner must return a DataFrame"
         )
 
-    # ======================================
-    # STEP 10: Return cleaned dataset
-    # ======================================
 
     return cleaned_df
