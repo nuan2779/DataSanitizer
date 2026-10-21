@@ -99,22 +99,3 @@ def profile_single_column(df: pd.DataFrame, col_name: str) -> Dict[str, Any]:
             "max": float(clean_series.max()) if not clean_series.empty else None,
             "outlier_count": int(((clean_series < q1 - 1.5 * iqr) | (clean_series > q3 + 1.5 * iqr)).sum())}
     return info
-
-if __name__ == "__main__":
-    import json
-
-    # Tạo bảng mẫu có:
-    # 1. Hai dòng giống hệt nhau (Dòng 0 và Dòng 4 - Dòng trùng lặp)
-    # 2. Hai cột 'tuoi' và 'nam_sinh' tương quan ngược chiều 100% (r = -1.0)
-    test_df = pd.DataFrame({
-        "ho_ten": ["An", "Binh", "Cuong", "Dung", "An"],
-        "tuoi": [20, 25, 30, 22, 20],
-        "nam_sinh": [2004, 1999, 1994, 2002, 2004],  # Tương quan hoàn hảo với cột tuoi
-        "luong": [1000, 1500, 2000, 1200, 1000]
-    })
-
-    print("==================================================")
-    print("TEST PHÁT HIỆN TRÙNG LẶP & CẢNH BÁO TƯƠNG QUAN CAO")
-    print("==================================================")
-    report = generate_profile(test_df, file_id="demo123", filename="test.csv")
-    print(json.dumps(report, indent=2, ensure_ascii=False))
