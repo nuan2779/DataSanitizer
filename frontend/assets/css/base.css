@@ -1,0 +1,148 @@
+/* nền tảng và khung sườn trang web */
+:root {
+    --bg-app: #0f172a;
+    --bg-body: #f8fafc;
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --primary: #0f172a;
+    --primary-hover: #1e293b;
+    --accent: #2563eb;
+    --success: #059669;
+    --danger: #dc2626;
+    --radius-pill: 9999px;
+    --radius-box: 10px;
+    --shadow-soft: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    line-height: 1.5;
+    min-height: 100vh;
+    background: linear-gradient(-45deg, #fdf0f4, #fff9d2, #ffe1e8, #fef5c4);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+}
+
+/* Định nghĩa luồng chuyển động của dải màu */
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Header kiểu Console */
+.app-header {
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-mark {
+    background: var(--bg-app);
+    color: white;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.logo h1 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+
+.logo p {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Thanh Sub-nav quy trình */
+.sub-nav-bar {
+    background-color: #f1f5f9;
+    border-top: 1px solid var(--border-color);
+    padding: 8px 0;
+}
+
+.nav-steps {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.step-indicator {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.step-indicator.active {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.step-divider {
+    color: #cbd5e1;
+}
+
+.main-content {
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.app-footer {
+    text-align: center;
+    padding: 24px 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-card);
+    margin-top: 40px;
+}
