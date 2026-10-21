@@ -178,6 +178,14 @@ class DataCleaner:
 
         self._log("standardize_nulls", f"Đã chuẩn hóa {junk_count} ô chứa các ký tự rác thành chuẩn")
         return self
+    def drop_duplicates(self, subset: Optional[List[str]] = None, keep: str = "first"):
+        #xóa các cột trùng lặp hoàn toàn hoặc trùng trên các cột chỉ đỉnh
+        rows_before = len(self.df)
+        self.df = self.df.drop_duplicates(subset=subset, keep=keep)
+        rows_removed = rows_before - len(self.df)
+
+        self._log("drop_duplicates", f"Đã xóa {rows_removed} dòng trùng lặp (giữ lại bản ghi: '{keep}').")
+        return self
     def clean_and_cast_numeric(self, columns: List[str]):
         for col in columns:
             if col not in self.df.columns:
@@ -239,4 +247,9 @@ class DataCleaner:
                     decimals= int(config.get("decimals",0)),
                     to_integer= bool(config.get("to_integer", False))
                 )
+            elif step_type == "drop_duplicates":
+                self.drop_duplicates(
+                    subset=config.get("subset"),
+                    keep=config.get("keep","first")
+                    )
         return self.df
