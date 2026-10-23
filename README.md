@@ -1,54 +1,103 @@
-## Overview
-**DataSanitizer** is a web-based application designed to automate data preprocessing and cleaning tasks. In Data Science projects, data preparation often consumes up to 80% of the workflow. DataSanitizer solves this by providing an intuitive interface where users can upload raw datasets (CSV/Excel) and receive clean, model-ready data in seconds.
+# DataSanitizer
 
-## Contributors
-* **Nguyễn Hữu Luân** 
-* **Đào Trung Phúc** 
-* **Hoàng Hải Văn** 
+A browser-based CSV/XLSX profiling and cleaning demo built with FastAPI, Pandas,
+scikit-learn and vanilla JavaScript.
 
-## Core Features
-The system provides a robust data processing pipeline with 4 main modules:
-1. **Missing Value Treatment:** 
-   - Automatically detects NaN/Null values.
-   - Supports dropping rows/columns or imputing missing data using Mean, Median, Mode, or Interpolation.
-2. **Outlier Detection:** 
-   - Identifies and handles anomalous values using **IQR (Interquartile Range)** or **Z-Score** methods.
-3. **Data Encoding & Scaling:**
-   - Supports Label Encoding and One-Hot Encoding for categorical features.
-   - Normalizes numerical data (Min-Max Scaler, Standard Scaler).
-4. **Data Export:** Easily export the sanitized dataset to `.csv` or `.json` formats.
+## Team
 
-## Tech Stack
-* **Backend:** Python, FastAPI, Uvicorn (API Routing & Server).
-* **Data Engine:** Pandas, NumPy, Scikit-learn.
-* **Frontend:** HTML, CSS, Vanilla JavaScript (Fetch API).
+- Nguyễn Hữu Luân
+- Đào Trung Phúc
+- Hoàng Hải Văn
 
-## 📁 Project Structure
-```text
-datasanitizer-project/
-│
-├── backend/
-│   ├── main.py             # FastAPI server, CORS config, and static files mount
-│   ├── api/                # API endpoints separation (formerly routers)
-│   │   └── endpoints/      # e.g., upload.py, clean.py, download.py
-│   ├── core/               # App configuration (config.py), constants, logging
-│   ├── schemas/            # Pydantic models for Request/Response validation
-│   ├── services/
-│   │   ├── cleaner.py      # Pandas logic for data processing
-│   │   └── profiler.py     # Logic for data profiling/statistics
-│   └── tests/              # Pytest files for testing Pandas logic
-│
-├── frontend/               # Served as Static Files by FastAPI
-│   ├── index.html          # Main web interface
-│   └── assets/             
-│       ├── css/style.css
-│       └── js/script.js
-│
-├── data/                   # (Ignored by Git)
-│   ├── raw/                # Uploaded raw files
-│   └── processed/          # Sanitized output files
-│
-├── .gitignore
-├── requirements.txt
-└── README.md
+## Setup (Windows PowerShell, Python 3.11)
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+New-Item -ItemType Directory -Force -Path '.\data\raw', '.\data\processed' | Out-Null
 ```
+
+Run in separate terminal windows from the project root:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn backend.main:app --reload
+```
+
+```powershell
+.\.venv\Scripts\python.exe -m http.server 5500 -d frontend
+```
+
+- Web interface: http://127.0.0.1:5500/index.html
+- API documentation: http://127.0.0.1:8000/docs
+
+## API contract
+
+- `POST /api/upload`: multipart field `file`, returns `file_id`.
+- `GET /api/profile/{file_id}`: dataset summary.
+- `GET /api/profile/{file_id}/{col_name}`: column statistics.
+- `POST /api/clean`: submit `file_id` and **ordered** `pipeline` steps from the UI;
+  older four-option requests are still supported.
+- `GET /api/download/{file_id}?file_format=csv` (or `json`).
+
+Example clean request (the order matters):
+
+```json
+{
+  "file_id": "00000000-0000-0000-0000-000000000001",
+  "pipeline": [
+    {"step_type":"standardize_nulls", "config":{}},
+    {"step_type":"missing_values", "config":{"columns":["Age"], "strategy":"median"}},
+    {"step_type":"encoding", "config":{"columns":["City"], "method":"one_hot"}}
+  ]
+}
+```
+
+The `/api/clean` response includes `audit_summary` with row/column counts, actual
+logged steps, and history, plus `original_data` and `processed_data` metadata.
+The steps available in the UI are `standardize_nulls`, `clean_numeric`,
+`missing_values`, `outlier`, `encoding`, `scaling`, and `round`.
+
+## Tests
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests -v
+.\.venv\Scripts\python.exe test_adapter_currency.py
+```
+
+`tests/test_frontend_pipeline_contract.py` tests that the UI payload actually
+runs the chosen steps (not merely returning HTTP 200).
+
+## Project structure
+
+```text
+backend/
+  main.py              FastAPI app and CORS
+  schemas.py           Pydantic request models
+  routers/             Upload / Profile / Clean / Download
+  services/
+    adapter.py         Legacy four-option cleaning adapter
+    pipeline_runner.py Ordered pipeline + validation + safe currency conversion
+    cleaner.py         Data processing engine
+    profiler.py        Dataset and column profiling
+frontend/
+  index.html
+  assets/css/
+  assets/js/
+tests/
+data/raw/              Uploads; not committed
+data/processed/        Processed datasets; not committed
+```
+
+## Important limits
+
+- This is a local, educational prototype, **not** a multi-user production system.
+  It does not implement authentication, authorization, data retention or session isolation.
+- Currency conversion accepts non-ambiguous US-style number separators such as
+  `$1,200.50` and `1,500 đ`. Ambiguous locale formats are rejected rather than
+  silently guessed. The ordered UI pipeline converts currency only when the
+  user adds a `clean_numeric` step for the relevant column(s).
+- Data processing depends on step order. Select numeric columns for mean, median,
+  interpolation, outlier processing and scaling. One-Hot may change the number
+  of columns. Rows with genuine outliers may legitimately be dropped.
+- The original uploaded file remains in `data/raw` on the local machine. Do not
+  use the demo to upload confidential information.

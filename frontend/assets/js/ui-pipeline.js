@@ -1,6 +1,7 @@
 // Xử lý cấu hình Pipeline (Bước 3) & Báo cáo Audit (Bước 4)
 import { appState } from "./state.js";
 import { updateStepIndicator } from "./ui-profiler.js";
+import { escapeHtml } from "./dom-safe.js";
 
 const STEP_NAMES = {
     standardize_nulls: "Chuẩn hóa ký tự rác thành Null",
@@ -124,8 +125,8 @@ export function renderPipelineQueue() {
 
         li.innerHTML = `
             <div class="step-info">
-                <div class="step-title">Bước ${index + 1}: ${STEP_NAMES[step.step_type]}</div>
-                <div class="step-detail">${colsText}${details ? ` — (${details})` : ""}</div>
+                <div class="step-title">Bước ${index + 1}: ${escapeHtml(STEP_NAMES[step.step_type])}</div>
+                <div class="step-detail">${escapeHtml(colsText)}${details ? ` — (${escapeHtml(details)})` : ""}</div>
             </div>
             <button type="button" class="btn-remove-step" data-index="${index}" title="Xóa bước này">&times;</button>
         `;
@@ -144,6 +145,11 @@ export function renderPipelineQueue() {
 
 // Hiển thị báo cáo Audit Summary ở Bước 4 (khớp với get_audit_summary trong cleaner.py)
 export function renderAuditResult(auditData) {
+    if (!auditData || !Number.isFinite(Number(auditData.initial_rows)) ||
+        !Number.isFinite(Number(auditData.final_rows)) ||
+        !Array.isArray(auditData.history)) {
+        throw new Error("Audit Summary từ Backend không hợp lệ");
+    }
     document.getElementById("audit-rows-compare").textContent = `${auditData.initial_rows} ➔ ${auditData.final_rows}`;
     document.getElementById("audit-rows-diff").textContent = `Đã loại bỏ: ${auditData.rows_removed} dòng`;
 
@@ -161,8 +167,8 @@ export function renderAuditResult(auditData) {
         li.className = "audit-item";
         li.innerHTML = `
             <div class="step-info">
-                <div class="step-title">Bước ${item.step}: [${item.action}]</div>
-                <div class="step-detail">${item.description}</div>
+                <div class="step-title">Bước ${escapeHtml(item.step)}: [${escapeHtml(item.action)}]</div>
+                <div class="step-detail">${escapeHtml(item.description)}</div>
             </div>
         `;
         historyList.appendChild(li);
