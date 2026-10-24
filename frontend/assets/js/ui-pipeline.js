@@ -35,7 +35,7 @@ export function handleStepTypeChange() {
     }
 }
 
-// Đọc dữ liệu từ Form và thêm 1 bước vào mảng pipelineSteps (chuẩn cấu trúc cleaner.py)
+// Đọc dữ liệu từ Form và thêm 1 bước vào mảng pipelineSteps
 export function addStepToPipeline() {
     const stepType = document.getElementById("step-type-select").value;
     const selectedCols = Array.from(document.querySelectorAll(".col-checkbox:checked")).map(cb => cb.value);
@@ -143,7 +143,7 @@ export function renderPipelineQueue() {
     });
 }
 
-// Hiển thị báo cáo Audit Summary ở Bước 4 (khớp với get_audit_summary trong cleaner.py)
+// Hiển thị báo cáo Audit Summary ở Bước 4
 export function renderAuditResult(auditData) {
     if (!auditData || !Number.isFinite(Number(auditData.initial_rows)) ||
         !Number.isFinite(Number(auditData.final_rows)) ||
