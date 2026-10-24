@@ -22,7 +22,7 @@ _AMBIGUOUS = re.compile(
     r"^\s*[+-]?\s*\$?\s*\d{1,3}\.\d{3}\s*(?:đ|₫|vnd|vnđ)\s*$",
     re.IGNORECASE,
 )
-_ALLOWED = {"standardize_nulls", "clean_numeric", "missing_values", "outlier", "encoding", "scaling", "round"}
+_ALLOWED = {"standardize_nulls", "clean_numeric", "missing_values", "outlier", "encoding", "scaling", "round","drop_duplicates","optimize_memory"}
 
 
 def _selected_columns(df: pd.DataFrame, config: dict, *, allow_all: bool = False) -> list[str]:
