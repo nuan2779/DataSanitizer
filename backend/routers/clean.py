@@ -1,4 +1,5 @@
 from backend.services.adapter import clean_dataframe
+from backend.services.pipeline_runner import run_selected_pipeline
 from fastapi import APIRouter, HTTPException
 from pathlib import Path
 from backend.schemas import CleanRequest
@@ -73,22 +74,33 @@ def clean_file(request: CleanRequest):
         for column, count in df.isna().sum().items()
     }
 
-    # BƯỚC 5: Lay cac tuy chon lam sach
-    options = request.model_dump(
-        mode="json",
-        exclude={"file_id"}
-    )
-
-    # BƯỚC 6: Goi Data Engine
-
+    # STEP 5: Frontend can submit an ordered pipeline. Older clients may
+    # still submit the legacy four cleaning options.
+    options = request.model_dump(mode="json", exclude={"file_id", "pipeline"})
     try:
-        cleaned_df = clean_dataframe(df, options)
-
-    except ValueError as error:
-        raise HTTPException(
-            status_code=400,
-            detail=str(error)
-        )
+        if request.pipeline is not None:
+            pipeline = [step.model_dump(mode="json") for step in request.pipeline]
+            cleaned_df, audit_summary = run_selected_pipeline(df, pipeline)
+        else:
+            cleaned_df = clean_dataframe(df, options)
+            # Legacy adapter does not expose the DataCleaner audit log.
+            audit_summary = {
+                "initial_rows": total_rows,
+                "final_rows": len(cleaned_df),
+                "rows_removed": total_rows - len(cleaned_df),
+                "initial_columns": total_columns,
+                "final_columns": len(cleaned_df.columns),
+                "columns_added_or_removed": len(cleaned_df.columns) - total_columns,
+                "total_steps": 1,
+                "history": [{
+                    "step": 1,
+                    "action": "legacy_adapter",
+                    "description": "Processed using the legacy four-option adapter",
+                    "details": options,
+                }],
+            }
+    except (ValueError, KeyError, TypeError) as error:
+        raise HTTPException(status_code=400, detail=str(error)) from error
 
 
     # Kiem tra ket qua tu Data Engine
@@ -134,5 +146,6 @@ def clean_file(request: CleanRequest):
         },
 
         "cleaning_applied": True,
+        "audit_summary": audit_summary,
         "options": options
     }

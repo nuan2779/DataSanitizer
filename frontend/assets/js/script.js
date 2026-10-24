@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Bước 1: Gửi file lên POST/api/upload
             uploadBtn.textContent = "Đang tải file lên server...";
             const uploadRes = await uploadDatasetAPI(fileInput.files[0]);
-            
+
             const fileId = uploadRes.file_id;
             if (!fileId) {
                 throw new Error("Server không trả về file_id sau khi upload!");
@@ -36,12 +36,17 @@ document.addEventListener("DOMContentLoaded", () => {
             // Bước 2: Có file_id -> Gọi tiếp GET/api/profile/{file_id}
             selectedFileName.textContent = `File đã tải lên thành công (ID: ${fileId}). Đang khám bệnh dữ liệu...`;
             uploadBtn.textContent = "Đang khám bệnh dữ liệu...";
-            
+
             const profileData = await fetchDatasetProfileAPI(fileId);
 
             // Đảm bảo giữ lại file_id và tên file nếu response profile không kèm sẵn
             profileData.file_id = profileData.file_id || fileId;
-            profileData.filename = profileData.filename || fileInput.files[0].name;
+            profileData.filename = uploadRes.filename || fileInput.files[0].name;
+
+            // Clear steps from the previous upload (their column names may be stale).
+            appState.pipelineSteps = [];
+            renderPipelineQueue();
+            document.getElementById("result-section").classList.add("hidden");
 
             // Đổ dữ liệu vào #summary-rows, #summary-cols và vẽ bảng #profile-tbody
             renderProfileData(profileData);
@@ -103,8 +108,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const response = await executePipelineAPI(appState.currentFileId, appState.pipelineSteps);
-            // Hỗ trợ cả trường hợp Backend trả về { audit_summary: {...} } hoặc trả thẳng object audit
-            renderAuditResult(response.audit_summary || response.audit || response);
+            // Require a real audit summary. Never display "undefined" as metrics.
+            if (!response.audit_summary) {
+                throw new Error("Backend không trả về audit_summary. Hãy kiểm tra phiên bản Clean API.");
+            }
+            renderAuditResult(response.audit_summary);
         } catch (err) {
             alert(err.message);
         } finally {

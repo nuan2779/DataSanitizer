@@ -1,6 +1,7 @@
 // Xử lý hiển thị Bảng Profiling (Bước 2) & Modal chi tiết cột
 import { appState } from "./state.js";
 import { fetchColumnDetailAPI } from "./api.js";
+import { escapeHtml } from "./dom-safe.js";
 
 // Cập nhật thanh tiến trình (Step Indicator) trên Header
 export function updateStepIndicator(stepId) {
@@ -32,7 +33,7 @@ export function renderProfileData(profileData) {
         searchInput.value = ""; // Reset ô tìm kiếm khi tải file mới
         searchInput.oninput = (e) => {
             const keyword = e.target.value.trim().toLowerCase();
-            const filteredCols = appState.columns.filter(col => 
+            const filteredCols = appState.columns.filter(col =>
                 col.name.toLowerCase().includes(keyword)
             );
             renderProfileTableRows(filteredCols);
@@ -73,14 +74,14 @@ function renderProfileTableRows(columnsList) {
         const samplesText = (col.sample_values || []).slice(0, 5).join(", ");
 
         tr.innerHTML = `
-            <td><strong>${col.name}</strong></td>
-            <td><code>${col.dtype}</code></td>
-            <td>${col.null_count}</td>
-            <td><strong>${col.null_percentage}%</strong></td>
-            <td>${col.unique_count}</td>
-            <td style="color: #64748b; font-size: 12px;">${samplesText || "-"}</td>
+            <td><strong>${escapeHtml(col.name)}</strong></td>
+            <td><code>${escapeHtml(col.dtype)}</code></td>
+            <td>${escapeHtml(col.null_count)}</td>
+            <td><strong>${escapeHtml(col.null_percentage)}%</strong></td>
+            <td>${escapeHtml(col.unique_count)}</td>
+            <td style="color: #64748b; font-size: 12px;">${escapeHtml(samplesText || "-")}</td>
             <td>
-                <button type="button" class="btn-link btn-view-col" data-col="${col.name}">
+                <button type="button" class="btn-link btn-view-col" data-col="${escapeHtml(col.name)}">
                     Xem chi tiết
                 </button>
             </td>
@@ -99,12 +100,12 @@ function renderColumnCheckboxes() {
     const container = document.getElementById("column-checkbox-list");
     container.innerHTML = "";
 
-    appState.columns.forEach(col => {
+    appState.columns.forEach((col, index) => {
         const div = document.createElement("div");
         div.className = "checkbox-item";
         div.innerHTML = `
-            <input type="checkbox" id="chk-col-${col.name}" value="${col.name}" class="col-checkbox">
-            <label for="chk-col-${col.name}">${col.name} <small style="color:#64748b">(${col.dtype})</small></label>
+            <input type="checkbox" id="chk-col-${index}" value="${escapeHtml(col.name)}" class="col-checkbox">
+            <label for="chk-col-${index}">${escapeHtml(col.name)} <small style="color:#64748b">(${escapeHtml(col.dtype)})</small></label>
         `;
         container.appendChild(div);
     });
@@ -135,7 +136,7 @@ export async function openColumnModal(colName) {
         numericSection.classList.remove("hidden");
         document.getElementById("modal-mean").textContent = colDetail.statistics.mean ?? "-";
         document.getElementById("modal-median").textContent = colDetail.statistics.median ?? "-";
-        document.getElementById("modal-std").textContent = colDetail.statistics.std ?? "-"; 
+        document.getElementById("modal-std").textContent = colDetail.statistics.std ?? "-";
         document.getElementById("modal-min").textContent = colDetail.statistics.min ?? "-";
         document.getElementById("modal-max").textContent = colDetail.statistics.max ?? "-";
         document.getElementById("modal-outliers").textContent = colDetail.statistics.outlier_count ?? 0;
