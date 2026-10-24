@@ -126,7 +126,8 @@ def clean_dataframe(
         "mode",
         "drop_rows",
         "drop_columns",
-        "interpolation"
+        "interpolation",
+        "interpolate"
     ]
 
     if missing_method not in valid_missing:
@@ -228,6 +229,7 @@ def clean_dataframe(
         "mode": "mode",
         "drop_rows": "drop_row",
         "drop_columns": "drop_col",
+        "interpolation": "interpolate",
         "interpolate": "interpolate"
     }
 
@@ -239,7 +241,8 @@ def clean_dataframe(
     if missing_method in [
         "mean",
         "median",
-        "interpolation"
+        "interpolation",
+        "interpolate"
     ]:
 
         target_columns = [
