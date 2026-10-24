@@ -114,14 +114,12 @@ function renderColumnCheckboxes() {
 export async function openColumnModal(colName) {
     let colDetail = appState.columns.find(c => c.name === colName);
 
-    // Nếu không phải dữ liệu Demo, thử gọi API lấy thống kê chi tiết của cột
-    if (appState.currentFileId !== "demo_ds66_001") {
-        try {
-            const apiDetail = await fetchColumnDetailAPI(appState.currentFileId, colName);
-            colDetail = { ...colDetail, ...apiDetail };
-        } catch (err) {
-            console.warn("Sử dụng dữ liệu bảng tổng quan do API cột đơn chưa phản hồi:", err);
-        }
+    // Gọi API lấy thống kê chi tiết của cột (Bỏ phần check file Demo)
+    try {
+        const apiDetail = await fetchColumnDetailAPI(appState.currentFileId, colName);
+        colDetail = { ...colDetail, ...apiDetail };
+    } catch (err) {
+        console.warn("Lỗi tải chi tiết cột từ server:", err);
     }
 
     if (!colDetail) return;
