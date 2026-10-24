@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // LUỒNG 1: Upload file -> Nhận file_id -> Tự động gọi GET/api/profile/{file_id}
-    document.getElementById("upload-form").addEventListener("submit", async (e) => {
+    document.getElementById("btn-upload").addEventListener("click", async (e) => {
         e.preventDefault();
         if (fileInput.files.length === 0) return;
 
