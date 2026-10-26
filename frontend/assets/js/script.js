@@ -1,7 +1,7 @@
 import { appState } from "./state.js";
 import { uploadDatasetAPI, fetchDatasetProfileAPI, executePipelineAPI, downloadExportFileAPI } from "./api.js";
 import { renderProfileData } from "./ui-profiler.js";
-import { handleStepTypeChange, addStepToPipeline, renderPipelineQueue, renderAuditResult } from "./ui-pipeline.js";
+import { handleStepTypeChange, addStepToPipeline, renderPipelineQueue, renderAuditResult, updateColumnAvailability } from "./ui-pipeline.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const fileInput = document.getElementById("file-input");
@@ -50,6 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Đổ dữ liệu vào #summary-rows, #summary-cols và vẽ bảng #profile-tbody
             renderProfileData(profileData);
+            updateColumnAvailability();
             selectedFileName.textContent = `Hoàn tất phân tích: ${profileData.filename}`;
 
         } catch (err) {
@@ -68,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Sự kiện thay đổi công cụ trong Pipeline
     document.getElementById("step-type-select").addEventListener("change", handleStepTypeChange);
 
-    // Ẩn/hiện ô nhập fill_value khi chọn strategy 'constant' trong Missing Values
+    // Ẩn/hiện ô nhập fill_value khi chọn strategy 'constant' trong Missing Values & cập nhật khóa cột
     document.getElementById("mv-strategy").addEventListener("change", (e) => {
         const constantGroup = document.getElementById("mv-constant-group");
         if (e.target.value === "constant") {
@@ -76,17 +77,19 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             constantGroup.classList.add("hidden");
         }
+        updateColumnAvailability();
     });
 
-    //Nút Chọn tất cả/ Bỏ chọn tất cả cột
+    // Nút Chọn tất cả (chỉ chọn các cột đang được phép chọn, bỏ qua cột bị disabled)
     document.getElementById("btn-select-all-cols").addEventListener("click", () => {
-        document.querySelectorAll(".col-checkbox").forEach(cb => cb.checked = true);
+        document.querySelectorAll(".col-checkbox:not(:disabled)").forEach(cb => cb.checked = true);
     });
+    // Nút Bỏ chọn tất cả cột
     document.getElementById("btn-clear-all-cols").addEventListener("click", () => {
         document.querySelectorAll(".col-checkbox").forEach(cb => cb.checked = false);
     });
 
-    // bước xử lý & Xóa toàn bộ danh sách chờ Pipeline
+    // Thêm bước xử lý & Xóa toàn bộ danh sách chờ Pipeline
     document.getElementById("btn-add-step").addEventListener("click", addStepToPipeline);
     document.getElementById("btn-clear-pipeline").addEventListener("click", () => {
         appState.pipelineSteps = [];

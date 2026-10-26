@@ -13,6 +13,88 @@ const STEP_NAMES = {
     round: "Làm tròn số (Round Feature)"
 };
 
+// Helper kiểm tra kiểu dữ liệu của cột
+export function isNumericType(dtype) {
+    if (!dtype) return false;
+    const lower = dtype.toLowerCase();
+    return lower.includes("int") || lower.includes("float") || lower.includes("number");
+}
+
+export function isCategoricalType(dtype) {
+    if (!dtype) return false;
+    const lower = dtype.toLowerCase();
+    return lower.includes("object") || lower.includes("string") || lower.includes("category") || lower.includes("bool");
+}
+
+// Cập nhật trạng thái enabled/disabled và nhãn cảnh báo cho từng cột theo công cụ đã chọn
+export function updateColumnAvailability() {
+    const stepType = document.getElementById("step-type-select")?.value;
+    const mvStrategy = document.getElementById("mv-strategy")?.value;
+
+    if (!appState.columns || appState.columns.length === 0) return;
+
+    appState.columns.forEach((col, index) => {
+        const checkbox = document.getElementById(`chk-col-${index}`);
+        const label = checkbox?.parentElement;
+        if (!checkbox || !label) return;
+
+        const isNum = isNumericType(col.dtype);
+        const isCat = isCategoricalType(col.dtype);
+        const hasDigits = (col.sample_values || []).some(s => /\d/.test(s));
+
+        let isDisabled = false;
+        let reason = "";
+
+        if (["scaling", "outlier", "round"].includes(stepType)) {
+            if (!isNum) {
+                isDisabled = true;
+                reason = " (Chỉ áp dụng cột số)";
+            }
+        } else if (stepType === "missing_values") {
+            if (["mean", "median", "interpolate"].includes(mvStrategy)) {
+                if (!isNum) {
+                    isDisabled = true;
+                    reason = " (Chỉ áp dụng cột số)";
+                }
+            }
+        } else if (stepType === "encoding") {
+            if (isNum) {
+                isDisabled = true;
+                reason = " (Chỉ áp dụng cột chữ/danh mục)";
+            }
+        } else if (stepType === "clean_numeric") {
+            if (isCat && !hasDigits) {
+                isDisabled = true;
+                reason = " (Chữ thuần túy, không có số)";
+            }
+        }
+
+        checkbox.disabled = isDisabled;
+        if (isDisabled) {
+            checkbox.checked = false;
+            label.style.opacity = "0.45";
+            label.style.cursor = "not-allowed";
+        } else {
+            label.style.opacity = "1";
+            label.style.cursor = "pointer";
+        }
+
+        // Cập nhật badge cảnh báo
+        let badge = label.querySelector(".col-badge-warning");
+        if (isDisabled) {
+            if (!badge) {
+                badge = document.createElement("span");
+                badge.className = "col-badge-warning";
+                badge.style.cssText = "color: #ef4444; font-size: 11px; margin-left: 6px; font-weight: 500;";
+                label.appendChild(badge);
+            }
+            badge.textContent = reason;
+        } else if (badge) {
+            badge.remove();
+        }
+    });
+}
+
 // Ẩn/hiện khung nhập tham số tùy theo công cụ người dùng chọn
 export function handleStepTypeChange() {
     const selectedType = document.getElementById("step-type-select").value;
@@ -33,6 +115,8 @@ export function handleStepTypeChange() {
     } else {
         colSelectorGroup.classList.remove("hidden");
     }
+
+    updateColumnAvailability();
 }
 
 // Đọc dữ liệu từ Form và thêm 1 bước vào mảng pipelineSteps
@@ -44,6 +128,56 @@ export function addStepToPipeline() {
     if (stepType !== "standardize_nulls" && stepType !== "missing_values" && selectedCols.length === 0) {
         alert("Vui lòng tích chọn ít nhất 1 cột để áp dụng công cụ này!");
         return;
+    }
+
+    // Kiểm tra tính hợp lệ của kiểu dữ liệu (Defensive Validation)
+    if (["scaling", "outlier", "round"].includes(stepType)) {
+        const textCols = selectedCols.filter(colName => {
+            const col = appState.columns.find(c => c.name === colName);
+            return col && !isNumericType(col.dtype);
+        });
+        if (textCols.length > 0) {
+            alert(`Cảnh báo: Công cụ '${STEP_NAMES[stepType]}' chỉ áp dụng cho cột SỐ!\nCác cột không hợp lệ: [ ${textCols.join(", ")} ]\nVui lòng bỏ chọn các cột chữ.`);
+            return;
+        }
+    }
+
+    if (stepType === "missing_values") {
+        const strategy = document.getElementById("mv-strategy").value;
+        if (["mean", "median", "interpolate"].includes(strategy)) {
+            const textCols = selectedCols.filter(colName => {
+                const col = appState.columns.find(c => c.name === colName);
+                return col && !isNumericType(col.dtype);
+            });
+            if (textCols.length > 0) {
+                alert(`Cảnh báo: Không thể tính '${strategy.toUpperCase()}' cho cột chữ!\nCác cột không hợp lệ: [ ${textCols.join(", ")} ]\nGợi ý: Chọn phương pháp 'Mode' hoặc 'Xóa dòng' cho cột chữ.`);
+                return;
+            }
+        }
+    }
+
+    if (stepType === "encoding") {
+        const numCols = selectedCols.filter(colName => {
+            const col = appState.columns.find(c => c.name === colName);
+            return col && isNumericType(col.dtype);
+        });
+        if (numCols.length > 0) {
+            alert(`Cảnh báo: Mã hóa phân loại (Encoding) chỉ áp dụng cho cột chữ/danh mục!\nCác cột không hợp lệ: [ ${numCols.join(", ")} ]`);
+            return;
+        }
+    }
+
+    if (stepType === "clean_numeric") {
+        const pureTextCols = selectedCols.filter(colName => {
+            const col = appState.columns.find(c => c.name === colName);
+            if (!col || isNumericType(col.dtype)) return false;
+            const hasDigits = (col.sample_values || []).some(s => /\d/.test(s));
+            return !hasDigits;
+        });
+        if (pureTextCols.length > 0) {
+            alert(`Cảnh báo: Công cụ 'Lọc tiền tệ & Ép kiểu số' không thể áp dụng cho cột chữ thuần túy không chứa số!\nCác cột không hợp lệ: [ ${pureTextCols.join(", ")} ]`);
+            return;
+        }
     }
 
     let config = {};

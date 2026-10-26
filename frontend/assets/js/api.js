@@ -11,7 +11,9 @@ export async function uploadDatasetAPI(file) {
     });
 
     if (!response.ok) {
-        throw new Error(`Lỗi tải file lên server (${response.status}):${response.statusText}`);
+        const errData = await response.json().catch(() => ({}));
+        const detailMsg = errData.detail || response.statusText;
+        throw new Error(`Lỗi tải file lên server (${response.status}): ${detailMsg}`);
     }
     return await response.json(); // Trả về object chứa { file_id: "..." }
 }
@@ -23,7 +25,9 @@ export async function fetchDatasetProfileAPI(fileId) {
     });
 
     if (!response.ok) {
-        throw new Error(`Lỗi khi phân tích dữ liệu (${response.status}):${response.statusText}`);
+        const errData = await response.json().catch(() => ({}));
+        const detailMsg = errData.detail || response.statusText;
+        throw new Error(`Lỗi khi phân tích dữ liệu (${response.status}): ${detailMsg}`);
     }
     return await response.json(); // Trả về kết quả của generate_profile()
 }
@@ -36,7 +40,9 @@ export async function fetchColumnDetailAPI(fileId, colName) {
     );
 
     if (!response.ok) {
-        throw new Error(`Không thể tải chi tiết cột '${colName}' (${response.status})`);
+        const errData = await response.json().catch(() => ({}));
+        const detailMsg = errData.detail || response.statusText;
+        throw new Error(`Không thể tải chi tiết cột '${colName}' (${response.status}): ${detailMsg}`);
     }
     return await response.json(); // Trả về kết quả của profile_single_column()
 }
@@ -55,7 +61,9 @@ export async function executePipelineAPI(fileId, pipeline) {
     });
 
     if (!response.ok) {
-        throw new Error(`Lỗi khi chạy Pipeline (${response.status}):${response.statusText}`);
+        const errData = await response.json().catch(() => ({}));
+        const detailMsg = errData.detail || response.statusText;
+        throw new Error(`Lỗi khi chạy Pipeline (${response.status}): ${detailMsg}`);
     }
     return await response.json();
 }
