@@ -13,6 +13,9 @@ const STEP_NAMES = {
     round: "Làm tròn số (Round Feature)"
 };
 
+// Regex nhận diện định dạng tiền tệ hoặc số hợp lệ (ví dụ: "$1,200.50", "1500 đ", "2500 VND", "1480000.0")
+const MONEY_PATTERN = /^\s*[+-]?\s*\$?\s*(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?\s*(?:đ|₫|vnd|vnđ)?\s*$/i;
+
 // Helper kiểm tra kiểu dữ liệu của cột
 export function isNumericType(dtype) {
     if (!dtype) return false;
@@ -24,6 +27,17 @@ export function isCategoricalType(dtype) {
     if (!dtype) return false;
     const lower = dtype.toLowerCase();
     return lower.includes("object") || lower.includes("string") || lower.includes("category") || lower.includes("bool");
+}
+
+// Kiểm tra xem cột chuỗi (object) có thực sự là cột tiền tệ / số dạng chuỗi hay không
+export function isCurrencyOrNumericString(col) {
+    if (!col || !col.sample_values || col.sample_values.length === 0) return false;
+    const validSamples = col.sample_values.filter(s => {
+        const text = String(s).trim();
+        return text !== "" && text !== "nan" && text !== "None" && text !== "null" && text !== "N/A" && text !== "?";
+    });
+    if (validSamples.length === 0) return false;
+    return validSamples.every(s => MONEY_PATTERN.test(String(s).trim()));
 }
 
 // Cập nhật trạng thái enabled/disabled và nhãn cảnh báo cho từng cột theo công cụ đã chọn
@@ -39,8 +53,7 @@ export function updateColumnAvailability() {
         if (!checkbox || !label) return;
 
         const isNum = isNumericType(col.dtype);
-        const isCat = isCategoricalType(col.dtype);
-        const hasDigits = (col.sample_values || []).some(s => /\d/.test(s));
+        const isMoneyOrNum = isNum || isCurrencyOrNumericString(col);
 
         let isDisabled = false;
         let reason = "";
@@ -63,9 +76,9 @@ export function updateColumnAvailability() {
                 reason = " (Chỉ áp dụng cột chữ/danh mục)";
             }
         } else if (stepType === "clean_numeric") {
-            if (isCat && !hasDigits) {
+            if (!isMoneyOrNum) {
                 isDisabled = true;
-                reason = " (Chữ thuần túy, không có số)";
+                reason = " (Chứa văn bản, không phải tiền tệ/số)";
             }
         }
 
@@ -137,7 +150,7 @@ export function addStepToPipeline() {
             return col && !isNumericType(col.dtype);
         });
         if (textCols.length > 0) {
-            alert(`Cảnh báo: Công cụ '${STEP_NAMES[stepType]}' chỉ áp dụng cho cột SỐ!\nCác cột không hợp lệ: [ ${textCols.join(", ")} ]\nVui lòng bỏ chọn các cột chữ.`);
+            alert(`⚠️ Cảnh báo: Công cụ '${STEP_NAMES[stepType]}' chỉ áp dụng cho cột SỐ!\nCác cột không hợp lệ: [ ${textCols.join(", ")} ]\nVui lòng bỏ chọn các cột chữ.`);
             return;
         }
     }
@@ -150,7 +163,7 @@ export function addStepToPipeline() {
                 return col && !isNumericType(col.dtype);
             });
             if (textCols.length > 0) {
-                alert(`Cảnh báo: Không thể tính '${strategy.toUpperCase()}' cho cột chữ!\nCác cột không hợp lệ: [ ${textCols.join(", ")} ]\nGợi ý: Chọn phương pháp 'Mode' hoặc 'Xóa dòng' cho cột chữ.`);
+                alert(`⚠️ Cảnh báo: Không thể tính '${strategy.toUpperCase()}' cho cột chữ!\nCác cột không hợp lệ: [ ${textCols.join(", ")} ]\nGợi ý: Chọn phương pháp 'Mode' hoặc 'Xóa dòng' cho cột chữ.`);
                 return;
             }
         }
@@ -162,20 +175,19 @@ export function addStepToPipeline() {
             return col && isNumericType(col.dtype);
         });
         if (numCols.length > 0) {
-            alert(`Cảnh báo: Mã hóa phân loại (Encoding) chỉ áp dụng cho cột chữ/danh mục!\nCác cột không hợp lệ: [ ${numCols.join(", ")} ]`);
+            alert(`⚠️ Cảnh báo: Mã hóa phân loại (Encoding) chỉ áp dụng cho cột chữ/danh mục!\nCác cột không hợp lệ: [ ${numCols.join(", ")} ]`);
             return;
         }
     }
 
     if (stepType === "clean_numeric") {
-        const pureTextCols = selectedCols.filter(colName => {
+        const invalidCols = selectedCols.filter(colName => {
             const col = appState.columns.find(c => c.name === colName);
-            if (!col || isNumericType(col.dtype)) return false;
-            const hasDigits = (col.sample_values || []).some(s => /\d/.test(s));
-            return !hasDigits;
+            if (!col) return false;
+            return !isNumericType(col.dtype) && !isCurrencyOrNumericString(col);
         });
-        if (pureTextCols.length > 0) {
-            alert(`Cảnh báo: Công cụ 'Lọc tiền tệ & Ép kiểu số' không thể áp dụng cho cột chữ thuần túy không chứa số!\nCác cột không hợp lệ: [ ${pureTextCols.join(", ")} ]`);
+        if (invalidCols.length > 0) {
+            alert(`⚠️ Cảnh báo: Công cụ 'Lọc tiền tệ & Ép kiểu số' chỉ áp dụng cho cột số hoặc chuỗi tiền tệ!\nCác cột chứa văn bản (như địa chỉ, ngày tháng, tên quận): [ ${invalidCols.join(", ")} ]\nVui lòng bỏ chọn các cột này.`);
             return;
         }
     }
