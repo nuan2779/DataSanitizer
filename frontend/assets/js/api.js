@@ -1,75 +1,96 @@
 const API_BASE_URL = "http://localhost:8000/api";
 
-// LUỒNG 1 - BƯỚC A: Gửi file lên server (POST /api/upload) -> Nhận về file_id
+// --- LUỒNG CỐT LÕI (CORE PIPELINE) ---
+
+// 1. Gửi file lên server -> Nhận file_id
 export async function uploadDatasetAPI(file) {
     const formData = new FormData();
     formData.append("file", file);
-
     const response = await fetch(`${API_BASE_URL}/upload`, {
         method: "POST",
         body: formData
     });
-
-    if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        const detailMsg = errData.detail || response.statusText;
-        throw new Error(`Lỗi tải file lên server (${response.status}): ${detailMsg}`);
-    }
-    return await response.json(); // Trả về object chứa { file_id: "..." }
-}
-
-// LUỒNG 1 - BƯỚC B: Tự động khám bệnh dữ liệu (GET /api/profile/{file_id})
-export async function fetchDatasetProfileAPI(fileId) {
-    const response = await fetch(`${API_BASE_URL}/profile/${encodeURIComponent(fileId)}`, {
-        method: "GET"
-    });
-
-    if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        const detailMsg = errData.detail || response.statusText;
-        throw new Error(`Lỗi khi phân tích dữ liệu (${response.status}): ${detailMsg}`);
-    }
-    return await response.json(); // Trả về kết quả của generate_profile()
-}
-
-// LUỒNG 2: Xem chi tiết chuyên sâu 1 cột - Lazy Loading (GET /api/profile/{file_id}/{col_name})
-export async function fetchColumnDetailAPI(fileId, colName) {
-    const response = await fetch(
-        `${API_BASE_URL}/profile/${encodeURIComponent(fileId)}/${encodeURIComponent(colName)}`,
-        { method: "GET" }
-    );
-
-    if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        const detailMsg = errData.detail || response.statusText;
-        throw new Error(`Không thể tải chi tiết cột '${colName}' (${response.status}): ${detailMsg}`);
-    }
-    return await response.json(); // Trả về kết quả của profile_single_column()
-}
-
-// LUỒNG 3: Thực thi Pipeline dọn dẹp (POST /api/clean)
-export async function executePipelineAPI(fileId, pipeline) {
-    const response = await fetch(`${API_BASE_URL}/clean`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            file_id: fileId,
-            pipeline: pipeline 
-        })
-    });
-
-    if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        const detailMsg = errData.detail || response.statusText;
-        throw new Error(`Lỗi khi chạy Pipeline (${response.status}): ${detailMsg}`);
-    }
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Upload failed"));
     return await response.json();
 }
 
-// Xuất dữ liệu sạch (.csv hoặc .json)
-export function downloadExportFileAPI(fileId, format = "csv") {
-    const downloadUrl = `${API_BASE_URL}/download/${encodeURIComponent(fileId)}?file_format=${format}`;
-    window.open(downloadUrl, "_blank");
+// 2. Khám bệnh dữ liệu toàn cục
+export async function fetchDatasetProfileAPI(fileId) {
+    const response = await fetch(`${API_BASE_URL}/profile/${encodeURIComponent(fileId)}`);
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Profiling failed"));
+    return await response.json();
+}
+
+// 3. Khám bệnh chuyên sâu 1 cột (Lazy Load)
+export async function fetchColumnDetailAPI(fileId, colName) {
+    const response = await fetch(`${API_BASE_URL}/profile/${encodeURIComponent(fileId)}/${encodeURIComponent(colName)}`);
+    if (!response.ok) throw new Error(await getErrorMsg(response, `Cannot load details for ${colName}`));
+    return await response.json();
+}
+
+// 4. Thực thi Pipeline dọn dẹp
+export async function executePipelineAPI(fileId, pipeline, purpose, trainSplit) {
+    const payload = { file_id: fileId, pipeline: pipeline };
+    
+    // Đính kèm cấu hình ML nếu chọn chế độ Machine Learning
+    if (purpose === "ml") {
+        payload.purpose = "ml";
+        payload.train_ratio = parseFloat(trainSplit) / 100;
+    } else {
+        payload.purpose = "eda";
+    }
+
+    const response = await fetch(`${API_BASE_URL}/clean`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    });
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Pipeline execution failed"));
+    return await response.json();
+}
+
+// 5. Tải file xuất ra (.csv, .json, train.csv, test.csv)
+export function downloadExportFileAPI(fileId, format = "csv", suffix = "") {
+    let url = `${API_BASE_URL}/download/${encodeURIComponent(fileId)}?file_format=${format}`;
+    if (suffix) url += `&suffix=${suffix}`; // Để tải _train hoặc _test
+    window.open(url, "_blank");
+}
+
+// --- LUỒNG TÍNH NĂNG MỚI (ENTERPRISE EDITION) ---
+
+// Kaggle Hub: Nạp dữ liệu mẫu
+export async function loadSampleDatasetAPI(sampleId) {
+    const response = await fetch(`${API_BASE_URL}/samples/${encodeURIComponent(sampleId)}/load`, {
+        method: "POST"
+    });
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Failed to load sample dataset"));
+    return await response.json();
+}
+
+// Lưu Recipe mới
+export async function saveRecipeAPI(name, steps) {
+    const response = await fetch(`${API_BASE_URL}/recipes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name, steps: steps })
+    });
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Failed to save recipe"));
+    return await response.json();
+}
+
+// Chấm điểm ML-Readiness
+export async function benchmarkAIAPI(fileId) {
+    const response = await fetch(`${API_BASE_URL}/benchmark/${encodeURIComponent(fileId)}`);
+    if (!response.ok) throw new Error(await getErrorMsg(response, "AI Benchmark failed"));
+    return await response.json();
+}
+
+// Helper: Trích xuất lỗi từ FastAPI Pydantic
+async function getErrorMsg(response, fallback) {
+    try {
+        const errData = await response.json();
+        return errData.detail || response.statusText || fallback;
+    } catch {
+        return `${fallback} (${response.status})`;
+    }
 }
