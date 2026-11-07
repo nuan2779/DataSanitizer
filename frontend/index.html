@@ -31,26 +31,26 @@
                     <span class="mode-label">Online</span>
                 </div>
                 <div id="offline-badge" class="security-badge">
-                    Local Environment
+                     Chế độ Cục bộ: Bảo mật dữ liệu 100%
                 </div>
-                <button id="btn-history" class="btn btn-outline hidden">History</button>
-                <button id="btn-auth" class="btn btn-primary hidden">Sign In</button>
+                <button id="btn-history" class="btn btn-outline hidden">Lịch sử xử lý</button>
+                <button id="btn-auth" class="btn btn-primary hidden">Đăng nhập</button>
                 <div id="profile-badge" class="profile-badge hidden">
                     <span id="username-display"></span>
-                    <button id="btn-logout" class="btn-link">Sign Out</button>
+                    <button id="btn-logout" class="btn-link">Đăng xuất</button>
                 </div>
             </div>
         </div>
         <!-- Thanh điều hướng quy trình (Step Indicator) -->
         <div class="sub-nav-bar">
             <div class="container nav-steps" role="tablist">
-                <button role="tab" class="step-indicator active" data-target="upload-section">Upload</button>
+                <button role="tab" class="step-indicator active" data-target="upload-section">1. Tải dữ liệu</button>
                 <span class="step-divider">/</span>
-                <button role="tab" class="step-indicator" data-target="profile-section" disabled>Profile</button>
+                <button role="tab" class="step-indicator" data-target="profile-section" disabled>2. Khám phá (Profiling)</button>
                 <span class="step-divider">/</span>
-                <button role="tab" class="step-indicator" data-target="pipeline-section" disabled>Pipeline</button>
+                <button role="tab" class="step-indicator" data-target="pipeline-section" disabled>3. Thiết lập Pipeline</button>
                 <span class="step-divider">/</span>
-                <button role="tab" class="step-indicator" data-target="result-section" disabled>Export</button>
+                <button role="tab" class="step-indicator" data-target="result-section" disabled>4. Xuất kết quả</button>
             </div>
         </div>
     </header>
@@ -61,215 +61,212 @@
         <!-- 1. KHU VỰC UPLOAD FILE -->
         <section id="upload-section" class="card">
             <div class="card-header">
-                <h2>Raw Dataset Ingestion</h2>
+                <h2>Tải lên tập dữ liệu thô (Raw Dataset)</h2>
             </div>
             <div class="card-body upload-grid">
                 <form id="upload-form" class="upload-zone">
                     <input type="file" id="file-input" accept=".csv, .xlsx, .xls" hidden>
                     <label for="file-input" class="upload-label" id="drop-area">
                         <div class="upload-text-group">
-                            <p class="upload-title">Drop file here or <span class="text-link">browse</span></p>
-                            <p class="upload-subtitle">Supported formats: CSV, XLSX</p>
+                            <p class="upload-title">Kéo thả tệp vào đây hoặc <span class="text-link">chọn từ thiết bị</span></p>
+                            <p class="upload-subtitle">Định dạng hỗ trợ: CSV, XLSX</p>
                         </div>
                         <p id="selected-file-name" class="selected-file"></p>
                     </label>
                     <div class="upload-actions">
                         <button type="button" id="btn-upload" class="btn btn-primary" disabled>
-                            Initialize Dataset
+                            Bắt đầu phân tích dữ liệu
                         </button>
                     </div>
                 </form>
 
                 <!-- Thẻ Kaggle Hub (Chỉ hiện Online) -->
                 <div id="kaggle-hub" class="kaggle-hub hidden">
-                    <h3>Sample Datasets</h3>
+                    <h3>Kaggle Sample Datasets</h3>
                     <div class="sample-grid">
-                        <button class="btn-sample" data-id="melbourne">Melbourne Housing</button>
-                        <button class="btn-sample" data-id="titanic">Titanic Disaster</button>
-                        <button class="btn-sample" data-id="iris">Iris Species</button>
-                        <button class="btn-sample" data-id="churn">Customer Churn</button>
+                        <button class="btn-sample" data-id="melbourne">Melbourne Housing<br><small style="color:var(--text-muted);font-weight:normal;">34k dòng | Dự đoán giá nhà</small></button>
+                        <button class="btn-sample" data-id="titanic">Titanic Disaster<br><small style="color:var(--text-muted);font-weight:normal;">891 dòng | Nhiều null values</small></button>
+                        <button class="btn-sample" data-id="iris">Iris Species<br><small style="color:var(--text-muted);font-weight:normal;">150 dòng | Phân loại thực vật</small></button>
+                        <button class="btn-sample" data-id="churn">Customer Churn<br><small style="color:var(--text-muted);font-weight:normal;">7k dòng | Rời bỏ viễn thông</small></button>
                     </div>
                 </div>
             </div>
             <div class="card-footer">
-                <button class="btn btn-nav next" data-target="profile-section" disabled>Next Step</button>
+                <button class="btn btn-nav next" data-target="profile-section" disabled>Tiếp tục bước sau →</button>
             </div>
         </section>
 
         <!-- 2. KHU VỰC DATA PROFILING -->
         <section id="profile-section" class="card hidden">
             <div class="card-header">
-                <h2>Exploratory Health Dashboard</h2>
+                <h2>Khám phá & Thống kê dữ liệu (Exploratory Health Dashboard)</h2>
             </div>
             <div class="card-body">
                 <div class="summary-grid">
                     <div class="stat-card">
-                        <span class="stat-label">File Name</span>
+                        <span class="stat-label">Tên File</span>
                         <strong id="summary-filename" class="stat-value">-</strong>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-label">Reference ID</span>
+                        <span class="stat-label">Mã File (ID)</span>
                         <strong id="summary-fileid" class="stat-value">-</strong>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-label">Total Rows</span>
+                        <span class="stat-label">Tổng số dòng</span>
                         <strong id="summary-rows" class="stat-value">0</strong>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-label">Total Columns</span>
+                        <span class="stat-label">Tổng số cột</span>
                         <strong id="summary-cols" class="stat-value">0</strong>
                     </div>
                 </div>
 
-                <!-- Thanh tìm kiếm cột theo tên-->
                  <div class="table-toolbar">
                     <input
                         type = "text"
                         id = "search-col-input"
                         class = "form-control search-input"
-                        placeholder = "Search columns...">
+                        placeholder = "Tìm kiếm cột theo tên...">
                  </div>
 
                 <div class="table-responsive">
                     <table class="data-table" id="profile-table">
                         <thead>
                             <tr>
-                                <th>Feature Name</th>
-                                <th>Data Type</th>
-                                <th>Missing Values</th>
-                                <th>Missing Rate</th>
-                                <th>Unique Count</th>
-                                <th>Sample Value</th>
-                                <th>Actions</th>
+                                <th>Tên cột</th>
+                                <th>Kiểu dữ liệu</th>
+                                <th>Số ô trống (Null)</th>
+                                <th>Tỷ lệ Null (%)</th>
+                                <th>Giá trị Unique</th>
+                                <th>Giá trị mẫu</th>
+                                <th>Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="profile-tbody">
-                            <!-- JS render dữ liệu -->
                         </tbody>
                     </table>
                 </div>
             </div>
             <div class="card-footer">
-                <button class="btn btn-nav prev" data-target="upload-section">Previous</button>
-                <button class="btn btn-nav next" data-target="pipeline-section">Next Step</button>
+                <button class="btn btn-nav prev" data-target="upload-section">← Quay lại bước trước</button>
+                <button class="btn btn-nav next" data-target="pipeline-section">Tiếp tục bước sau →</button>
             </div>
         </section>
 
         <!-- 3. KHU VỰC XÂY DỰNG PIPELINE -->
         <section id="pipeline-section" class="card hidden">
             <div class="card-header">
-                <h2>Pipeline Builder</h2>
+                <h2>Thiết lập kịch bản làm sạch (Pipeline Builder)</h2>
             </div>
             
-            <!-- Mục đích sử dụng: Phân tích vs Machine Learning -->
             <div class="purpose-selector">
                 <div class="purpose-options">
                     <label class="radio-label">
                         <input type="radio" name="data-purpose" value="eda" checked>
-                        Exploratory Data Analysis (EDA)
+                        Phân tích Khám phá (EDA / BI)
                     </label>
                     <label class="radio-label">
                         <input type="radio" name="data-purpose" value="ml">
-                        Machine Learning Readiness
+                        Huấn luyện Học máy (ML Readiness)
                     </label>
                 </div>
                 
                 <div id="leakage-warning" class="alert alert-warning">
-                    <strong>Notice:</strong> Applying encoding or scaling across the entire dataset is suitable for EDA. For machine learning, consider data leakage risks.
+                     <strong>Khuyến nghị Data Science:</strong> Mã hóa trên toàn bộ bảng dữ liệu phù hợp cho Phân tích Khám phá (EDA). Nếu bạn chuẩn bị dữ liệu cho Học máy, việc mã hóa toàn bảng có thể gây rò rỉ dữ liệu (Data Leakage). Hãy chọn chế độ Huấn luyện Học máy bên dưới.
                 </div>
                 
                 <div id="ml-split-config" class="split-config hidden">
-                    <label class="form-label" for="train-split">Train/Test Split Ratio:</label>
+                    <label class="form-label" for="train-split">Tỷ lệ chia Train/Test:</label>
                     <div class="range-wrapper">
                         <input type="range" id="train-split" min="50" max="90" value="80" step="5">
-                        <span id="split-display">80% / 20%</span>
+                        <span id="split-display">Train: 80% | Test: 20%</span>
                     </div>
                 </div>
             </div>
 
             <div class="card-body pipeline-grid">
                 <div class="pipeline-config">
-                    <div class="section-title">Configuration</div>
+                    <div class="section-title">Thêm bước xử lý</div>
 
                     <div class="form-group">
-                        <label class="form-label" for="step-type-select">Operation:</label>
+                        <label class="form-label" for="step-type-select">Chọn công cụ làm sạch:</label>
                         <select id="step-type-select" class="form-control">
-                            <option value="standardize_nulls">Standardize Null Signatures</option>
-                            <option value="clean_numeric">Currency Formatting & Numeric Cast</option>
-                            <option value="missing_values" selected>Missing Value Imputation</option>
-                            <option value="outlier">Outlier Handling</option>
-                            <option value="encoding">Categorical Encoding</option>
-                            <option value="scaling">Feature Scaling</option>
-                            <option value="round">Numeric Rounding</option>
+                            <option value="standardize_nulls">1. Chuẩn hóa ký tự rác thành Null</option>
+                            <option value="clean_numeric">2. Lọc ký tự tiền tệ & Ép kiểu số</option>
+                            <option value="missing_values" selected>3. Xử lý giá trị thiếu (Missing Values)</option>
+                            <option value="outlier">4. Phát hiện & Xử lý ngoại lai (Outliers)</option>
+                            <option value="encoding">5. Mã hóa dữ liệu phân loại (Encoding)</option>
+                            <option value="scaling">6. Chuẩn hóa thang đo (Scaling)</option>
+                            <option value="round">7. Làm tròn số (Round Feature)</option>
                         </select>
                     </div>
 
                     <div id="column-selector-group" class="form-group">
                         <div class="label-row">
-                            <label class="form-label">Target Features:</label>
+                            <label class="form-label">Chọn cột áp dụng:</label>
                             <div class="quick-select">
-                                <button type="button" id="btn-select-all-cols" class="btn-link">Select All</button>
+                                <button type="button" id="btn-select-all-cols" class="btn-link">Chọn tất cả</button>
                                 <span>|</span>
-                                <button type="button" id="btn-clear-all-cols" class="btn-link">Clear</button>
+                                <button type="button" id="btn-clear-all-cols" class="btn-link">Bỏ chọn</button>
                             </div>
                         </div>
                         <div id="column-checkbox-list" class="checkbox-list"></div>
                     </div>
 
-                    <!-- Cấu hình động từng step_type -->
+                    <!-- Cấu hình động -->
                     <div id="config-standardize_nulls" class="step-config-panel hidden">
-                        <p class="text-muted">Converts text representations like 'N/A', '?', or 'null' to standard NaN objects.</p>
+                        <p class="text-muted">Tự động quy đổi các ký tự ('N/A', '?', 'null') về chuẩn NaN.</p>
                     </div>
 
                     <div id="config-clean_numeric" class="step-config-panel hidden">
-                        <p class="text-muted">Strips currency symbols and casts strings to float64.</p>
+                        <p class="text-muted">Loại bỏ ký tự không phải số và chuyển định dạng cột về dạng số học.</p>
                     </div>
 
                     <div id="config-missing_values" class="step-config-panel">
                         <div class="form-group">
-                            <label class="form-label" for="mv-strategy">Strategy:</label>
+                            <label class="form-label" for="mv-strategy">Phương pháp xử lý:</label>
                             <select id="mv-strategy" class="form-control">
-                                <option value="mean">Mean Imputation</option>
-                                <option value="median">Median Imputation</option>
-                                <option value="mode">Mode Imputation</option>
-                                <option value="interpolate">Linear Interpolation</option>
-                                <option value="constant">Constant Value</option>
-                                <option value="drop_row">Drop Rows</option>
-                                <option value="drop_col">Drop Columns</option>
+                                <option value="mean">Điền giá trị trung bình (Mean)</option>
+                                <option value="median">Điền trung vị (Median)</option>
+                                <option value="mode">Điền giá trị phổ biến nhất (Mode)</option>
+                                <option value="interpolate">Nội suy tuyến tính (Interpolate)</option>
+                                <option value="constant">Điền giá trị cố định (Constant)</option>
+                                <option value="drop_row">Xóa dòng chứa ô trống (Drop Rows)</option>
+                                <option value="drop_col">Xóa cột chứa ô trống (Drop Columns)</option>
                             </select>
                         </div>
                         <div id="mv-constant-group" class="form-group hidden">
-                            <label class="form-label" for="mv-fill-value">Constant Value:</label>
-                            <input type="text" id="mv-fill-value" class="form-control" placeholder="Enter value">
+                            <label class="form-label" for="mv-fill-value">Giá trị điền (fill_value):</label>
+                            <input type="text" id="mv-fill-value" class="form-control" placeholder="Nhập giá trị...">
                         </div>
                     </div>
 
                     <div id="config-outlier" class="step-config-panel hidden">
                         <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label" for="outlier-method">Algorithm:</label>
+                                <label class="form-label" for="outlier-method">Phương pháp:</label>
                                 <select id="outlier-method" class="form-control">
-                                    <option value="iqr">Interquartile Range (IQR)</option>
-                                    <option value="z_score">Z-Score</option>
+                                    <option value="iqr">IQR (Khoảng tứ phân vị)</option>
+                                    <option value="z_score">Z-Score (Độ lệch chuẩn)</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label class="form-label" for="outlier-threshold">Threshold:</label>
+                                <label class="form-label" for="outlier-threshold">Ngưỡng (Threshold):</label>
                                 <input type="number" id="outlier-threshold" class="form-control" value="1.5" step="0.1">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="form-label" for="outlier-handling">Action:</label>
+                            <label class="form-label" for="outlier-handling">Cách xử lý:</label>
                             <select id="outlier-handling" class="form-control">
-                                <option value="remove">Remove Rows</option>
-                                <option value="cap">Winsorize (Cap)</option>
+                                <option value="remove">Xóa dòng ngoại lai (Remove)</option>
+                                <option value="cap">Cắt ngọn giới hạn (Cap)</option>
                             </select>
                         </div>
                     </div>
 
                     <div id="config-encoding" class="step-config-panel hidden">
                         <div class="form-group">
-                            <label class="form-label" for="encoding-method">Strategy:</label>
+                            <label class="form-label" for="encoding-method">Phương pháp mã hóa:</label>
                             <select id="encoding-method" class="form-control">
                                 <option value="label">Label Encoding</option>
                                 <option value="one_hot">One-Hot Encoding</option>
@@ -279,7 +276,7 @@
 
                     <div id="config-scaling" class="step-config-panel hidden">
                         <div class="form-group">
-                            <label class="form-label" for="scaling-method">Scaler Type:</label>
+                            <label class="form-label" for="scaling-method">Phương pháp chuẩn hóa:</label>
                             <select id="scaling-method" class="form-control">
                                 <option value="standard">Standard Scaler</option>
                                 <option value="min_max">Min-Max Scaler</option>
@@ -289,114 +286,109 @@
 
                     <div id="config-round" class="step-config-panel hidden">
                         <div class="form-group">
-                            <label class="form-label" for="round-decimals">Decimal Places:</label>
+                            <label class="form-label" for="round-decimals">Số chữ số thập phân:</label>
                             <input type="number" id="round-decimals" class="form-control" value="0" min="0">
                         </div>
                         <div class="form-group checkbox-inline">
                             <input type="checkbox" id="round-to-int">
-                            <label for="round-to-int">Cast to Integer</label>
+                            <label for="round-to-int">Ép kiểu về số nguyên</label>
                         </div>
                     </div>
 
                     <button type="button" id="btn-add-step" class="btn btn-secondary btn-full">
-                        Add to Queue
+                        Thêm vào danh sách Pipeline
                     </button>
                 </div>
 
                 <div class="pipeline-queue">
                     <div class="queue-header">
-                        <div class="section-title">Execution Queue (<span id="pipeline-count">0</span>)</div>
+                        <div class="section-title">Danh sách chờ thực thi (<span id="pipeline-count">0</span>)</div>
                         <div class="queue-actions">
-                            <button type="button" id="btn-save-recipe" class="btn-link hidden">Save Recipe</button>
-                            <button type="button" id="btn-clear-pipeline" class="btn-link text-danger">Clear All</button>
+                            <button type="button" id="btn-save-recipe" class="btn-link hidden">Lưu thành Recipe</button>
+                            <button type="button" id="btn-clear-pipeline" class="btn-link text-danger">Xóa tất cả</button>
                         </div>
                     </div>
                     
-                    <!-- Recipe Library (Chỉ hiện Online) -->
                     <div id="recipe-library" class="recipe-library hidden">
                         <select id="recipe-select" class="form-control">
-                            <option value="">Select Predefined Recipe</option>
-                            <option value="preset_1">Missing Value Filter</option>
-                            <option value="preset_2">Noise & Outlier Pipeline</option>
-                            <option value="preset_3">Numeric & Categorical Standardization</option>
+                            <option value="">-- Chọn Recipe đã lưu --</option>
+                            <option value="preset_1">Bộ lọc dữ liệu khuyết thiếu</option>
+                            <option value="preset_2">Xử lý nhiễu & Ngoại lai</option>
+                            <option value="preset_3">Chuẩn hóa dữ liệu số và Categorical</option>
                         </select>
-                        <button id="btn-apply-recipe" class="btn btn-outline">Apply</button>
+                        <button id="btn-apply-recipe" class="btn btn-outline">Áp dụng</button>
                     </div>
 
                     <ul id="pipeline-list" class="pipeline-list">
-                        <li class="empty-state">Queue is empty.</li>
+                        <li class="empty-state">Chưa có bước xử lý nào.</li>
                     </ul>
 
                     <div class="queue-footer">
                         <button type="button" id="btn-execute-pipeline" class="btn btn-primary btn-full" disabled>
-                            Run Pipeline
+                            Thực thi Pipeline làm sạch
                         </button>
                     </div>
                 </div>
             </div>
             <div class="card-footer">
-                <button class="btn btn-nav prev" data-target="profile-section">Previous</button>
+                <button class="btn btn-nav prev" data-target="profile-section">← Quay lại bước trước</button>
             </div>
         </section>
 
         <!-- 4. KHU VỰC KẾT QUẢ & EXPORT -->
         <section id="result-section" class="card hidden">
             <div class="card-header">
-                <h2>Audit Summary</h2>
+                <h2>Báo cáo kết quả xử lý (Audit Summary)</h2>
             </div>
             <div class="card-body">
                 <div class="summary-grid">
                     <div class="stat-card">
-                        <span class="stat-label">Row Variation</span>
+                        <span class="stat-label">Số dòng (Trước → Sau)</span>
                         <strong id="audit-rows-compare" class="stat-value">0 → 0</strong>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-label">Feature Variation</span>
+                        <span class="stat-label">Số cột (Trước → Sau)</span>
                         <strong id="audit-cols-compare" class="stat-value">0 → 0</strong>
                     </div>
                     <div class="stat-card">
-                        <span class="stat-label">Operations Applied</span>
+                        <span class="stat-label">Tổng số bước thực hiện</span>
                         <strong id="audit-total-steps" class="stat-value">0</strong>
                     </div>
                 </div>
 
-                <!-- ML Readiness Benchmark (Chỉ hiện Online & ML mode) -->
                 <div id="ml-benchmark" class="ml-benchmark hidden">
-                    <div class="section-title">ML-Readiness Evaluation</div>
+                    <div class="section-title">ML-Readiness Benchmark (Chấm điểm dữ liệu)</div>
                     <div class="health-meter">
                         <div class="meter-bar">
                             <div class="meter-fill" id="health-score-fill" style="width: 0%;"></div>
                         </div>
-                        <span id="health-score-text">Evaluating...</span>
+                        <span id="health-score-text">Đang đánh giá...</span>
                     </div>
-                    <button id="btn-test-ai" class="btn btn-outline">Run Baseline Evaluation</button>
+                    <button id="btn-test-ai" class="btn btn-outline">Chấm điểm & Test AI</button>
                     <div id="ai-results" class="ai-results hidden">
-                        <!-- Kết quả test chèn ở đây -->
                     </div>
                 </div>
 
                 <div class="audit-log-box">
-                    <div class="section-title">Transformation Log</div>
+                    <div class="section-title">Nhật ký chi tiết (Audit History)</div>
                     <ul id="audit-history-list" class="audit-list"></ul>
                 </div>
 
                 <div class="export-box">
                     <div class="export-info">
-                        <div class="section-title">Data Export</div>
+                        <div class="section-title">Xuất dữ liệu sạch</div>
                     </div>
                     <div class="export-buttons" id="export-buttons-group">
-                        <!-- Mặc định (EDA Mode) -->
-                        <button type="button" id="btn-export-csv" class="btn btn-primary">Download CSV</button>
-                        <button type="button" id="btn-export-json" class="btn btn-outline">Download JSON</button>
+                        <button type="button" id="btn-export-csv" class="btn btn-primary">Tải file .CSV</button>
+                        <button type="button" id="btn-export-json" class="btn btn-outline">Tải file .JSON</button>
                         
-                        <!-- Machine Learning Mode -->
-                        <button type="button" id="btn-export-train" class="btn btn-primary hidden">Download Train Set</button>
-                        <button type="button" id="btn-export-test" class="btn btn-outline hidden">Download Test Set</button>
+                        <button type="button" id="btn-export-train" class="btn btn-primary hidden">Tải Tập Train</button>
+                        <button type="button" id="btn-export-test" class="btn btn-outline hidden">Tải Tập Test</button>
                     </div>
                 </div>
             </div>
             <div class="card-footer">
-                <button class="btn btn-nav prev" data-target="pipeline-section">Previous</button>
+                <button class="btn btn-nav prev" data-target="pipeline-section">← Quay lại bước trước</button>
             </div>
         </section>
 
@@ -406,30 +398,30 @@
     <div id="column-modal" class="modal-overlay hidden">
         <div class="modal-box">
             <div class="modal-header">
-                <h3 id="modal-col-title">Feature Properties</h3>
+                <h3 id="modal-col-title">Chi tiết cột</h3>
                 <button type="button" id="btn-close-modal" class="btn-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="modal-stats-grid">
                     <div class="mini-stat">
-                        <span class="stat-label">Data Type</span>
+                        <span class="stat-label">Kiểu dữ liệu</span>
                         <strong id="modal-dtype" class="stat-value">-</strong>
                     </div>
                     <div class="mini-stat">
-                        <span class="stat-label">Null Count</span>
+                        <span class="stat-label">Số ô Null</span>
                         <strong id="modal-nulls" class="stat-value">0</strong>
                     </div>
                     <div class = "mini-stat">
-                        <span class="stat-label">Null Rate</span>
+                        <span class="stat-label">Tỷ lệ Null (%)</span>
                         <strong id = "modal-null-pct" class="stat-value">0%</strong>
                     </div>
                     <div class="mini-stat">
-                        <span class="stat-label">Unique Values</span>
+                        <span class="stat-label">Giá trị Unique</span>
                         <strong id="modal-unique" class="stat-value">0</strong>
                     </div>
                 </div>
                 <div id="modal-numeric-stats" class="numeric-stats-section hidden">
-                    <div class="section-title">Distribution</div>
+                    <div class="section-title">Thống kê nâng cao</div>
                     <div class="modal-stats-grid">
                         <div class="mini-stat">
                             <span class="stat-label">Mean</span>
@@ -440,7 +432,7 @@
                             <strong id="modal-median" class="stat-value">-</strong>
                         </div>
                         <div class = "mini-stat">
-                            <span class="stat-label">Std Dev</span>
+                            <span class="stat-label">Độ lệch chuẩn</span>
                             <strong id = "modal-std" class="stat-value">-</strong>
                         </div>
                         <div class="mini-stat">
@@ -452,7 +444,7 @@
                             <strong id="modal-max" class="stat-value">-</strong>
                         </div>
                         <div class="mini-stat">
-                            <span class="stat-label">IQR Outliers</span>
+                            <span class="stat-label">Outliers (IQR)</span>
                             <strong id="modal-outliers" class="stat-value">0</strong>
                         </div>
                     </div>
@@ -465,21 +457,21 @@
     <div id="auth-modal" class="modal-overlay hidden">
         <div class="modal-box auth-box">
             <div class="modal-header">
-                <h3 id="auth-title">Authentication</h3>
+                <h3 id="auth-title">Đăng nhập hệ thống</h3>
                 <button type="button" id="btn-close-auth" class="btn-close">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="auth-form">
                     <div class="form-group">
-                        <label class="form-label">Identifier</label>
+                        <label class="form-label">Tên đăng nhập / Email</label>
                         <input type="text" id="auth-username" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Password</label>
+                        <label class="form-label">Mật khẩu</label>
                         <input type="password" id="auth-password" class="form-control" required>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-full">Submit</button>
-                    <p class="auth-switch">No account? <a href="#" id="toggle-auth-mode">Create one</a></p>
+                    <button type="submit" class="btn btn-primary btn-full">Đăng nhập</button>
+                    <p class="auth-switch">Chưa có tài khoản? <a href="#" id="toggle-auth-mode">Đăng ký ngay</a></p>
                 </form>
             </div>
         </div>
@@ -488,12 +480,12 @@
     <!-- LỊCH SỬ DRAWER -->
     <div id="history-drawer" class="drawer hidden">
         <div class="drawer-header">
-            <h3>Execution History</h3>
+            <h3>Lịch sử xử lý</h3>
             <button id="btn-close-history" class="btn-close">&times;</button>
         </div>
         <div class="drawer-body">
             <ul id="history-list" class="history-list">
-                <li class="empty-state">No execution records found.</li>
+                <li class="empty-state">Chưa có lịch sử xử lý nào.</li>
             </ul>
         </div>
     </div>
@@ -504,7 +496,7 @@
     <!-- FOOTER -->
     <footer class="app-footer">
         <div class="container">
-            <p>DataSanitizer Platform</p>
+            <p>DataSanitizer Platform — Nguyễn Hữu Luân, Đào Trung Phúc, Hoàng Hải Văn</p>
         </div>
     </footer>
 

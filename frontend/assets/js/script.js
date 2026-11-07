@@ -1,6 +1,5 @@
-// Controller Chính & Điều hướng giao diện
-import { appState, saveStateToStorage, clearSavedState } from "./state.js";
-import { uploadDatasetAPI, fetchDatasetProfileAPI, executePipelineAPI, downloadExportFileAPI, loadSampleDatasetAPI, benchmarkAIAPI } from "./api.js";
+import { appState, saveStateToStorage, clearSavedState, loadStateFromStorage } from "./state.js";
+import { uploadDatasetAPI, fetchDatasetProfileAPI, executePipelineAPI, downloadExportFileAPI, loadSampleDatasetAPI, benchmarkAIAPI, saveRecipeAPI } from "./api.js";
 import { renderProfileData, updateStepIndicator } from "./ui-profiler.js";
 import { handleStepTypeChange, addStepToPipeline, renderPipelineQueue, renderAuditResult, updateColumnAvailability } from "./ui-pipeline.js";
 import { showToast } from "./dom-safe.js";
@@ -8,39 +7,49 @@ import { showToast } from "./dom-safe.js";
 document.addEventListener("DOMContentLoaded", () => {
     
     // --- 1. KIỂM TRA & KHÔI PHỤC PHIÊN LÀM VIỆC (F5 PERSISTENCE) ---
-    try {
-        const saved = localStorage.getItem('datasanitizer_state');
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            Object.assign(appState, parsed);
-            
-            // Nếu có dữ liệu đang làm dở, dựng lại UI
-            if (appState.currentFileId && appState.columns.length > 0) {
-                document.getElementById("selected-file-name").textContent = `Active Session: ${appState.filename}`;
-                document.getElementById("btn-upload").textContent = "Re-initialize";
-                document.getElementById("btn-upload").disabled = false;
-                
-                // Khôi phục giao diện
-                renderProfileData({
-                    file_id: appState.currentFileId,
-                    filename: appState.filename,
-                    columns: appState.columns,
-                    // Giả lập rows/cols vì không lưu chi tiết trong state.js để nhẹ thẻ
-                    total_rows: "?", 
-                    total_columns: appState.columns.length
-                });
-                
-                renderPipelineQueue();
-                
-                // Phục hồi setting mục đích sử dụng
-                document.querySelector(`input[name="data-purpose"][value="${appState.purpose}"]`).checked = true;
-                document.getElementById("train-split").value = appState.trainSplit;
-                document.getElementById("split-display").textContent = `${appState.trainSplit}% / ${100 - appState.trainSplit}%`;
-                
-                showToast(`Restored previous session: ${appState.filename}`, "success");
-            }
-        }
-    } catch (e) { console.warn("Cannot restore state", e); }
+    const restored = loadStateFromStorage();
+    if (restored) {
+        document.getElementById("selected-file-name").textContent = `Active Session: ${appState.filename}`;
+        document.getElementById("btn-upload").textContent = "Tiếp tục phân tích";
+        document.getElementById("btn-upload").disabled = false;
+        
+        // Hiện banner khôi phục thay vì toast
+        const sessionBanner = document.createElement("div");
+        sessionBanner.className = "alert alert-warning";
+        sessionBanner.style.display = "flex";
+        sessionBanner.style.justifyContent = "space-between";
+        sessionBanner.style.alignItems = "center";
+        sessionBanner.innerHTML = `
+            <span>Đã khôi phục phiên làm việc: <strong>${appState.filename}</strong></span>
+            <button id="btn-new-session" class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;">Bắt đầu phiên mới</button>
+        `;
+        document.getElementById("upload-section").querySelector(".card-body").prepend(sessionBanner);
+        
+        document.getElementById("btn-new-session").addEventListener("click", () => {
+            clearSavedState();
+            location.reload();
+        });
+
+        // Khôi phục giao diện
+        renderProfileData({
+            file_id: appState.currentFileId,
+            filename: appState.filename,
+            columns: appState.columns,
+            total_rows: appState.totalRows || "?", // Lấy từ state
+            total_columns: appState.columns.length
+        });
+        
+        renderPipelineQueue();
+        
+        const purposeRadio = document.querySelector(`input[name="data-purpose"][value="${appState.purpose}"]`);
+        if (purposeRadio) purposeRadio.checked = true;
+        
+        document.getElementById("train-split").value = appState.trainSplit;
+        document.getElementById("split-display").textContent = `Train: ${appState.trainSplit}% | Test: ${100 - appState.trainSplit}%`;
+        
+        // Mở khóa Bước 3 nếu có column
+        document.getElementById("pipeline-section").classList.remove("hidden");
+    }
 
     // --- 2. CHUYỂN ĐỔI CHẾ ĐỘ OFFLINE / ONLINE ---
     const modeToggle = document.getElementById("mode-toggle");
@@ -62,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!appState.user) btnAuth.classList.remove("hidden");
             recipeLib.classList.remove("hidden");
             btnSaveRecipe.classList.remove("hidden");
-            showToast("Switched to Cloud Workspace", "success");
+            showToast("Đã chuyển sang Cloud Workspace", "success");
         } else {
             offlineBadge.classList.remove("hidden");
             kaggleHub.classList.add("hidden");
@@ -72,15 +81,13 @@ document.addEventListener("DOMContentLoaded", () => {
             recipeLib.classList.add("hidden");
             btnSaveRecipe.classList.add("hidden");
             document.getElementById("ml-benchmark").classList.add("hidden");
-            showToast("Switched to Local Environment", "success");
+            showToast("Đã chuyển sang Chế độ Cục bộ", "success");
         }
     });
-    
-    // Set trạng thái ban đầu cho công tắc Mode
     modeToggle.checked = (appState.mode === 'online');
     modeToggle.dispatchEvent(new Event('change'));
 
-    // --- 3. ĐIỀU HƯỚNG TƯƠNG TÁC (INTERACTIVE STEPPER & NAV BUTTONS) ---
+    // --- 3. ĐIỀU HƯỚNG TƯƠNG TÁC ---
     function scrollToSection(targetId) {
         document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         updateStepIndicator(targetId);
@@ -93,9 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.querySelectorAll(".btn-nav").forEach(btn => {
-        btn.addEventListener("click", () => {
-            scrollToSection(btn.dataset.target);
-        });
+        btn.addEventListener("click", () => scrollToSection(btn.dataset.target));
     });
 
     // --- 4. UPLOAD & KAGGLE HUB ---
@@ -105,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     fileInput.addEventListener("change", () => {
         if (fileInput.files.length > 0) {
-            selectedFileName.textContent = `Selected: ${fileInput.files[0].name}`;
+            selectedFileName.textContent = `Đã chọn: ${fileInput.files[0].name}`;
             uploadBtn.disabled = false;
         }
     });
@@ -116,43 +121,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
         uploadBtn.disabled = true;
         try {
-            let fileId = appState.currentFileId; // Nếu đang restore
+            let fileId = appState.currentFileId;
             if (fileInput.files.length > 0) {
-                clearSavedState(); // Xóa phiên cũ khi nạp file mới
-                uploadBtn.textContent = "Uploading...";
+                clearSavedState();
+                uploadBtn.textContent = "Đang tải file lên...";
                 const uploadRes = await uploadDatasetAPI(fileInput.files[0]);
                 fileId = uploadRes.file_id;
                 appState.filename = uploadRes.filename || fileInput.files[0].name;
             }
 
-            uploadBtn.textContent = "Profiling data...";
+            uploadBtn.textContent = "Đang khám bệnh dữ liệu...";
             const profileData = await fetchDatasetProfileAPI(fileId);
             
-            // Xóa rác Pipeline cũ
             appState.pipelineSteps = [];
             renderPipelineQueue();
             document.getElementById("result-section").classList.add("hidden");
-
+            
+            appState.totalRows = profileData.total_rows; // Lưu total rows
             renderProfileData(profileData);
             updateColumnAvailability();
             
-            selectedFileName.textContent = `Initialized: ${appState.filename}`;
-            showToast("Dataset loaded and profiled successfully");
+            selectedFileName.textContent = `Hoàn tất: ${appState.filename}`;
+            showToast("Tải và phân tích dữ liệu thành công");
             scrollToSection("profile-section");
-
         } catch (err) {
             showToast(err.message, "error");
         } finally {
-            uploadBtn.textContent = "Initialize Dataset";
+            uploadBtn.textContent = "Bắt đầu phân tích dữ liệu";
             uploadBtn.disabled = false;
         }
     });
 
-    // Bấm Nạp dữ liệu mẫu Kaggle 1-Click
     document.querySelectorAll(".btn-sample").forEach(btn => {
         btn.addEventListener("click", async () => {
             const sampleId = btn.dataset.id;
-            uploadBtn.textContent = "Loading Kaggle dataset...";
+            uploadBtn.textContent = "Đang nạp dữ liệu Kaggle...";
             uploadBtn.disabled = true;
             try {
                 clearSavedState();
@@ -160,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 appState.filename = uploadRes.filename;
                 
                 const profileData = await fetchDatasetProfileAPI(uploadRes.file_id);
+                appState.totalRows = profileData.total_rows;
                 appState.pipelineSteps = [];
                 renderPipelineQueue();
                 document.getElementById("result-section").classList.add("hidden");
@@ -167,46 +171,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 renderProfileData(profileData);
                 updateColumnAvailability();
                 
-                selectedFileName.textContent = `Kaggle Dataset: ${appState.filename}`;
-                showToast(`Loaded ${sampleId} dataset`, "success");
+                selectedFileName.textContent = `Dữ liệu mẫu: ${appState.filename}`;
+                showToast(`Đã nạp bộ dữ liệu ${sampleId}`, "success");
                 scrollToSection("profile-section");
             } catch (err) {
                 showToast(err.message, "error");
             } finally {
-                uploadBtn.textContent = "Initialize Dataset";
+                uploadBtn.textContent = "Bắt đầu phân tích dữ liệu";
                 uploadBtn.disabled = false;
             }
         });
     });
 
-    // --- 5. LOGIC PIPELINE VÀ ANTI-LEAKAGE ---
-    document.getElementById("btn-close-modal").addEventListener("click", () => {
-        document.getElementById("column-modal").classList.add("hidden");
-    });
-
+    // --- 5. LOGIC PIPELINE & RECIPE ---
+    document.getElementById("btn-close-modal").addEventListener("click", () => document.getElementById("column-modal").classList.add("hidden"));
     document.getElementById("step-type-select").addEventListener("change", handleStepTypeChange);
-
+    
     document.getElementById("mv-strategy").addEventListener("change", (e) => {
         const constantGroup = document.getElementById("mv-constant-group");
-        if (e.target.value === "constant") {
-            constantGroup.classList.remove("hidden");
-        } else {
-            constantGroup.classList.add("hidden");
-        }
+        if (e.target.value === "constant") constantGroup.classList.remove("hidden");
+        else constantGroup.classList.add("hidden");
         updateColumnAvailability();
     });
 
-    // Chọn tỷ lệ Train/Test & Lưu vào state
     document.querySelectorAll('input[name="data-purpose"]').forEach(radio => {
         radio.addEventListener("change", (e) => {
             appState.purpose = e.target.value;
             const splitConfig = document.getElementById("ml-split-config");
-            if (appState.purpose === "ml") {
-                splitConfig.classList.remove("hidden");
-            } else {
-                splitConfig.classList.add("hidden");
-            }
-            updateColumnAvailability(); // Bật tắt cảnh báo rò rỉ dữ liệu
+            if (appState.purpose === "ml") splitConfig.classList.remove("hidden");
+            else splitConfig.classList.add("hidden");
+            updateColumnAvailability();
             saveStateToStorage();
         });
     });
@@ -214,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const splitRange = document.getElementById("train-split");
     splitRange.addEventListener("input", (e) => {
         appState.trainSplit = e.target.value;
-        document.getElementById("split-display").textContent = `${appState.trainSplit}% / ${100 - appState.trainSplit}%`;
+        document.getElementById("split-display").textContent = `Train: ${appState.trainSplit}% | Test: ${100 - appState.trainSplit}%`;
         saveStateToStorage();
     });
 
@@ -227,65 +221,84 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("btn-add-step").addEventListener("click", addStepToPipeline);
-    
     document.getElementById("btn-clear-pipeline").addEventListener("click", () => {
         appState.pipelineSteps = [];
         renderPipelineQueue();
         saveStateToStorage();
     });
+    
+    // Sửa lỗi #2: Event listener cho nút Save/Apply Recipe
+    document.getElementById("btn-save-recipe").addEventListener("click", async () => {
+        if (appState.pipelineSteps.length === 0) {
+            showToast("Chưa có bước nào trong pipeline để lưu!", "error");
+            return;
+        }
+        const recipeName = prompt("Nhập tên cho Recipe này:", `Recipe - ${appState.filename}`);
+        if (!recipeName) return;
+        
+        try {
+            await saveRecipeAPI(recipeName, appState.pipelineSteps);
+            showToast("Đã lưu Recipe thành công!", "success");
+        } catch(err) {
+            showToast("Lỗi khi lưu Recipe. (Chưa kết nối API Backend)", "error");
+        }
+    });
+    
+    document.getElementById("btn-apply-recipe").addEventListener("click", () => {
+        const selected = document.getElementById("recipe-select").value;
+        if (!selected) {
+            showToast("Vui lòng chọn 1 Recipe từ thư viện", "error");
+            return;
+        }
+        // Mock data để demo
+        appState.pipelineSteps.push({
+            step_type: "missing_values", config: { columns: null, strategy: "median" }
+        });
+        renderPipelineQueue();
+        saveStateToStorage();
+        showToast("Đã nạp Recipe vào danh sách chờ", "success");
+    });
 
-    // THỰC THI PIPELINE VÀ CHẤM ĐIỂM
     const executeBtn = document.getElementById("btn-execute-pipeline");
     executeBtn.addEventListener("click", async () => {
         if (appState.pipelineSteps.length === 0) {
-            showToast("Add at least one operation to the queue.", "error");
+            showToast("Vui lòng thêm ít nhất 1 bước.", "error");
             return;
         }
-
-        executeBtn.textContent = "Processing...";
+        executeBtn.textContent = "Đang xử lý...";
         executeBtn.disabled = true;
 
         try {
-            const response = await executePipelineAPI(
-                appState.currentFileId, 
-                appState.pipelineSteps,
-                appState.purpose,
-                appState.trainSplit
-            );
+            const response = await executePipelineAPI(appState.currentFileId, appState.pipelineSteps, appState.purpose, appState.trainSplit);
             renderAuditResult(response.audit_summary);
-            showToast("Data cleaning pipeline completed", "success");
+            showToast("Làm sạch dữ liệu thành công", "success");
         } catch (err) {
             showToast(err.message, "error");
         } finally {
-            executeBtn.textContent = "Run Pipeline";
+            executeBtn.textContent = "Thực thi Pipeline làm sạch";
             executeBtn.disabled = false;
         }
     });
 
-    // Nút Test AI
     document.getElementById("btn-test-ai").addEventListener("click", async (e) => {
         e.preventDefault();
         const btn = e.target;
         btn.disabled = true;
-        btn.textContent = "Running baseline model...";
-        
+        btn.textContent = "Đang chạy Baseline...";
         try {
             const result = await benchmarkAIAPI(appState.currentFileId);
             const fill = document.getElementById("health-score-fill");
             const txt = document.getElementById("health-score-text");
             const score = result.ml_readiness_score || 0;
-            
             fill.style.width = `${score}%`;
             txt.textContent = `${score}/100`;
-            
             if (score > 80) fill.style.backgroundColor = "var(--success)";
             else if (score > 50) fill.style.backgroundColor = "#eab308";
             else fill.style.backgroundColor = "var(--danger)";
-            
         } catch (err) {
-            showToast("Benchmark API is not available yet in Backend", "error");
+            showToast("Backend chưa có API chấm điểm AI", "error");
         } finally {
-            btn.textContent = "Run Baseline Evaluation";
+            btn.textContent = "Chấm điểm dữ liệu & Test AI";
             btn.disabled = false;
         }
     });
@@ -296,9 +309,53 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-export-train").addEventListener("click", () => downloadExportFileAPI(appState.currentFileId, "csv", "train_cleaned"));
     document.getElementById("btn-export-test").addEventListener("click", () => downloadExportFileAPI(appState.currentFileId, "csv", "test_cleaned"));
     
-    // Đóng Drawer, Auth Modal
+    // --- 7. MODALS, DRAWER & FORMS ---
     document.getElementById("btn-close-auth").addEventListener("click", () => document.getElementById("auth-modal").classList.add("hidden"));
-    document.getElementById("btn-close-history").addEventListener("click", () => document.getElementById("history-drawer").classList.add("hidden"));
     document.getElementById("btn-auth").addEventListener("click", () => document.getElementById("auth-modal").classList.remove("hidden"));
-    document.getElementById("btn-history").addEventListener("click", () => document.getElementById("history-drawer").classList.remove("hidden"));
+    
+    // Sửa lỗi #1: PreventDefault cho form đăng nhập
+    document.getElementById("auth-form").addEventListener("submit", (e) => {
+        e.preventDefault(); 
+        appState.user = document.getElementById("auth-username").value;
+        document.getElementById("auth-modal").classList.add("hidden");
+        document.getElementById("btn-auth").classList.add("hidden");
+        document.getElementById("profile-badge").classList.remove("hidden");
+        document.getElementById("username-display").textContent = appState.user;
+        showToast(`Đăng nhập thành công: ${appState.user}`, "success");
+        saveStateToStorage();
+    });
+    
+    // Sửa lỗi #3: Sign Out và Chuyển Đăng ký
+    document.getElementById("btn-logout").addEventListener("click", () => {
+        appState.user = null;
+        document.getElementById("profile-badge").classList.add("hidden");
+        document.getElementById("btn-auth").classList.remove("hidden");
+        saveStateToStorage();
+        showToast("Đã đăng xuất", "success");
+    });
+    
+    let isLogin = true;
+    document.getElementById("toggle-auth-mode").addEventListener("click", (e) => {
+        e.preventDefault();
+        isLogin = !isLogin;
+        document.getElementById("auth-title").textContent = isLogin ? "Đăng nhập hệ thống" : "Đăng ký tài khoản";
+        document.querySelector("#auth-form button[type='submit']").textContent = isLogin ? "Đăng nhập" : "Đăng ký";
+        e.target.textContent = isLogin ? "Đăng ký ngay" : "Đăng nhập";
+    });
+
+    // Drawer Lịch sử
+    document.getElementById("btn-close-history").addEventListener("click", () => document.getElementById("history-drawer").classList.add("hidden"));
+    document.getElementById("btn-history").addEventListener("click", async () => {
+        document.getElementById("history-drawer").classList.remove("hidden");
+        // Giả lập logic gọi API hiển thị
+        const list = document.getElementById("history-list");
+        if(appState.filename && appState.pipelineSteps.length > 0) {
+            list.innerHTML = `
+                <li class="history-item">
+                    <div class="history-title">${appState.filename}</div>
+                    <div class="history-meta">Vừa xong • ${appState.pipelineSteps.length} bước</div>
+                </li>
+            `;
+        }
+    });
 });

@@ -9,10 +9,10 @@ export const appState = {
     purpose: 'eda', // 'eda' hoặc 'ml'
     trainSplit: 80,
     user: null,
-    authToken: null
+    authToken: null,
+    totalRows: 0 // Thêm trường này để fix lỗi hiện "?"
 };
 
-// Lưu toàn bộ state hiện tại vào trình duyệt
 export function saveStateToStorage() {
     try {
         const stateToSave = {
@@ -22,7 +22,8 @@ export function saveStateToStorage() {
             columns: appState.columns,
             pipelineSteps: appState.pipelineSteps,
             purpose: appState.purpose,
-            trainSplit: appState.trainSplit
+            trainSplit: appState.trainSplit,
+            totalRows: appState.totalRows // Lưu vào localStorage
         };
         localStorage.setItem('datasanitizer_state', JSON.stringify(stateToSave));
     } catch (e) {
@@ -30,7 +31,20 @@ export function saveStateToStorage() {
     }
 }
 
-// Xóa state khi bắt đầu phiên mới
+export function loadStateFromStorage() {
+    try {
+        const saved = localStorage.getItem('datasanitizer_state');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            Object.assign(appState, parsed);
+            return true;
+        }
+    } catch (e) {
+        console.warn("Lỗi đọc state từ localStorage:", e);
+    }
+    return false;
+}
+
 export function clearSavedState() {
     localStorage.removeItem('datasanitizer_state');
     appState.currentFileId = null;
@@ -39,4 +53,5 @@ export function clearSavedState() {
     appState.pipelineSteps = [];
     appState.purpose = 'eda';
     appState.trainSplit = 80;
+    appState.totalRows = 0;
 }
