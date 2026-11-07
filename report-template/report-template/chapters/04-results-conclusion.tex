@@ -1,0 +1,80 @@
+\section{Results and Conclusion}
+
+\subsection{Testing and Quality Assurance}
+To verify system correctness, robustness, and architectural contract compliance, DataSanitizer incorporates a comprehensive automated testing suite built with \texttt{pytest} and Starlette's \texttt{TestClient}. The test suite is organized into six specialized modules containing 19 distinct automated test cases, achieving a **100\% pass rate** across all suites:
+\begin{enumerate}
+  \item \texttt{test\_upload\_validation.py}: Verifies rejection of unsupported file extensions, zero-byte uploads, oversized files ($>10$~MB), and corrupted Excel containers.
+  \item \texttt{test\_api.py}: Tests core endpoint contracts, UUID assignment, and single-column lazy-loaded profiling.
+  \item \texttt{test\_frontend\_pipeline\_contract.py}: Specifically asserts that pipeline JSON structures submitted by the web interface correctly execute multi-step operations without regression.
+  \item \texttt{test\_real\_pipeline.py}: Evaluates complex transformation chains on real-world datasets with heterogeneous data types.
+  \item \texttt{test\_invalid\_data.py}: Verifies that the server gracefully rejects illegal operations (e.g., executing mean imputation on pure text strings) with descriptive HTTP 400 errors.
+  \item \texttt{test\_end\_to\_end.py}: Exercises the complete data lifecycle from multipart upload, profiling, pipeline execution, to final CSV/JSON download streaming.
+\end{enumerate}
+
+Table~\ref{tab:test} details representative test cases executed by the continuous quality verification pipeline.
+
+\begin{table}[ht]
+\centering\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}clp{6.0cm}c@{}}
+\toprule
+\textbf{ID} & \textbf{Feature / Scenario} & \textbf{Expected Result} & \textbf{Result}\\
+\midrule
+TC01 & Upload valid CSV file (\texttt{melb\_data.csv}) & HTTP 200, valid UUID returned, file cached in \texttt{data/raw} & Pass\\
+TC02 & Upload oversized file ($>10$~MB payload) & HTTP 413 (Payload Too Large), upload rejected & Pass\\
+TC03 & Upload malformed Excel file with fake extension & HTTP 400, BadZipFile detected, cleanly rejected & Pass\\
+TC04 & Lazy-load single-column profile (\texttt{Price}) & HTTP 200, returns mean, std, quartiles, IQR outliers & Pass\\
+TC05 & Clean currency string (\texttt{"\$1,200.50"} $\rightarrow$ \texttt{1200.5}) & Cast to float64, thousand-separators removed & Pass\\
+TC06 & Pipeline missing value imputation (\texttt{mean}) & Null values filled with column mean, audit log updated & Pass\\
+TC07 & Submit invalid mean imputation on text column & HTTP 400, detailed error naming offending column & Pass\\
+TC08 & Download processed dataset as JSON & HTTP 200, \texttt{application/json} streamed, correct records & Pass\\
+\bottomrule
+\end{tabular}
+\caption{Selected automated test verification scenarios.}
+\label{tab:test}
+\end{table}
+
+\textbf{Performance Benchmarking:}
+Benchmarks measured directly on an Intel Core i7 test environment utilizing the Melbourne Housing Dataset (comprising 13,580 rows and 21 columns) demonstrated exceptional processing velocity:
+\begin{itemize}
+  \item Initial file ingestion and global health profiling completed in \textbf{46.1~ms} (excluding disk I/O).
+  \item Full multi-step pipeline execution (Null standardization, mean imputation, IQR capping via \texttt{np.clip}, One-Hot encoding, and standard scaling) executed in \textbf{44.9~ms}.
+  \item Front-end DOM rendering and reactive table updates executed with zero perceptible frame stutter ($< 60$~ms).
+\end{itemize}
+
+\subsection{Achievements and Limitations}
+
+\subsubsection{Achievements}
+Evaluating the finished application against the initial objectives outlined in Section~1 confirms that all target milestones were fully satisfied:
+\begin{itemize}
+  \item \textbf{High-Speed Automated Profiling (Objective 1):} Implemented a multi-metric diagnostic scanner providing sorted null ratios, duplicate counts, and multicollinearity alerts in sub-second timeframes.
+  \item \textbf{Mathematical Pipeline Engine (Objective 2):} Engineered an enterprise-grade \texttt{DataCleaner} supporting 7 distinct operations adhering to data science best practices \cite{tukey1977, mckinney2010, pedregosa2011}.
+  \item \textbf{Context-Aware Defensive UI (Objective 3):} Developed dynamic client-side type-guarding that prevents user error at the point of interaction, eliminating blind server rejections.
+  \item \textbf{Auditable Lifecycle \& Export (Objective 4):} Established transparent pre- and post-processing accounting with dual-format export capability.
+\end{itemize}
+
+\subsubsection{Limitations}
+Despite its strengths, the current educational prototype exhibits specific technical boundaries:
+\begin{enumerate}
+  \item \textbf{Memory-Bound Scalability:} Because operations reside in-memory within Pandas DataFrames, datasets exceeding available system RAM ($> 1$~GB) risk triggering Out-Of-Memory (OOM) exceptions.
+  \item \textbf{Stateless Local Storage:} Ingestion files are staged to the local server disk rather than distributed cloud blob stores (e.g., AWS S3), limiting horizontal auto-scaling across multi-instance clusters.
+  \item \textbf{Absence of Multi-Tenant Security:} The prototype lacks session isolation, user authentication tokens (JWT), and automated data purging schedules.
+\end{enumerate}
+
+\subsection{Lessons Learned and Future Work}
+
+\subsubsection{Lessons Learned}
+Throughout the design and engineering of DataSanitizer, the team acquired invaluable insights into real-world software engineering:
+\begin{itemize}
+  \item \textbf{Two-Tier Validation Synergy:} Client-side validation delivers superior user experience and instant feedback, but server-side validation is non-negotiable for system security and algorithmic integrity.
+  \item \textbf{Edge-Case Complexity in Data Science:} Handling numerical conversions requires deep defensive foresight; naively casting strings with spaces or locale-specific currency markers can silently introduce corrupted calculations.
+  \item \textbf{API Contract Discipline:} Establishing strict Pydantic schemas upfront significantly reduced integration friction between front-end UI components and back-end services.
+\end{itemize}
+
+\subsubsection{Future Roadmap}
+Building upon the solid foundation established in this release, future iterations will explore:
+\begin{itemize}
+  \item \textbf{Out-of-Core Big Data Engine:} Integrating \texttt{Polars} or \texttt{DuckDB} to enable lazy out-of-core query streaming for multi-gigabyte datasets without memory exhaustion.
+  \item \textbf{Interactive Statistical Visualizations:} Embedding client-side interactive histograms and correlation heatmaps utilizing Chart.js or D3.js.
+  \item \textbf{Automated ML-Readiness Advisor (AutoSanitize):} Incorporating heuristic algorithms that automatically inspect column distributions and recommend the optimal imputation and encoding recipe for downstream model training.
+\end{itemize}

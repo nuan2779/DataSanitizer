@@ -1,0 +1,86 @@
+% =====================================================================
+%  GROUP ASSIGNMENT REPORT (MIDTERM) — Faculty of Data Science and AI, NEU
+%  Compile with XeLaTeX:   latexmk -xelatex main.tex
+%  (Overleaf: Menu -> Compiler -> XeLaTeX)
+%  Edit only main.tex and chapters/. Do not edit fdareport.cls.
+% =====================================================================
+\documentclass{fdareport}
+
+% ---------------------------- REPORT INFORMATION ---------------------
+\reporttitle{DataSanitizer: Hệ Thống Tự Động Khám Bệnh và Tiền Xử Lý Dữ Liệu Dạng Bảng}
+\reportsubtitle{Kiến Trúc Pipeline Tương Tác Phục Vụ Tiền Xử Lý Dữ Liệu và Sẵn Sàng Cho Học Máy}
+\course{Thiết kế và Lập trình Web}
+\coursecode{WDP2026}
+\classname{FDA66}
+\semester{Học kỳ 1, Năm học 2026--2027}
+\instructor{ThS. Lê Duy Khánh}
+\groupname{Nhóm 01}
+\repourl{https://github.com/nuan2779/DataSanitizer}
+\demourl{http://127.0.0.1:5500}
+\reportdate{Tháng 11 Năm 2026}
+
+% Tên các bảng và mục lục bằng Tiếng Việt
+\renewcommand{\contentsname}{Mục lục}
+\renewcommand{\listfigurename}{Danh mục hình vẽ}
+\renewcommand{\listtablename}{Danh mục bảng}
+\renewcommand{\figurename}{Hình}
+\renewcommand{\tablename}{Bảng}
+\renewcommand{\refname}{Tài liệu tham khảo}
+\renewcommand{\appendixname}{Phụ lục}
+
+% Each row: No. & Full name & Student ID & Role \\
+\members{
+  1 & Nguyễn Hữu Luân & 11247191 & Trưởng nhóm, Data Engine \& Kiến trúc \\
+  2 & Đào Trung Phúc  & 11242354 & Lập trình API Back-end \& Pipeline Runner \\
+  3 & Hoàng Hải Văn   & 11240301 & Lập trình Giao diện Front-end \& UI/UX \\
+}
+
+\begin{document}
+
+\maketitle
+
+% ---------------------------- DECLARATION ----------------------------
+\section*{Lời cam đoan}
+Chúng tôi xin cam đoan rằng bản báo cáo này là kết quả làm việc độc lập của nhóm chúng tôi trong khuôn khổ học phần \emph{\@course}. Toàn bộ các nguồn tài liệu tham khảo (văn liệu khoa học, mã nguồn mở, hình ảnh minh họa, công cụ hỗ trợ AI) đều đã được trích dẫn và ghi nhận rõ ràng, minh bạch. Nhóm chúng tôi xin chịu hoàn toàn trách nhiệm về nội dung và tính trung thực của báo cáo này.
+
+% ---------------------------- CONTRIBUTIONS --------------------------
+\section*{Phân công công việc và Đóng góp của các thành viên}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{@{}l X c@{}}
+\toprule
+\textbf{Thành viên} & \textbf{Nội dung công việc phụ trách} & \textbf{Đóng góp (\%)}\\
+\midrule
+Nguyễn Hữu Luân & Phát triển lõi thuật toán DataCleaner, xây dựng hệ thống khám bệnh thống kê, xử lý ngoại lai IQR/Z-score, mã hóa dữ liệu, thiết kế kiến trúc hệ thống & 34\\
+Đào Trung Phúc  & Xây dựng các API RESTful FastAPI (/upload, /profile, /clean, /download), bộ điều phối PipelineRunner, kiểm định dữ liệu Pydantic, xây dựng bộ kiểm thử tự động Pytest & 33\\
+Hoàng Hải Văn   & Phát triển giao diện đơn trang (SPA), thiết kế CSS tương thích, xây dựng cơ chế phản ứng DOM, bộ lọc kiểm soát kiểu dữ liệu động, xử lý thông báo lỗi chi tiết & 33\\
+\midrule
+\multicolumn{2}{r}{\textbf{Tổng cộng}} & \textbf{100}\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\clearpage
+\tableofcontents
+\clearpage
+\listoffigures
+\listoftables
+\clearpage
+
+% ---------------------------- CONTENT --------------------------------
+\input{chapters/01-introduction}
+\input{chapters/02-analysis-design}
+\input{chapters/03-implementation}
+\input{chapters/04-results-conclusion}
+
+% ---------------------------- REFERENCES -----------------------------
+\clearpage
+\addcontentsline{toc}{section}{Tài liệu tham khảo}
+\bibliographystyle{plain}
+\bibliography{references}
+
+% ---------------------------- APPENDIX -------------------------------
+\appendix
+\input{chapters/appendix}
+
+\end{document}

@@ -13,3 +13,8 @@ data/processed/*
 .env
 .env.*
 !.env.example
+
+# SQLite Database
+*.db
+*.sqlite3
+data/*.db

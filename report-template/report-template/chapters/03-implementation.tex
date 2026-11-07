@@ -1,0 +1,122 @@
+\section{Implementation}
+
+\subsection{Project Structure}
+The DataSanitizer codebase is strictly structured into modular components, cleanly separating client presentation, REST routing, data engineering logic, and automated verification suites:
+
+\begin{lstlisting}[language=bash,numbers=none]
+DataSanitizer/
+|-- backend/
+|   |-- main.py              # FastAPI application, CORS middleware & route registration
+|   |-- schemas.py           # Pydantic v2 data models & request contracts
+|   |-- routers/             # Endpoint routers: upload, profile, clean, download
+|   `-- services/
+|       |-- cleaner.py       # DataCleaner: In-memory mathematical transformation engine
+|       |-- profiler.py      # Statistical profiling & Pearson correlation scanner
+|       |-- pipeline_runner.py # Strict pipeline validation & regex currency conversion
+|       `-- adapter.py       # Backward-compatibility legacy adapter
+|-- frontend/
+|   |-- index.html           # Single-Page Application (SPA) structure
+|   `-- assets/
+|       |-- css/             # Component styles: base, components, sections, modal
+|       `-- js/              # Vanilla ES6 modules: script, state, api, ui-*, dom-safe
+|-- tests/                   # 6 automated test modules (19 test cases)
+|-- data/                    # Local cache directory: raw/ and processed/
+|-- requirements.txt         # Pinned Python package dependencies
+`-- README.md                # System documentation and operational instructions
+\end{lstlisting}
+
+\subsection{User Interface Implementation}
+The front-end client is constructed entirely using standard **Vanilla ES6 JavaScript Modules** without bulky third-party frontend frameworks, ensuring near-instant load times and zero dependency overhead. 
+
+State management is centralized within \texttt{frontend/assets/js/state.js}, exposing an observable \texttt{appState} object that synchronizes the active \texttt{file\_id}, parsed column schema, and ordered \texttt{pipelineSteps} array across all UI views. Crucially, to prevent unhandled runtime errors when users submit requests, the client implements a \textbf{Dynamic Context-Aware Type Guard} in \texttt{ui-pipeline.js}, shown in Listing~\ref{lst:typeguard}.
+
+\begin{lstlisting}[language=JavaScript,caption={Context-aware dynamic type-guarding in ui-pipeline.js.},label={lst:typeguard}]
+export function updateColumnAvailability() {
+  const stepType = document.getElementById("step-type-select")?.value;
+  const mvStrategy = document.getElementById("mv-strategy")?.value;
+  if (!appState.columns || appState.columns.length === 0) return;
+
+  appState.columns.forEach((col, index) => {
+    const cb = document.getElementById(`chk-col-${index}`);
+    const label = cb?.parentElement;
+    if (!cb || !label) return;
+
+    const isNum = /int|float/i.test(col.dtype);
+    let isDisabled = false;
+
+    // Lock non-numeric columns for quantitative operations
+    if (["scaling", "outlier", "round"].includes(stepType) && !isNum) {
+      isDisabled = true;
+    } else if (stepType === "missing_values" && 
+               ["mean", "median", "interpolate"].includes(mvStrategy) && !isNum) {
+      isDisabled = true;
+    } else if (stepType === "encoding" && isNum) {
+      isDisabled = true; // Lock numeric columns for categorical encoding
+    }
+
+    cb.disabled = isDisabled;
+    if (isDisabled) cb.checked = false;
+    label.style.opacity = isDisabled ? "0.45" : "1.0";
+    label.style.cursor = isDisabled ? "not-allowed" : "pointer";
+  });
+}
+\end{lstlisting}
+
+As demonstrated in Listing~\ref{lst:typeguard}, whenever a user switches the active cleaning tool or alters the missing-value strategy (e.g., from \texttt{"mode"} to \texttt{"mean"}), the interface dynamically recalculates column eligibility. Incompatible checkboxes are instantly disabled, unchecked, faded, and annotated with explanatory warning badges. Furthermore, the ``Select All'' button is programmed to target only active elements using the CSS selector \texttt{.col-checkbox:not(:disabled)}, guaranteeing that non-numeric columns are never inadvertently packaged into mathematical operations.
+
+\subsection{Server-Side Logic and Data Engine}
+The server-side computational backbone is centered on two specialized modules: \texttt{DataCleaner} and \texttt{PipelineRunner}.
+
+\subsubsection{Robust Currency and Numeric Sanitization}
+Textual columns frequently embed monetary symbols, thousand-separator commas, or regional currency tags. To prevent corrupting valid data, \texttt{pipeline\_runner.py} employs compiled regular expressions (\texttt{\_MONEY}) that safely parse non-ambiguous currency formats while strictly rejecting ambiguous notations (such as decimal-separated thousand markers like \texttt{"1.500 đ"}), as shown in Listing~\ref{lst:money}.
+
+\begin{lstlisting}[language=Python,caption={Safe currency conversion logic in pipeline\_runner.py.},label={lst:money}]
+_MONEY = re.compile(
+    r"^\s*([+-]?)\s*\$?\s*((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)\s*(?:đ|₫|vnd|vnđ)?\s*$",
+    re.IGNORECASE,
+)
+
+def _convert_numeric_column(series: pd.Series, col_name: str) -> pd.Series:
+    if pd.api.types.is_numeric_dtype(series):
+        return series
+    converted = []
+    for val in series:
+        if pd.isna(val) or str(val).strip() in {"", "?", "N/A", "null"}:
+            converted.append(float("nan"))
+            continue
+        m = _MONEY.fullmatch(str(val).strip())
+        if not m:
+            raise ValueError(f"Non-numeric value in column '{col_name}': {str(val)[:40]}")
+        num = float(m.group(2).replace(",", ""))
+        converted.append(-num if m.group(1) == "-" else num)
+    return pd.Series(converted, index=series.index, dtype="float64")
+\end{lstlisting}
+
+\subsubsection{Outlier Handling via IQR Winsorization}
+Rather than naively deleting outlier rows—which causes catastrophic sample loss in small datasets—the \texttt{DataCleaner.handle\_outliers()} method offers a non-destructive capping mechanism (\emph{Winsorization}). By computing the Interquartile Range ($\text{IQR} = Q_3 - Q_1$), values lying beyond $[Q_1 - 1.5 \times \text{IQR}, Q_3 + 1.5 \times \text{IQR}]$ are clamped directly to the boundary thresholds using NumPy's vectorized \texttt{np.clip(self.df[col], lower, upper)} function. This ensures outliers are moderated to the upper and lower bounds at vectorized $O(1)$ memory speed while inherently preserving missing \texttt{NaN} values.
+
+\subsubsection{Categorical Encoding and Collinearity Prevention}
+When transforming categorical features into binary indicator vectors via One-Hot Encoding, \texttt{DataCleaner} explicitly enables \texttt{drop\_first=True}. This practice drops the first dummy level for each nominal feature, preventing the \emph{Dummy Variable Trap} (perfect multicollinearity where the sum of indicator variables equals the constant intercept vector).
+
+\subsection{Source Control and Teamwork}
+The project was developed collaboratively on GitHub using a disciplined feature-branching workflow. 
+\begin{itemize}
+  \item \textbf{Branching Strategy:} The \texttt{main} branch was protected, serving as the stable production baseline. Features were developed on dedicated branches (e.g., \texttt{feature/phuc-backend}, \texttt{frontend}, \texttt{fix/group-integration}).
+  \item \textbf{Pull Requests and Code Reviews:} Merges were executed through Pull Requests (PR \#4 for back-end routing, PR \#8 for pipeline adapter integration, and PR \#9 for frontend type-guards). Team members conducted thorough code reviews and verified test suites before merging.
+  \item \textbf{Commit Hygiene:} Commit messages followed the Conventional Commits specification (e.g., \texttt{feat(frontend): ...}, \texttt{fix(api): ...}, \texttt{chore: ...}), ensuring transparent traceability across the development history.
+\end{itemize}
+
+\subsection{Deployment}
+\textbf{Local Execution Architecture:}
+During development and academic review, the application is executed locally using two concurrent processes:
+\begin{enumerate}
+  \item Back-end ASGI Server: \texttt{python -m uvicorn backend.main:app --reload --port 8000}
+  \item Front-end Static Server: \texttt{python -m http.server 5500 -d frontend}
+\end{enumerate}
+
+\textbf{Cloud Deployment Readiness:}
+The system is architected for zero-configuration cloud hosting:
+\begin{itemize}
+  \item \textbf{Back-end (Render / Railway):} Packaged via \texttt{requirements.txt} and launched via Gunicorn/Uvicorn workers with automated SSL provisioning.
+  \item \textbf{Front-end (Vercel / GitHub Pages):} The static assets in \texttt{frontend/} deploy seamlessly to Vercel edge networks. An adaptive \texttt{isLocal} protocol check in \texttt{api.js} dynamically routes API requests to the cloud back-end when hosted externally.
+\end{itemize}
