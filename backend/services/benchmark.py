@@ -80,6 +80,7 @@ def compute_data_quality_score(df: pd.DataFrame, initial_rows: Optional[int] = N
 
     return {
         "overall_score": overall,
+        "ml_readiness_score": overall,
         "rating": rating,
         "badge_color": badge_color,
         "breakdown": {
