@@ -1,77 +1,66 @@
 // Xử lý hiển thị Bảng Profiling (Bước 2) & Modal chi tiết cột
-import { appState } from "./state.js";
+import { appState, saveStateToStorage } from "./state.js";
 import { fetchColumnDetailAPI } from "./api.js";
 import { escapeHtml } from "./dom-safe.js";
 
-// Cập nhật thanh tiến trình (Step Indicator) trên Header
+// Cập nhật thanh tiến trình (Step Indicator)
 export function updateStepIndicator(stepId) {
     document.querySelectorAll(".step-indicator").forEach(el => {
+        el.classList.remove("active");
         if (el.dataset.target === stepId) {
             el.classList.add("active");
+            el.disabled = false; // Mở khóa tab nếu nó đã được active
         }
     });
 }
 
-// Hiển thị dữ liệu từ generate_profile() lên giao diện Bước 2 & tạo Checkbox Bước 3
+// Khởi tạo hiển thị dữ liệu Profiling
 export function renderProfileData(profileData) {
-    appState.currentFileId = profileData.file_id;
-    appState.filename = profileData.filename;
+    appState.currentFileId = profileData.file_id || appState.currentFileId;
+    appState.filename = profileData.filename || appState.filename;
     appState.columns = profileData.columns || [];
 
-    // 1. Điền các thẻ Summary Cards
-    document.getElementById("summary-filename").textContent = profileData.filename;
-    document.getElementById("summary-fileid").textContent = profileData.file_id;
-    document.getElementById("summary-rows").textContent = profileData.total_rows.toLocaleString();
-    document.getElementById("summary-cols").textContent = profileData.total_columns;
+    document.getElementById("summary-filename").textContent = appState.filename;
+    document.getElementById("summary-fileid").textContent = appState.currentFileId;
+    document.getElementById("summary-rows").textContent = profileData.total_rows?.toLocaleString() || "0";
+    document.getElementById("summary-cols").textContent = profileData.total_columns || "0";
 
-    // 2. Render toàn bộ các dòng vào bảng ban đầu
     renderProfileTableRows(appState.columns);
 
-    // 3. Lắng nghe sự kiện gõ tìm kiếm cột theo tên
     const searchInput = document.getElementById("search-col-input");
     if (searchInput) {
-        searchInput.value = ""; // Reset ô tìm kiếm khi tải file mới
         searchInput.oninput = (e) => {
             const keyword = e.target.value.trim().toLowerCase();
-            const filteredCols = appState.columns.filter(col =>
-                col.name.toLowerCase().includes(keyword)
-            );
+            const filteredCols = appState.columns.filter(col => col.name.toLowerCase().includes(keyword));
             renderProfileTableRows(filteredCols);
         };
     }
 
-    // 4. Tạo danh sách Checkbox chọn cột ở Bước 3 (Pipeline)
     renderColumnCheckboxes();
 
-    // 5. Mở khóa khu vực Bước 2 và Bước 3
     document.getElementById("profile-section").classList.remove("hidden");
     document.getElementById("pipeline-section").classList.remove("hidden");
+    
+    // Mở khóa các tab tương ứng
+    document.querySelector('.step-indicator[data-target="profile-section"]').disabled = false;
+    document.querySelector('.step-indicator[data-target="pipeline-section"]').disabled = false;
+    
     updateStepIndicator("profile-section");
-    updateStepIndicator("pipeline-section");
-
-    // Cuộn mượt xuống khu vực Khám phá dữ liệu
-    document.getElementById("profile-section").scrollIntoView({ behavior: "smooth" });
+    saveStateToStorage();
 }
 
-// Hàm phụ: Vẽ các dòng trong bảng #profile-tbody dựa trên danh sách cột truyền vào
 function renderProfileTableRows(columnsList) {
     const tbody = document.getElementById("profile-tbody");
     tbody.innerHTML = "";
 
-    if (columnsList.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="7" style="text-align: center; color: #64748b; padding: 20px;">
-                    Không tìm thấy cột nào khớp với từ khóa.
-                </td>
-            </tr>
-        `;
+    if (!columnsList || columnsList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No matching features found.</td></tr>`;
         return;
     }
 
     columnsList.forEach(col => {
         const tr = document.createElement("tr");
-        const samplesText = (col.sample_values || []).slice(0, 5).join(", ");
+        const samplesText = (col.sample_values || []).slice(0, 4).join(", ");
 
         tr.innerHTML = `
             <td><strong>${escapeHtml(col.name)}</strong></td>
@@ -79,23 +68,17 @@ function renderProfileTableRows(columnsList) {
             <td>${escapeHtml(col.null_count)}</td>
             <td><strong>${escapeHtml(col.null_percentage)}%</strong></td>
             <td>${escapeHtml(col.unique_count)}</td>
-            <td style="color: #64748b; font-size: 12px;">${escapeHtml(samplesText || "-")}</td>
-            <td>
-                <button type="button" class="btn-link btn-view-col" data-col="${escapeHtml(col.name)}">
-                    Xem chi tiết
-                </button>
-            </td>
+            <td class="text-muted">${escapeHtml(samplesText || "-")}</td>
+            <td><button type="button" class="btn-link btn-view-col" data-col="${escapeHtml(col.name)}">Details</button></td>
         `;
         tbody.appendChild(tr);
     });
 
-    // Gắn sự kiện mở Modal cho các nút "Xem chi tiết"
     tbody.querySelectorAll(".btn-view-col").forEach(btn => {
         btn.addEventListener("click", () => openColumnModal(btn.dataset.col));
     });
 }
 
-// Tạo các ô Checkbox cột cho phần cấu hình Pipeline
 function renderColumnCheckboxes() {
     const container = document.getElementById("column-checkbox-list");
     container.innerHTML = "";
@@ -105,27 +88,25 @@ function renderColumnCheckboxes() {
         div.className = "checkbox-item";
         div.innerHTML = `
             <input type="checkbox" id="chk-col-${index}" value="${escapeHtml(col.name)}" class="col-checkbox">
-            <label for="chk-col-${index}">${escapeHtml(col.name)} <small style="color:#64748b">(${escapeHtml(col.dtype)})</small></label>
+            <label for="chk-col-${index}">${escapeHtml(col.name)} <span class="text-muted">(${escapeHtml(col.dtype)})</span></label>
         `;
         container.appendChild(div);
     });
 }
 
-// Mở Modal hiển thị thông tin từ profile_single_column()
 export async function openColumnModal(colName) {
     let colDetail = appState.columns.find(c => c.name === colName);
 
-    // Gọi API lấy thống kê chi tiết của cột (Bỏ phần check file Demo)
     try {
         const apiDetail = await fetchColumnDetailAPI(appState.currentFileId, colName);
         colDetail = { ...colDetail, ...apiDetail };
     } catch (err) {
-        console.warn("Lỗi tải chi tiết cột từ server:", err);
+        console.warn("Failed to load details:", err);
     }
 
     if (!colDetail) return;
 
-    document.getElementById("modal-col-title").textContent = `Chi tiết cột: ${colName}`;
+    document.getElementById("modal-col-title").textContent = `Feature: ${colName}`;
     document.getElementById("modal-dtype").textContent = colDetail.dtype;
     document.getElementById("modal-nulls").textContent = colDetail.null_count;
     document.getElementById("modal-null-pct").textContent = `${colDetail.null_percentage}%`;

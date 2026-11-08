@@ -1,90 +1,203 @@
+/* ==========================================================================
+   MODALS, DRAWERS & TOASTS
+   ========================================================================== */
+
+/* Overlay */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(15, 23, 42, 0.6);
+    background-color: rgba(15, 23, 42, 0.4); /* Nền mờ nhạt hơn bản cũ */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    backdrop-filter: blur(2px);
 }
 
+/* Hộp Modal chung */
 .modal-box {
-    background: white;
+    background: var(--bg-card);
     width: 100%;
-    max-width: 550px;
+    max-width: 500px;
     border-radius: var(--radius-box);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-md);
     overflow: hidden;
 }
 
 .modal-header {
-    padding: 16px 20px;
+    padding: 16px 24px;
     border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #fafafa;
+    background-color: #fff;
 }
 
 .modal-header h3 {
     margin: 0;
     font-size: 15px;
     font-weight: 600;
+    color: var(--text-main);
 }
 
 .btn-close {
     background: none;
     border: none;
     font-size: 20px;
+    line-height: 1;
     cursor: pointer;
     color: var(--text-muted);
 }
-
-.modal-body {
-    padding: 20px;
+.btn-close:hover {
+    color: var(--text-main);
 }
 
+.modal-body {
+    padding: 24px;
+}
+
+/* Modal Profiling (Chi tiết cột) */
 .modal-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 12px;
-    margin-bottom: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
 }
 
 .mini-stat {
     background: #f8fafc;
-    padding: 10px;
-    border-radius: 6px;
+    padding: 12px;
+    border-radius: 4px;
     border: 1px solid var(--border-color);
-    text-align: center;
 }
 
-.mini-stat span {
+.mini-stat .stat-label {
     display: block;
     font-size: 11px;
     color: var(--text-muted);
-    margin-bottom: 2px;
+    margin-bottom: 4px;
 }
 
-.mini-stat strong {
+.mini-stat .stat-value {
     font-size: 14px;
-    font-weight: 600;
-}
-
-.mini-stat.warning {
-    background-color: #fef2f2;
-    border-color: #fecaca;
-}
-
-.mini-stat.warning strong {
-    color: var(--danger);
-}
-
-.numeric-stats-section h4 {
-    font-size: 13px;
-    font-weight: 600;
-    margin-bottom: 10px;
+    font-weight: 500;
     color: var(--text-main);
+}
+
+.numeric-stats-section {
+    border-top: 1px dashed var(--border-color);
+    padding-top: 20px;
+}
+
+/* Auth Modal (Đăng nhập / Đăng ký) */
+.auth-box {
+    max-width: 400px;
+}
+
+.auth-switch {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+.auth-switch a {
+    color: var(--primary);
+    text-decoration: none;
+}
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================================================
+   DRAWER (LỊCH SỬ)
+   ========================================================================== */
+.drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 360px;
+    height: 100vh;
+    background-color: var(--bg-card);
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.05);
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    border-left: 1px solid var(--border-color);
+}
+
+.drawer:not(.hidden) {
+    transform: translateX(0);
+}
+
+.drawer-header {
+    padding: 16px 24px;
     border-bottom: 1px solid var(--border-color);
-    padding-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.drawer-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.drawer-body {
+    padding: 20px 24px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.history-item {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+.history-title {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+.history-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+.history-actions {
+    margin-top: 8px;
+}
+
+/* ==========================================================================
+   TOAST NOTIFICATION
+   ========================================================================== */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+    padding: 12px 16px;
+    border-radius: 4px;
+    box-shadow: var(--shadow-md);
+    border-left: 4px solid var(--primary);
+    font-size: 13px;
+    font-weight: 500;
+    animation: slideInRight 0.3s ease-out forwards;
+    min-width: 250px;
+}
+
+.toast.success { border-left-color: var(--success); }
+.toast.error { border-left-color: var(--danger); }
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }

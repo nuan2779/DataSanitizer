@@ -13,3 +13,9 @@ data/processed/*
 .env
 .env.*
 !.env.example
+
+# Database
+data/datasanitizer.db
+
+# Personal files
+m.text
