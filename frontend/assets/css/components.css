@@ -1,16 +1,20 @@
-/* Định dạng cho các mảnh ghép giao diện (UI Components) xuất hiện lặp đi lặp lại ở nhiều nơi trên trang web. */
-/* Nút bấm dạng Pill tiêu chuẩn Enterprise */
+/* ==========================================================================
+   UI COMPONENTS (BUTTONS, CARDS, FORMS)
+   ========================================================================== */
+
+/* Buttons - Đã loại bỏ bo tròn quá mức (pill), dùng bo 4px-6px chuyên nghiệp */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 20px;
-    font-size: 14px;
+    padding: 8px 16px;
+    font-size: 13px;
     font-weight: 500;
-    border-radius: var(--radius-pill);
+    border-radius: 4px;
     border: 1px solid transparent;
     cursor: pointer;
     transition: all 0.2s ease;
+    font-family: inherit;
 }
 
 .btn:disabled {
@@ -18,51 +22,47 @@
     cursor: not-allowed;
 }
 
-.btn-pill-primary {
+.btn-primary {
     background-color: var(--primary);
     color: white;
 }
 
-.btn-pill-primary:hover:not(:disabled) {
+.btn-primary:hover:not(:disabled) {
     background-color: var(--primary-hover);
 }
 
-.btn-pill-secondary {
+.btn-secondary {
     background-color: #f1f5f9;
     color: var(--text-main);
     border-color: var(--border-color);
 }
 
-.btn-pill-secondary:hover:not(:disabled) {
+.btn-secondary:hover:not(:disabled) {
     background-color: #e2e8f0;
 }
 
-.btn-pill-success {
-    background-color: var(--success);
-    color: white;
-}
-
-.btn-pill-outline {
+.btn-outline {
     background-color: transparent;
     color: var(--text-main);
     border-color: var(--border-color);
 }
 
-.btn-pill-outline:hover {
+.btn-outline:hover:not(:disabled) {
     background-color: #f8fafc;
-    border-color: var(--text-main);
+    border-color: #cbd5e1;
 }
 
 .btn-link {
     background: none;
     border: none;
-    color: var(--accent);
+    color: var(--primary);
     cursor: pointer;
     font-size: 13px;
     padding: 0;
+    font-family: inherit;
 }
 
-.btn-link:hover {
+.btn-link:hover:not(:disabled) {
     text-decoration: underline;
 }
 
@@ -71,7 +71,18 @@
 }
 
 .text-danger {
-    color: var(--danger);
+    color: var(--danger) !important;
+}
+
+/* Nút Điều hướng Next/Prev */
+.btn-nav {
+    background-color: transparent;
+    color: var(--text-muted);
+    padding: 6px 12px;
+}
+.btn-nav:hover:not(:disabled) {
+    color: var(--text-main);
+    background-color: #f1f5f9;
 }
 
 /* Thẻ Card */
@@ -84,7 +95,7 @@
 }
 
 .card-header {
-    background-color: #fafafa;
+    background-color: #f8fafc; /* Đồng bộ nền xám sáng */
     padding: 16px 24px;
     border-bottom: 1px solid var(--border-color);
     display: flex;
@@ -93,54 +104,52 @@
 }
 
 .card-header h2 {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
-}
-
-.badge {
-    background: #e2e8f0;
     color: var(--text-main);
-    padding: 2px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-}
-
-.badge-success {
-    background: #d1fae5;
-    color: #065f46;
 }
 
 .card-body {
     padding: 24px;
 }
 
-/* Forms */
+.card-footer {
+    padding: 12px 24px;
+    border-top: 1px solid var(--border-color);
+    background-color: #fafafa;
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Forms & Inputs */
 .form-group {
     margin-bottom: 16px;
 }
 
-.form-group label {
+.form-label {
     display: block;
     font-size: 13px;
     font-weight: 500;
     margin-bottom: 6px;
+    color: var(--text-main);
 }
 
 .form-control {
     width: 100%;
-    padding: 9px 12px;
+    padding: 8px 12px;
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: 4px;
+    font-size: 13px;
     font-family: inherit;
     outline: none;
     background-color: #fff;
+    color: var(--text-main);
+    transition: border-color 0.2s;
 }
 
 .form-control:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
 }
 
 .form-row {
@@ -149,33 +158,37 @@
     gap: 16px;
 }
 
-.info-box {
-    background-color: #f8fafc;
-    color: var(--text-main);
-    padding: 10px 14px;
-    border-radius: 6px;
-    font-size: 13px;
-    border-left: 3px solid var(--accent);
-    margin-bottom: 16px;
-    border: 1px solid var(--border-color);
+.text-muted {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
 }
 
-/* Checkbox Danh sách cột & Checkbox nằm ngang */
+/* Alerts & Notices */
+.alert {
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 16px;
+    border-left: 4px solid transparent;
+}
 
-.checkbox-inline {
+.alert-warning {
+    background-color: var(--warning-bg);
+    color: var(--warning-text);
+    border-color: var(--warning-border);
+    border-left-color: #eab308;
+}
+
+/* Checkbox & Radios */
+.checkbox-inline, .radio-label {
     display: flex;
     align-items: center;
     gap: 8px;
-}
-
-.checkbox-inline label {
-    margin-bottom: 0;
     font-size: 13px;
+    cursor: pointer;
 }
 
-.form-hint {
-    display: block;
-    margin-top: 4px;
-    font-size: 12px;
-    color: var(--text-muted);
+.radio-label input[type="radio"] {
+    cursor: pointer;
 }

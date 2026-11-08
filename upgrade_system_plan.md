@@ -212,16 +212,14 @@ Hệ thống cung cấp cơ sở dữ liệu SQLite (`data/datasanitizer.db`) ze
   * Khi nạp một file mới, người dùng chỉ cần mở danh sách **Recipe Library**, chọn công thức mong muốn và nhấn **"Áp dụng công thức"** $\rightarrow$ toàn bộ các bước được tự động điền sẵn và chạy ngay lập tức.
   * Hệ thống cũng cung cấp sẵn 3 Recipe tiêu chuẩn: *"Bộ lọc dữ liệu khuyết thiếu"*, *"Xử lý nhiễu & Ngoại lai"*, *"Chuẩn hóa dữ liệu số và Categorical"*.
 
-#### 4. Đánh Giá Độ Sạch & Sức Khỏe Dữ Liệu (Data Quality & Hygiene Score)
-* **Ý nghĩa:** Đo lường chính xác mức độ hoàn thiện của dữ liệu sau khi làm sạch theo chuẩn mực Khoa học Dữ liệu, không chạy mô hình dự đoán để tránh tranh cãi rò rỉ dữ liệu / overfitting.
+#### 4. ML-Readiness Benchmark & Baseline AI Testing
+* **Ý nghĩa:** Đánh giá độ sạch và chất lượng dữ liệu phục vụ trực tiếp cho Khoa học Dữ liệu & AI.
 * **Cách hoạt động:**
-  * Tại Bước 4 (sau khi làm sạch dữ liệu), hệ thống cung cấp bảng **"Thẻ Sức Khỏe Dữ Liệu (Data Health Card)"** với thang điểm 0 - 100 điểm:
-    1. **Độ đầy đủ (Completeness - 30 điểm):** Đo lường tỷ lệ các ô dữ liệu không bị Null/NaN (mục tiêu 0% ô trống).
-    2. **Khử trùng lặp (Deduplication - 20 điểm):** Kiểm định tỷ lệ bản ghi trùng lặp (0% duplicate).
-    3. **Tính đồng nhất kiểu dữ liệu (Type Uniformity - 25 điểm):** Tỷ lệ các cột đã được chuyển đổi về số học hoặc danh mục chuẩn.
-    4. **Mức độ bảo toàn dữ liệu (Data Retention - 25 điểm):** Bảo đảm không drop quá nhiều dòng làm suy giảm kích thước mẫu.
-    5. **Chẩn đoán nâng cao (Diagnostics):** Cảnh báo tự động các cột hằng số (Zero-variance columns) hoặc các cột văn bản có quá nhiều giá trị phân tán (High cardinality text).
-  * Trả về bảng tổng kết tóm tắt độ sạch và xếp hạng chất lượng dữ liệu (Xuất sắc / Tốt / Trung bình / Kém).
+  * Tại Bước 4 (sau khi làm sạch dữ liệu), hệ thống cung cấp tính năng **"Đánh giá Độ sẵn sàng cho Học máy (ML-Readiness Score)"**:
+    1. **Kiểm tra tiêu chí kỹ thuật:** Tỷ lệ giá trị thiếu còn lại (mục tiêu 0%), tỷ lệ các cột định danh/văn bản đã được mã hóa số học, tỷ lệ giữ lại của dữ liệu (Data Retention Rate).
+    2. **Chấm điểm:** Thang điểm 0 - 100 điểm với thanh đo trực quan (Health Meter).
+    3. **Chạy thử nghiệm Baseline Model siêu nhanh:** Sử dụng thuật toán `scikit-learn` có sẵn (hồi quy hoặc phân loại đơn giản) trên tập Train/Test đã cô lập để đo lường nhanh hiệu năng trước vs sau khi làm sạch.
+  * Trả về bảng tổng kết tóm tắt độ cải thiện của dữ liệu giúp sinh viên đưa thẳng số liệu này vào bài báo cáo nộp thầy.
 
 #### 5. Personal History & Cloud Audit Log (Lịch Sử Phiên Làm Việc Cá Nhân)
 * **Ý nghĩa:** Quản lý không gian làm việc cá nhân của từng sinh viên/người dùng.
