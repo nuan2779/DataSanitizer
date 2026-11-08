@@ -1,0 +1,76 @@
+\section{Introduction}
+
+\subsection{Background and Motivation}
+In modern data science and machine learning workflows, empirical studies consistently reveal that data practitioners spend between 60\% to 80\% of their total project lifecycle on exploratory data analysis (EDA), data cleaning, and feature preprocessing \cite{mckinney2010}. The fundamental premise of statistical learning, frequently encapsulated as ``Garbage In, Garbage Out'' (GIGO), dictates that even state-of-the-art predictive algorithms will yield degraded performance, high variance, or biased predictions if fed corrupted, noisy, or unstandardized inputs.
+
+Real-world tabular datasets—originating from heterogeneous sources such as transactional enterprise databases, web scrapers, IoT loggers, and legacy spreadsheets—are plagued with systemic anomalies:
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Missing and Null Inconsistencies:} Databases frequently employ divergent representations for missingness, including literal strings such as \texttt{"N/A"}, \texttt{"null"}, \texttt{"?"}, and whitespace dashes, preventing standard numerical routines from parsing columns reliably.
+  \item \textbf{Formatting and Currency Contamination:} Quantitative columns containing financial transactions (e.g., \texttt{"\$1,200.50"}, \texttt{"1,500 đ"}, \texttt{"2500 VND"}) are imported as generic textual objects rather than floating-point numeric types.
+  \item \textbf{Outliers and Distributional Skewness:} Extreme observations and recording errors severely distort sample variance, sample means, and normal distributions required by parametric models.
+  \item \textbf{Multicollinearity and Redundancy:} High correlation between predictive features ($|r| \ge 0.85$) destabilizes matrix inversion in linear estimators and inflates standard errors.
+  \item \textbf{Unencoded Categorical Data:} Non-numerical variables cannot be directly supplied to tensor operations without robust categorical encoding, which itself risks the dummy variable trap.
+\end{enumerate}
+
+Traditional workarounds rely heavily on ad-hoc Jupyter Notebook scripts written in Python or R. While flexible, this approach demands repetitive boilerplate code, lacks systematic reproducibility, and presents steep barriers to non-programming domain experts. Conversely, commercial solutions and emerging cloud-based Generative AI tools introduce severe data confidentiality vulnerabilities, high latency, non-deterministic transformations (hallucinations), and vendor lock-in.
+
+To address these critical challenges, our group conceived and developed \textbf{DataSanitizer}—a high-performance, browser-accessible, deterministic data sanitization and profiling studio. By unifying an asynchronous FastAPI back-end with a reactive vanilla JavaScript Single-Page Application (SPA), DataSanitizer provides intuitive automated data health diagnosis and an interactive, ordered transformation pipeline engine.
+
+\subsection{Objectives}
+The primary objective of the DataSanitizer project is to deliver a reliable, lightweight, and auditable web platform for automated tabular data preprocessing. Specifically, the project establishes four measurable technical milestones:
+\begin{itemize}
+  \item \textbf{Objective 1 (Automated Health Profiling):} Construct an automated dataset profiling service capable of ingesting tabular files (\texttt{.csv} and \texttt{.xlsx} up to 10~MB) and computing comprehensive statistical diagnostics—including sorted null-percentage distributions, duplicated row counts, unique cardinality, and pairwise multicollinearity warnings ($|r| \ge 0.85$)—within 2.0 seconds.
+  \item \textbf{Objective 2 (Ordered Enterprise Pipeline Execution):} Implement an in-memory transformation engine based on Pandas \cite{mckinney2010} and Scikit-learn \cite{pedregosa2011} that executes user-composed, ordered preprocessing pipelines featuring missing value imputation, robust outlier handling (IQR and Z-score winsorization/removal), categorical encoding (Label and One-Hot with collinearity avoidance), feature scaling, currency extraction, and floating-point rounding.
+  \item \textbf{Objective 3 (Defensive Client-Side Validation):} Design a reactive user interface featuring context-aware dynamic type guarding that automatically inspects data types and prevents users from executing mathematically impermissible operations (e.g., executing numeric scaling on text columns), eliminating unhandled HTTP 400 server rejections.
+  \item \textbf{Objective 4 (Transparent Auditability and Export):} Establish a verifiable audit logging mechanism that records pre- and post-processing row and column differentials alongside step-by-step transformation receipts, facilitating clean dataset downloads in standard CSV and JSON formats.
+\end{itemize}
+
+\subsection{Scope and Target Users}
+\textbf{Target Users:}
+DataSanitizer is engineered for data analysts, academic researchers, machine learning practitioners, and business intelligence specialists who require rapid, deterministic data preparation without constructing bespoke preprocessing scripts for every incoming dataset.
+
+\textbf{In-Scope Features:}
+\begin{itemize}
+  \item Multipart file ingestion supporting CSV and modern Excel (XLSX) structures with strict size and MIME verification.
+  \item Full-table health inspection and lazy-loaded single-column deep statistical inspection (mean, median, standard deviation, quartiles, IQR outlier count).
+  \item Interactive construction, reordering, and removal of transformation pipeline steps.
+  \item Robust currency string stripping and numerical casting via compiled regular expressions.
+  \item Automated transformation audit summary generation and clean file export.
+\end{itemize}
+
+\textbf{Out-of-Scope Features:}
+As an educational and departmental prototype, DataSanitizer currently excludes multi-tenant enterprise authentication (OAuth2/SSO), persistent relational database storage, long-term cloud object retention, and distributed cluster computation (e.g., Apache Spark).
+
+\subsection{Technologies}
+The technology stack for DataSanitizer was selected based on strict requirements for high execution speed, mathematical precision, standards compliance, and lightweight deployment footprints without external framework bloat. Table~\ref{tab:tech} summarizes the core technologies utilized.
+
+\begin{table}[ht]
+\centering\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Layer / Component} & \textbf{Technology} & \textbf{Technical Purpose}\\
+\midrule
+\textbf{Front-end UI}       & HTML5, Modern CSS3      & Structural semantics, modern cards, and responsive grid layout\\
+\textbf{Front-end Logic}    & Vanilla JavaScript (ES6+) & Modular architecture, Fetch API, DOM manipulation, type guarding\\
+\textbf{Back-end Framework} & FastAPI (Python 3.10+)  & Asynchronous ASGI routing, OpenAPI documentation, CORS\\
+\textbf{Data Validation}    & Pydantic v2             & Strict typed schema parsing, HTTP 422 payload protection\\
+\textbf{Analytical Core}    & Pandas \& NumPy         & Vectorized matrix manipulation, in-memory DataFrame transforms\\
+\textbf{Machine Learning}   & Scikit-learn            & Standard/MinMax feature scalers, Label and One-Hot encoders\\
+\textbf{Spreadsheet Parser} & OpenPyXL \& Zipfile     & Excel file decompression, structure and MIME verification\\
+\textbf{Automated Testing}  & Pytest \& HTTPX         & Contract testing, pipeline verification, edge-case coverage\\
+\textbf{Version Control}    & Git \& GitHub           & Collaborative branching, issue tracking, and code reviews\\
+\bottomrule
+\end{tabular}
+\caption{Technologies utilized across the DataSanitizer platform.}
+\label{tab:tech}
+\end{table}
+
+\subsection{Report Structure}
+The remainder of this report is organized as follows:
+\begin{itemize}
+  \item \textbf{Section~2 (Analysis and Design):} Details functional and non-functional requirements, UI/UX interaction workflows, multi-tiered system architecture, data storage strategy, and RESTful API specifications.
+  \item \textbf{Section~3 (Implementation):} Explains project modularity, key client-side type-guarding mechanisms, server-side data processing algorithms, and teamwork workflows.
+  \item \textbf{Section~4 (Results and Conclusion):} Demonstrates automated test suite validation, evaluates objective fulfillment, discusses known constraints, and outlines future architectural improvements.
+  \item \textbf{Appendix:} Provides comprehensive local execution instructions, API payload contracts, and ethical declarations regarding AI assistance.
+\end{itemize}

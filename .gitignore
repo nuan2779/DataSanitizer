@@ -14,8 +14,7 @@ data/processed/*
 .env.*
 !.env.example
 
-# Database
-data/datasanitizer.db
-
-# Personal files
-m.text
+# SQLite Database
+*.db
+*.sqlite3
+data/*.db

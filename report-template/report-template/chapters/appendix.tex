@@ -1,0 +1,90 @@
+\section{Appendix}
+
+\subsection{Setup and Run Instructions}
+The DataSanitizer project is designed for straightforward local deployment on modern Windows, macOS, or Linux systems with Python 3.10+ installed.
+
+\begin{lstlisting}[language=bash,caption={Local setup commands for Windows PowerShell.},label={lst:setup}]
+# 1. Clone repository from GitHub
+git clone https://github.com/nuan2779/DataSanitizer.git
+cd DataSanitizer
+
+# 2. Create and activate Python virtual environment
+py -3.11 -m venv .venv
+.\.venv\Scripts\activate
+
+# 3. Install core dependencies
+pip install -r requirements.txt
+
+# 4. Ensure local staging directories exist
+New-Item -ItemType Directory -Force -Path '.\data\raw', '.\data\processed' | Out-Null
+
+# 5. Launch Back-end Server (Terminal 1)
+python -m uvicorn backend.main:app --reload --port 8000
+
+# 6. Launch Front-end Static Server (Terminal 2)
+python -m http.server 5500 -d frontend
+\end{lstlisting}
+
+Once both servers are running:
+\begin{itemize}
+  \item Web Application Interface: \url{http://127.0.0.1:5500/index.html}
+  \item Interactive OpenAPI (Swagger) Documentation: \url{http://127.0.0.1:8000/docs}
+\end{itemize}
+
+\subsection{Verification and Test Execution}
+To verify the complete mathematical integrity and API contract compliance of the project, execute the automated test suite using \texttt{pytest}:
+
+\begin{lstlisting}[language=bash,caption={Automated test execution command.},label={lst:testrun}]
+pytest tests -v
+\end{lstlisting}
+
+The test harness evaluates 19 distinct unit and integration test scenarios across 6 test modules, confirming that all endpoints, validators, and transformation pipelines execute with zero failures.
+
+\subsection{Representative JSON Pipeline Payloads}
+
+\subsubsection{Sample Pipeline Execution Request (\texttt{POST /api/clean})}
+\begin{lstlisting}[language=JavaScript,caption={Sample request body submitted to /api/clean.},label={lst:payload}]
+{
+  "file_id": "92f7cba4-b9a5-4edd-b6da-57a0fe9b9b46",
+  "pipeline": [
+    { "step_type": "standardize_nulls", "config": {} },
+    { "step_type": "clean_numeric", "config": { "columns": ["Price"] } },
+    { "step_type": "missing_values", "config": { "columns": ["Price", "Distance"], "strategy": "mean" } },
+    { "step_type": "outlier", "config": { "columns": ["Price"], "method": "iqr", "threshold": 1.5, "handling": "cap" } },
+    { "step_type": "encoding", "config": { "columns": ["Type", "Method"], "method": "one_hot" } },
+    { "step_type": "scaling", "config": { "columns": ["Price", "Distance"], "method": "standard" } }
+  ]
+}
+\end{lstlisting}
+
+\subsubsection{Sample Audit Summary Response}
+\begin{lstlisting}[language=JavaScript,caption={Sample audit summary returned by /api/clean.},label={lst:auditresp}]
+{
+  "message": "Dataset processed and saved",
+  "file_id": "92f7cba4-b9a5-4edd-b6da-57a0fe9b9b46",
+  "audit_summary": {
+    "initial_rows": 13580,
+    "final_rows": 13580,
+    "rows_removed": 0,
+    "initial_columns": 21,
+    "final_columns": 28,
+    "columns_added_or_removed": 7,
+    "total_steps": 6,
+    "history": [
+      { "step": 1, "action": "standardize_nulls", "description": "Standardized dirty markers (?, N/A, null) to NaN." },
+      { "step": 2, "action": "clean_numeric", "description": "Converted currency/numeric strings in ['Price'] to float64." },
+      { "step": 3, "action": "missing_values", "description": "Imputed missing values in ['Price', 'Distance'] using mean." },
+      { "step": 4, "action": "outlier", "description": "Capped outliers in ['Price'] using IQR (threshold=1.5)." },
+      { "step": 5, "action": "encoding", "description": "Applied One-Hot Encoding to ['Type', 'Method'] (drop_first=True)." },
+      { "step": 6, "action": "scaling", "description": "Standardized features ['Price', 'Distance'] using StandardScaler." }
+    ]
+  }
+}
+\end{lstlisting}
+
+\subsection{Use of Artificial Intelligence (AI) Tools}
+In compliance with academic integrity guidelines established by the Faculty of Data Science and Artificial Intelligence (NEU), the team explicitly declares the utilization of AI assistance during project execution:
+\begin{itemize}
+  \item \textbf{Antigravity AI (Google DeepMind):} Employed as an interactive pair-programming assistant for debugging regex boundary edge-cases in currency string parsing, advising on two-tier defensive type validation in JavaScript, assisting in generating edge-case Pytest unit tests, and structuring the report within the institutional \texttt{fdareport.cls} XeLaTeX template.
+  \item \textbf{Verification and Authorship:} All algorithmic logic, architectural designs, API implementations, and written analytical content were reviewed, verified, tested, and validated by the team members. No AI-generated hallucinated content or unverified external code was incorporated into the production codebase.
+\end{itemize}

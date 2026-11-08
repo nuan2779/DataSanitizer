@@ -22,7 +22,7 @@ _AMBIGUOUS = re.compile(
     r"^\s*[+-]?\s*\$?\s*\d{1,3}\.\d{3}\s*(?:đ|₫|vnd|vnđ)\s*$",
     re.IGNORECASE,
 )
-_ALLOWED = {"standardize_nulls", "clean_numeric", "missing_values", "outlier", "encoding", "scaling", "round","drop_duplicates","optimize_memory"}
+_ALLOWED = {"standardize_nulls", "clean_numeric", "missing_values", "outlier", "encoding", "scaling", "round", "drop_duplicates", "optimize_memory"}
 
 
 def _selected_columns(df: pd.DataFrame, config: dict, *, allow_all: bool = False) -> list[str]:
@@ -64,8 +64,19 @@ def _convert_numeric_column(series: pd.Series, col_name: str) -> pd.Series:
     return pd.Series(converted, index=series.index, dtype="float64")
 
 
-def run_selected_pipeline(df: pd.DataFrame, pipeline: list[dict[str, Any]]):
-    """Return (clean_dataframe, DataCleaner audit summary)."""
+def run_selected_pipeline(
+    df: pd.DataFrame, 
+    pipeline: list[dict[str, Any]], 
+    *, 
+    is_ml_mode: bool = False, 
+    test_size: float = 0.2, 
+    random_state: int = 42,
+    return_split_dfs: bool = False
+):
+    """
+    Return (clean_dataframe, DataCleaner audit summary).
+    If return_split_dfs=True, returns (clean_dataframe, audit_summary, train_df, test_df).
+    """
     cleaner = DataCleaner(df)
     if not pipeline:
         raise ValueError("Pipeline must contain at least one step")
@@ -126,6 +137,10 @@ def run_selected_pipeline(df: pd.DataFrame, pipeline: list[dict[str, Any]]):
             cleaner.handle_outliers(columns, method, threshold, handling)
             continue
 
+        # CHE DO MACHINE LEARNING: Chia Train/Test truoc khi Encoding hoac Scaling de chong Data Leakage
+        if is_ml_mode and kind in {"encoding", "scaling"} and not cleaner.is_split:
+            cleaner.split_train_test(test_size=test_size, random_state=random_state)
+
         if kind == "encoding":
             method = config.get("method", "label")
             if method not in {"label", "one_hot"}:
@@ -151,4 +166,6 @@ def run_selected_pipeline(df: pd.DataFrame, pipeline: list[dict[str, Any]]):
                 raise ValueError("Rounding decimals must be between -10 and 10")
             cleaner.round_feature(columns, decimals, config.get("to_integer", False) is True)
 
+    if return_split_dfs:
+        return cleaner.df, cleaner.get_audit_summary(), cleaner.train_df, cleaner.test_df
     return cleaner.df, cleaner.get_audit_summary()

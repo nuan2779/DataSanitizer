@@ -74,16 +74,27 @@ def clean_file(request: CleanRequest):
         for column, count in df.isna().sum().items()
     }
 
-    # STEP 5: Frontend can submit an ordered pipeline. Older clients may
-    # still submit the legacy four cleaning options.
+    # STEP 5: Frontend can submit an ordered pipeline with optional ML mode.
     options = request.model_dump(mode="json", exclude={"file_id", "pipeline"})
+    train_df = None
+    test_df = None
+
     try:
         if request.pipeline is not None:
             pipeline = [step.model_dump(mode="json") for step in request.pipeline]
-            cleaned_df, audit_summary = run_selected_pipeline(df, pipeline)
+            is_ml_mode = (request.purpose == "ml")
+            test_size = max(0.05, min(0.5, 1.0 - request.train_ratio))
+
+            if is_ml_mode:
+                cleaned_df, audit_summary, train_df, test_df = run_selected_pipeline(
+                    df, pipeline, is_ml_mode=True, test_size=test_size, return_split_dfs=True
+                )
+            else:
+                cleaned_df, audit_summary = run_selected_pipeline(
+                    df, pipeline, is_ml_mode=False
+                )
         else:
             cleaned_df = clean_dataframe(df, options)
-            # Legacy adapter does not expose the DataCleaner audit log.
             audit_summary = {
                 "initial_rows": total_rows,
                 "final_rows": len(cleaned_df),
@@ -102,7 +113,6 @@ def clean_file(request: CleanRequest):
     except (ValueError, KeyError, TypeError) as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
-
     # Kiem tra ket qua tu Data Engine
     if not isinstance(cleaned_df, pd.DataFrame):
         raise HTTPException(
@@ -111,14 +121,17 @@ def clean_file(request: CleanRequest):
         )
 
     # BƯỚC 7: Luu du lieu sau xu ly
-    output_path = (
-        PROCESSED_DIR / f"{request.file_id}.csv"
-    )
+    output_path = PROCESSED_DIR / f"{request.file_id}.csv"
     try:
-        cleaned_df.to_csv(
-            output_path,
-            index=False
-        )
+        cleaned_df.to_csv(output_path, index=False)
+
+        # Luu rieng 2 tap Train va Test neu chay o che do Machine Learning
+        if train_df is not None and test_df is not None:
+            train_path = PROCESSED_DIR / f"{request.file_id}_train_cleaned.csv"
+            test_path = PROCESSED_DIR / f"{request.file_id}_test_cleaned.csv"
+            train_df.to_csv(train_path, index=False)
+            test_df.to_csv(test_path, index=False)
+
     except OSError:
         raise HTTPException(
             status_code=500,
@@ -126,7 +139,7 @@ def clean_file(request: CleanRequest):
         )
 
     # BƯỚC 8: Tra ket qua ve Frontend
-    return {
+    response_data = {
         "message": "Dataset processed and saved",
         "file_id": str(request.file_id),
 
@@ -147,5 +160,16 @@ def clean_file(request: CleanRequest):
 
         "cleaning_applied": True,
         "audit_summary": audit_summary,
-        "options": options
+        "options": options,
+        "purpose": request.purpose
     }
+
+    if train_df is not None and test_df is not None:
+        response_data["ml_split"] = {
+            "train_rows": len(train_df),
+            "test_rows": len(test_df),
+            "train_file": f"{request.file_id}_train_cleaned.csv",
+            "test_file": f"{request.file_id}_test_cleaned.csv"
+        }
+
+    return response_data

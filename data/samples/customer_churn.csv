@@ -1,0 +1,1001 @@
+customerID,gender,SeniorCitizen,Partner,tenure,PhoneService,InternetService,Contract,MonthlyCharges,TotalCharges,Churn
+4741-AA,Female,0,No,71,Yes,DSL,Two year,59.1,4201.24,No
+1062-BD,Female,0,No,7,No,No,Month-to-month,29.04,206.23,Yes
+5223-CG,Male,0,No,72,Yes,DSL,Month-to-month,60.03,4324.95,Yes
+2551-DJ,Male,0,No,67,Yes,No,Month-to-month,24.44,1630.87,No
+7306-EM,Male,0,No,10,Yes,DSL,One year,60.68,606.05,No
+4005-FP,Female,0,No,71,Yes,No,One year,26.35,1868.9,No
+4322-GS,Female,0,No,53,Yes,DSL,Month-to-month,65.8,3487.91,No
+8997-HV,Male,0,Yes,57,Yes,Fiber optic,Month-to-month,81.66,4657.26,Yes
+9486-IY,Male,0,Yes,27,Yes,Fiber optic,Month-to-month,79.38,2140.69,No
+1882-JB,Female,0,No,54,Yes,Fiber optic,Month-to-month,91.3,4927.82,No
+1393-KE,Female,0,No,4,Yes,DSL,Month-to-month,40.38,164.92,No
+3739-LH,Male,1,No,23,Yes,Fiber optic,Two year,91.97,2109.66,No
+5167-MK,Female,0,No,48,Yes,Fiber optic,Month-to-month,70.05,3358.67,No
+5413-NN,Male,0,No,42,Yes,DSL,Month-to-month,63.41,2663.25,Yes
+5690-OQ,Male,0,No,3,No,DSL,Two year,62.68,192.54,No
+5474-PT,Female,1,Yes,3,Yes,Fiber optic,Month-to-month,108.85,321.71,Yes
+5231-QW,Female,0,Yes,28,Yes,DSL,One year,40.13,1132.59,No
+3777-RZ,Female,0,No,63,Yes,Fiber optic,Month-to-month,83.99,5284.62,No
+2401-SC,Male,0,No,31,Yes,DSL,Month-to-month,61.15,1903.4,Yes
+9086-TF,Female,0,No,10,No,Fiber optic,Two year,90.67,912.7,No
+1905-UI,Female,0,Yes,49,Yes,DSL,One year,59.49,2907.86,No
+1529-VL,Male,1,No,21,Yes,Fiber optic,Month-to-month,91.46,1912.5,No
+9011-WO,Male,0,Yes,53,No,DSL,One year,45.44,2411.92,No
+8078-XR,Female,0,Yes,54,Yes,DSL,Two year,54.27,2928.69,No
+5618-YU,Male,0,Yes,57,Yes,DSL,Month-to-month,59.61,3392.74,No
+4721-ZX,Male,0,No,20,No,No,Month-to-month,25.24,513.86,Yes
+9578-AA,Male,1,No,49,Yes,DSL,Two year,45.56,2226.47,No
+3621-BD,Female,0,Yes,7,No,Fiber optic,Month-to-month,107.28,747.33,No
+7726-CG,Female,0,Yes,29,Yes,DSL,One year,47.16,1364.6,No
+1572-DJ,Male,0,Yes,48,No,DSL,One year,46.8,2232.4,No
+1643-EM,Male,0,Yes,13,Yes,Fiber optic,One year,88.38,1149.4,No
+5071-FP,Male,0,No,3,No,Fiber optic,Month-to-month,77.46,227.82,Yes
+9071-GS,Female,0,Yes,2,Yes,No,Month-to-month,18.15,40.35,Yes
+8013-HV,Male,0,No,16,Yes,No,One year,20.06,325.67,No
+6605-IY,Male,0,Yes,6,Yes,Fiber optic,Month-to-month,74.13,445.94,No
+6682-JB,Female,0,No,45,Yes,Fiber optic,Month-to-month,77.91,3507.17,No
+1554-KE,Male,0,Yes,71,Yes,Fiber optic,Month-to-month,89.19,6333.31,No
+4393-LH,Female,0,No,5,Yes,DSL,Month-to-month,66.34,328.2,No
+5568-MK,Female,0,No,56,Yes,No,Two year,25.03,1398.61,No
+4459-NN,Female,0,No,71,Yes,Fiber optic,Month-to-month,97.26,6912.08,Yes
+2121-OQ,Male,1,Yes,32,Yes,Fiber optic,Two year,83.56,2677.6,No
+6530-PT,Male,0,No,49,No,DSL,Month-to-month,58.85,2884.68,Yes
+6109-QW,Female,1,Yes,13,Yes,DSL,One year,57.47,750.11,No
+1055-RZ,Male,1,No,30,Yes,No,Month-to-month,20.72,621.29,Yes
+9849-SC,Female,0,No,25,Yes,DSL,One year,66.61,1666.17,No
+9451-TF,Male,0,Yes,60,Yes,Fiber optic,One year,89.73,5386.77,No
+5736-UI,Female,0,No,59,Yes,DSL,Month-to-month,51.15,3007.48,No
+3609-VL,Female,0,No,28,Yes,Fiber optic,Two year,83.05,2329.93,No
+4909-WO,Male,0,Yes,58,Yes,DSL,Month-to-month,44.57,2589.23,Yes
+1403-XR,Male,0,No,20,Yes,Fiber optic,One year,77.31,1542.3,No
+1794-YU,Male,0,No,34,Yes,DSL,Two year,43.97,1501.2,No
+2561-ZX,Male,0,No,5,Yes,No,Two year,25.04,114.11,Yes
+8423-AA,Female,0,No,60,Yes,Fiber optic,Two year,104.52,6272.96,No
+7795-BD,Female,0,Yes,43,Yes,DSL,Month-to-month,49.2,2115.8,No
+6492-CG,Male,0,No,57,Yes,Fiber optic,Month-to-month,99.75,5684.2,Yes
+5999-DJ,Male,0,No,57,Yes,DSL,Month-to-month,57.35,3269.05,No
+7198-EM,Female,0,No,54,Yes,DSL,Month-to-month,69.63,3762.93,No
+6197-FP,Male,0,No,45,Yes,No,One year,23.64,1054.77,No
+4562-GS,Male,1,No,37,Yes,Fiber optic,Month-to-month,84.26,3122.62,Yes
+2694-HV,Male,0,No,48,Yes,DSL,One year,49.74,2385.47,No
+1855-IY,Male,0,No,54,Yes,DSL,Month-to-month,45.49,2461.54,Yes
+5755-JB,Female,0,No,48,Yes,DSL,Month-to-month,44.29,2129.14,Yes
+4621-KE,Female,0,Yes,6,Yes,No,One year,18.04,106.08,No
+5206-LH,Male,0,Yes,34,No,DSL,Month-to-month,69.6,2366.0,No
+2038-MK,Female,1,Yes,63,Yes,No,Two year,28.01,1764.53,No
+5596-NN,Male,0,Yes,48,Yes,No,Month-to-month,22.74,1099.55,Yes
+5513-OQ,Male,1,No,23,No,DSL,One year,52.71,1206.63,Yes
+5370-PT,Male,0,No,13,Yes,DSL,Month-to-month,45.59,590.48,No
+8661-QW,Female,0,Yes,47,Yes,No,Month-to-month,25.47,1189.18,Yes
+6316-RZ,Female,0,Yes,44,Yes,DSL,One year,43.87,1930.9,No
+4447-SC,Female,1,Yes,32,Yes,DSL,Two year,53.7,1715.28,No
+6850-TF,Female,0,No,26,Yes,DSL,Month-to-month,48.15,1249.39,Yes
+8230-UI,Female,0,No,53,Yes,Fiber optic,Month-to-month,95.77,5083.23,No
+4432-VL,Male,0,Yes,14,Yes,Fiber optic,Month-to-month,70.81,987.22,Yes
+8116-WO,Male,0,Yes,52,Yes,DSL,Month-to-month,52.84,2746.88,No
+6229-XR,Female,0,Yes,36,Yes,DSL,Two year,69.5,2499.71,No
+3241-YU,Female,1,Yes,8,Yes,No,One year,29.12,230.98,Yes
+8818-ZX,Female,0,Yes,40,Yes,Fiber optic,Month-to-month,104.91,4210.26,No
+7998-AA,Male,0,No,22,Yes,Fiber optic,Month-to-month,81.89,1792.91,No
+5894-BD,Female,0,Yes,16,Yes,Fiber optic,One year,80.3,1288.02,No
+7444-CG,Male,0,No,60,Yes,Fiber optic,Month-to-month,85.26,5127.74,Yes
+4015-DJ,Male,0,Yes,60,No,Fiber optic,One year,84.25,5060.4,No
+7815-EM,Female,0,Yes,10,Yes,DSL,Month-to-month,65.7,657.23,Yes
+5864-FP,Male,0,No,25,Yes,DSL,One year,42.27,1050.89,No
+5234-GS,Male,0,Yes,31,Yes,Fiber optic,Month-to-month,94.85,2946.87,No
+5956-HV,Female,1,No,21,Yes,Fiber optic,Two year,76.57,1612.66,No
+3339-IY,Male,1,No,33,Yes,No,Month-to-month,23.42,765.21,No
+9526-JB,Female,0,Yes,31,Yes,DSL,Month-to-month,68.86,2133.06,Yes
+7842-KE,Male,0,Yes,21,Yes,No,Two year,22.82,473.19,No
+2858-LH,Female,1,No,36,Yes,No,Month-to-month,20.24,714.34,No
+2207-MK,Female,0,No,65,No,DSL,Month-to-month,61.2,3971.85,No
+1924-NN,Male,0,Yes,4,Yes,Fiber optic,Month-to-month,70.7,283.33,Yes
+3945-OQ,Female,1,No,68,Yes,Fiber optic,Month-to-month,94.77,6447.26,No
+6381-PT,Male,0,Yes,4,No,No,Two year,18.49,72.34,No
+6429-QW,Male,0,No,9,Yes,Fiber optic,One year,92.69,841.08,No
+5439-RZ,Female,0,Yes,30,Yes,Fiber optic,Month-to-month,105.97,3184.25,Yes
+8591-SC,Male,0,No,45,Yes,Fiber optic,One year,108.8,4895.37,No
+6892-TF,Female,0,No,4,Yes,DSL,Month-to-month,49.14,195.3,No
+6945-UI,Male,0,Yes,69,Yes,DSL,Two year,41.07,2835.74,No
+8691-VL,Male,0,No,23,Yes,Fiber optic,Month-to-month,73.35,1686.96,No
+5027-WO,Female,0,No,16,Yes,Fiber optic,One year,76.43,1215.75,No
+5295-XR,Male,0,No,22,Yes,Fiber optic,Month-to-month,99.33,2183.78,No
+8479-YU,Male,0,No,72,Yes,Fiber optic,Month-to-month,87.25,6285.33,No
+5661-ZX,Male,0,No,48,Yes,DSL,Month-to-month,64.89,3121.29,Yes
+3398-AA,Male,0,No,62,Yes,Fiber optic,Month-to-month,82.34,5109.88,No
+1027-BD,Male,0,No,60,Yes,DSL,One year,64.44,3868.07,No
+2898-CG,Male,0,Yes,5,No,Fiber optic,Month-to-month,77.41,394.34,Yes
+8300-DJ,Male,0,No,7,Yes,No,Two year,23.6,167.32,No
+3427-EM,Male,0,No,51,Yes,Fiber optic,Month-to-month,76.95,3924.01,No
+2625-FP,Female,0,Yes,65,Yes,DSL,One year,40.26,2624.29,No
+3036-GS,Male,0,No,9,Yes,DSL,Two year,65.01,588.69,No
+4355-HV,Male,0,No,45,Yes,Fiber optic,One year,79.25,3572.76,No
+8046-IY,Female,0,Yes,47,Yes,Fiber optic,Two year,105.56,4955.38,No
+4720-JB,Female,0,No,67,Yes,Fiber optic,Two year,72.2,4833.1,No
+5902-KE,Female,1,No,24,Yes,DSL,Month-to-month,55.8,1335.11,No
+6236-LH,Male,0,Yes,10,Yes,Fiber optic,One year,91.95,920.41,Yes
+9280-MK,Female,0,Yes,48,Yes,Fiber optic,Month-to-month,89.24,4292.64,No
+9313-NN,Female,0,No,35,Yes,DSL,Month-to-month,63.2,2206.31,Yes
+5961-OQ,Male,0,No,54,Yes,Fiber optic,Month-to-month,70.29,3800.19,No
+1032-PT,Male,1,Yes,71,Yes,DSL,One year,41.14,2914.93,No
+5698-QW,Female,0,No,16,Yes,Fiber optic,Month-to-month,96.35,1552.19,Yes
+9887-RZ,Female,0,Yes,53,Yes,No,Month-to-month,28.14,1483.44,No
+4841-SC,Male,0,Yes,40,Yes,Fiber optic,Month-to-month,88.82,3556.5,No
+9716-TF,Male,0,Yes,20,No,Fiber optic,Two year,80.66,1617.6,No
+6444-UI,Male,0,No,69,Yes,Fiber optic,Month-to-month,83.79,5784.61,No
+7177-VL,Male,0,Yes,45,Yes,DSL,Month-to-month,41.22,1850.51,No
+9438-WO,Male,0,Yes,6,Yes,Fiber optic,Month-to-month,105.31,626.58,No
+4926-XR,Female,0,Yes,69,Yes,Fiber optic,Two year,77.37,5344.89,No
+3959-YU,Male,0,No,49,Yes,DSL,Two year,53.13,2608.61,No
+3227-ZX,Male,0,No,39,Yes,DSL,One year,56.64,2214.13,No
+2393-AA,Male,0,No,2,Yes,Fiber optic,Two year,78.6,162.98,No
+3023-BD,Male,0,Yes,39,Yes,DSL,Month-to-month,58.32,2266.8,No
+7064-CG,Male,0,No,21,Yes,DSL,Two year,46.74,973.71,No
+8562-DJ,Female,0,No,40,No,Fiber optic,Month-to-month,106.69,4264.24,Yes
+7639-EM,Male,0,Yes,54,Yes,DSL,Month-to-month,58.85,3175.5,No
+3478-FP,Female,1,Yes,12,Yes,No,Month-to-month,19.82,234.91,No
+8374-GS,Male,0,No,37,Yes,DSL,One year,58.63,2170.7,No
+8929-HV,Female,1,No,38,Yes,Fiber optic,One year,105.16,4001.66,No
+5459-IY,Female,0,Yes,15,Yes,Fiber optic,Month-to-month,100.19,1501.38,No
+7453-JB,Male,0,No,7,Yes,Fiber optic,Two year,107.34,747.3,No
+9418-KE,Male,0,Yes,50,Yes,DSL,Month-to-month,56.15,2811.56,No
+2266-LH,Male,0,Yes,65,Yes,No,Month-to-month,20.59,1336.94,No
+3057-MK,Male,0,No,67,Yes,Fiber optic,Month-to-month,97.6,6539.74,No
+8996-NN,Male,0,No,44,Yes,Fiber optic,One year,104.79,4609.1,No
+3941-OQ,Female,0,No,31,Yes,DSL,Two year,63.08,1957.18,No
+1156-PT,Male,0,No,43,Yes,DSL,Month-to-month,61.21,2626.96,No
+7998-QW,Male,0,Yes,48,Yes,Fiber optic,One year,100.98,4850.67,No
+1760-RZ,Female,0,No,61,Yes,DSL,Month-to-month,56.4,3440.24,No
+9965-SC,Male,0,No,10,Yes,Fiber optic,One year,83.14,827.58,No
+7407-TF,Female,0,No,29,Yes,DSL,Two year,69.88,2029.17,No
+7731-UI,Male,0,Yes,48,Yes,Fiber optic,Month-to-month,107.4,5151.37,No
+1957-VL,Female,0,No,62,Yes,No,Two year,25.15,1555.69,No
+1253-WO,Male,0,No,13,Yes,Fiber optic,One year,90.82,1174.65,Yes
+8885-XR,Female,1,Yes,44,No,Fiber optic,Month-to-month,85.65,3760.08,Yes
+2569-YU,Female,0,Yes,47,Yes,Fiber optic,Two year,108.4,5097.47,No
+8493-ZX,Male,1,Yes,64,Yes,Fiber optic,Month-to-month,83.4,5343.43,No
+8505-AA,Male,1,Yes,53,Yes,No,Month-to-month,18.42,974.01,Yes
+7883-BD,Male,0,Yes,44,Yes,No,Month-to-month,26.41,1158.05,No
+6006-CG,Female,0,No,28,Yes,Fiber optic,Month-to-month,87.42,2438.7,Yes
+6768-DJ,Female,0,Yes,2,Yes,DSL,Two year,49.68,88.49,No
+5916-EM,Female,0,Yes,57,Yes,Fiber optic,One year,99.91,5698.5,No
+8541-FP,Male,0,Yes,57,Yes,DSL,Two year,44.37,2519.22,No
+7707-GS,Male,0,Yes,34,No,Fiber optic,Month-to-month,100.2,3401.08,No
+4200-HV,Female,0,Yes,58,Yes,Fiber optic,Month-to-month,79.09,4588.64,No
+7557-IY,Male,1,Yes,52,Yes,Fiber optic,Month-to-month,105.53,5488.01,Yes
+8547-JB,Female,0,Yes,29,Yes,No,Month-to-month,23.61,686.31,No
+6088-KE,Male,0,Yes,35,Yes,Fiber optic,Two year,93.05,3256.78,No
+1000-LH,Male,0,No,48,Yes,DSL,One year,56.33,2702.06,No
+1166-MK,Female,1,No,33,No,No,Month-to-month,22.31,730.54,No
+3063-NN,Male,0,No,9,Yes,DSL,Two year,66.6,596.23,No
+9303-OQ,Male,0,Yes,48,No,Fiber optic,One year,93.85,4503.35,No
+2125-PT,Male,0,Yes,67,Yes,DSL,Month-to-month,54.2,3621.95,Yes
+3641-QW,Male,0,Yes,36,No,DSL,Two year,69.14,2485.11,No
+2429-RZ,Male,0,No,71,Yes,No,Month-to-month,20.33,1441.57,Yes
+7101-SC,Female,0,Yes,44,Yes,DSL,Month-to-month,51.15,2247.16,Yes
+2634-TF,Male,0,Yes,60,Yes,Fiber optic,Month-to-month,70.77,4244.49,Yes
+9862-UI,Female,0,Yes,63,Yes,DSL,Month-to-month,43.43,2739.43,No
+4111-VL,Male,0,No,5,Yes,No,Month-to-month,26.15,134.71,No
+2690-WO,Male,1,No,40,Yes,No,Month-to-month,24.58,990.76,No
+8715-XR,Female,0,Yes,19,Yes,DSL,Month-to-month,69.07,1304.79,No
+7640-YU,Female,1,No,47,Yes,DSL,One year,63.2,2968.3,No
+4957-ZX,Male,0,Yes,65,No,Fiber optic,Two year,84.44,5494.74,No
+1280-AA,Male,0,Yes,67,No,DSL,One year,41.2,2751.67,No
+5446-BD,Female,0,No,18,Yes,Fiber optic,Month-to-month,96.31,1727.7,Yes
+3808-CG,Female,0,No,50,Yes,DSL,Month-to-month,50.21,2507.42,No
+6402-DJ,Female,0,No,30,Yes,DSL,Month-to-month,49.36,1491.02,No
+2964-EM,Female,0,No,66,Yes,Fiber optic,Month-to-month,103.74,6841.97,Yes
+1822-FP,Male,0,Yes,5,Yes,DSL,One year,57.55,293.17,Yes
+3061-GS,Male,0,Yes,42,Yes,No,One year,28.04,1177.54,No
+6175-HV,Male,0,No,5,Yes,DSL,One year,66.67,327.62,No
+4865-IY,Male,0,No,50,Yes,DSL,One year,69.8,3504.0,No
+5294-JB,Male,0,Yes,58,Yes,No,Month-to-month,25.36,1471.85,No
+1077-KE,Female,0,Yes,8,Yes,Fiber optic,Month-to-month,83.35,668.68,No
+3159-LH,Female,0,Yes,31,Yes,Fiber optic,One year,88.85,2757.02,Yes
+4187-MK,Female,0,Yes,12,Yes,DSL,Month-to-month,55.72,670.92,Yes
+8135-NN,Male,0,No,21,Yes,Fiber optic,Month-to-month,73.68,1558.04,Yes
+1789-OQ,Female,0,No,62,Yes,Fiber optic,Month-to-month,97.44,6050.21,Yes
+2563-PT,Male,0,No,33,Yes,DSL,Month-to-month,47.86,1574.72,Yes
+2322-QW,Male,0,Yes,26,Yes,Fiber optic,Month-to-month,104.59,2729.43,No
+7673-RZ,Male,0,Yes,40,Yes,Fiber optic,Two year,97.79,3908.1,No
+2502-SC,Female,0,No,65,Yes,DSL,Two year,56.85,3696.86,No
+8116-TF,Male,0,No,59,Yes,Fiber optic,Month-to-month,94.67,5578.27,No
+2659-UI,Male,1,No,15,Yes,Fiber optic,Month-to-month,73.75,1111.43,No
+4062-VL,Female,0,Yes,1,Yes,DSL,One year,42.2,40.66,No
+9316-WO,Male,0,No,11,Yes,Fiber optic,Month-to-month,109.66,1200.51,No
+4062-XR,Female,1,Yes,55,Yes,DSL,Month-to-month,41.2,2271.94,No
+9710-YU,Male,1,No,2,No,Fiber optic,Month-to-month,97.31,201.8,Yes
+3070-ZX,Female,0,No,65,Yes,Fiber optic,Month-to-month,79.49,5174.2,No
+5257-AA,Male,0,No,44,Yes,Fiber optic,One year,87.5,3842.39,No
+3553-BD,Male,1,Yes,16,Yes,No,Two year,23.98,391.55,No
+2044-CG,Female,0,Yes,22,Yes,DSL,Month-to-month,62.39,1371.08,Yes
+6957-DJ,Male,1,Yes,18,Yes,Fiber optic,Month-to-month,80.62,1461.42,No
+5578-EM,Female,0,Yes,47,Yes,Fiber optic,Month-to-month,87.82,4130.66,No
+6621-FP,Male,0,Yes,30,Yes,Fiber optic,Month-to-month,98.49,2955.96,Yes
+2966-GS,Female,0,Yes,10,Yes,Fiber optic,Two year,85.04,850.44,No
+5969-HV,Male,0,No,58,Yes,DSL,One year,62.98,3652.77,Yes
+3250-IY,Male,0,Yes,62,Yes,DSL,Month-to-month,53.36,3304.92,Yes
+9333-JB,Male,1,No,6,Yes,DSL,One year,50.38,296.94,Yes
+3014-KE,Female,0,Yes,67,Yes,No,Two year,28.27,1892.28,No
+5624-LH,Female,0,No,41,Yes,DSL,Two year,62.46,2566.81,Yes
+4608-MK,Female,0,No,43,Yes,No,Month-to-month,26.26,1122.2,No
+7719-NN,Female,0,Yes,18,Yes,Fiber optic,Month-to-month,76.57,1384.96,Yes
+4925-OQ,Female,0,No,58,Yes,DSL,One year,55.72,3232.48,No
+6868-PT,Male,0,Yes,60,Yes,Fiber optic,Month-to-month,74.84,4494.31,No
+1804-QW,Male,0,Yes,27,Yes,Fiber optic,Two year,107.2,2898.57,No
+2334-RZ,Male,0,Yes,68,Yes,No,One year,27.19,1853.56,No
+1667-SC,Male,0,Yes,22,Yes,DSL,Two year,50.85,1118.81,No
+1384-TF,Male,0,No,24,Yes,DSL,Month-to-month,67.97,1631.54,No
+4254-UI,Female,1,Yes,40,Yes,DSL,Two year,58.92,2361.27,No
+4440-VL,Male,0,No,66,Yes,DSL,Month-to-month,68.02,4484.11,Yes
+3748-WO,Female,0,No,40,Yes,Fiber optic,Two year,107.83,4307.23,No
+1012-XR,Male,0,No,6,Yes,No,Month-to-month,28.73,170.06,Yes
+8726-YU,Female,0,Yes,18,Yes,DSL,Month-to-month,46.93,846.18,Yes
+6403-ZX,Female,0,No,30,Yes,Fiber optic,One year,71.85,2165.1,No
+8454-AA,Female,0,Yes,21,Yes,Fiber optic,Month-to-month,91.99,1932.03,No
+7151-BD,Male,0,No,62,Yes,DSL,Month-to-month,54.85,3410.7,No
+7230-CG,Male,0,Yes,10,Yes,DSL,Two year,54.14,543.98,No
+1100-DJ,Male,0,Yes,13,Yes,Fiber optic,Month-to-month,80.29,1041.5,No
+5978-EM,Male,0,Yes,9,Yes,No,One year,25.31,233.53,No
+7534-FP,Female,0,Yes,68,Yes,Fiber optic,Month-to-month,86.45,5877.39,No
+5704-GS,Female,0,No,39,Yes,DSL,Two year,68.26,2663.4,No
+1449-HV,Female,0,No,24,Yes,DSL,One year,66.31,1584.76,No
+4167-IY,Female,0,Yes,34,Yes,DSL,Month-to-month,46.26,1565.3,No
+6380-JB,Male,1,No,61,Yes,Fiber optic,Month-to-month,92.33,5634.9,Yes
+9312-KE,Female,1,Yes,41,Yes,Fiber optic,One year,104.45,4287.97,No
+4856-LH,Male,0,Yes,5,Yes,DSL,Month-to-month,52.0,269.73,Yes
+2075-MK,Female,0,No,50,Yes,Fiber optic,Month-to-month,81.28,4059.95,No
+5413-NN,Female,0,Yes,4,Yes,Fiber optic,One year,91.91,374.96,No
+1701-OQ,Female,1,Yes,51,Yes,Fiber optic,Month-to-month,73.33,3746.4,No
+4348-PT,Male,0,Yes,52,Yes,No,Month-to-month,19.05,988.14,No
+9185-QW,Male,0,Yes,39,Yes,DSL,One year,69.47,2716.27,No
+7836-RZ,Female,0,Yes,8,No,No,Month-to-month,28.93,236.16,Yes
+9212-SC,Female,0,No,45,Yes,DSL,Month-to-month,54.64,2464.51,No
+6834-TF,Female,1,No,28,Yes,DSL,Month-to-month,63.22,1781.0,No
+3249-UI,Male,0,No,27,Yes,No,One year,28.83,783.91,No
+4222-VL,Male,0,Yes,65,Yes,No,One year,21.41,1380.97,No
+5991-WO,Male,0,Yes,34,Yes,Fiber optic,One year,102.0,3469.61,No
+9118-XR,Female,0,Yes,62,Yes,Fiber optic,Month-to-month,103.37,6401.11,No
+3551-YU,Male,0,Yes,62,Yes,Fiber optic,Month-to-month,82.17,5095.3,No
+9257-ZX,Female,0,Yes,38,Yes,Fiber optic,Month-to-month,88.76,3373.35,No
+9102-AA,Male,1,Yes,26,Yes,DSL,Month-to-month,57.95,1503.78,No
+9663-BD,Female,0,No,24,Yes,Fiber optic,Two year,72.11,1725.5,No
+3214-CG,Female,0,Yes,39,Yes,Fiber optic,Month-to-month,105.57,4114.58,No
+9534-DJ,Male,1,No,21,No,Fiber optic,Month-to-month,78.77,1652.48,Yes
+1717-EM,Female,0,Yes,47,Yes,Fiber optic,Month-to-month,97.14,4564.92,No
+3460-FP,Female,0,No,48,No,Fiber optic,One year,93.3,4478.93,No
+4255-GS,Female,0,Yes,13,Yes,No,One year,20.92,274.89,No
+6790-HV,Male,0,No,3,Yes,Fiber optic,One year,104.37,311.55,No
+6334-IY,Female,0,No,32,Yes,No,Two year,27.7,892.8,No
+7830-JB,Male,1,Yes,35,Yes,DSL,Month-to-month,49.23,1722.86,No
+8754-KE,Male,0,Yes,19,Yes,Fiber optic,Month-to-month,91.53,1743.69,No
+7940-LH,Female,0,No,14,Yes,Fiber optic,Month-to-month,102.45,1432.78,No
+4632-MK,Male,0,Yes,48,Yes,Fiber optic,One year,78.66,3789.4,No
+1014-NN,Female,0,Yes,68,Yes,Fiber optic,One year,102.12,6946.5,No
+9208-OQ,Male,0,Yes,45,Yes,Fiber optic,Month-to-month,85.99,3877.73,No
+2949-PT,Female,0,No,19,Yes,No,One year,29.02,547.91,No
+9272-QW,Male,1,Yes,64,Yes,Fiber optic,One year,100.36,6420.8,No
+7799-RZ,Female,0,No,66,Yes,DSL,Two year,59.78,3944.22,Yes
+7579-SC,Female,0,No,66,No,Fiber optic,One year,90.59,5991.3,No
+4079-TF,Female,0,Yes,45,Yes,Fiber optic,One year,72.56,3264.14,No
+9127-UI,Female,0,No,67,No,DSL,Month-to-month,41.86,2800.5,No
+9971-VL,Male,0,Yes,69,Yes,No,One year,27.58,1909.52,No
+2824-WO,Male,0,Yes,3,Yes,Fiber optic,Two year,92.24,277.01,Yes
+7329-XR,Female,0,No,38,Yes,Fiber optic,Month-to-month,86.19,3274.13,No
+4864-YU,Male,0,No,42,Yes,DSL,One year,44.47,1864.69,Yes
+3513-ZX,Female,0,No,40,Yes,DSL,One year,69.55,2784.44,No
+7710-AA,Female,0,No,50,Yes,Fiber optic,Month-to-month,88.24,4417.31,Yes
+9516-BD,Male,0,No,35,No,DSL,One year,63.14,2213.84,No
+4490-CG,Male,0,Yes,24,Yes,Fiber optic,Month-to-month,104.02,2494.08,Yes
+9868-DJ,Female,0,No,17,Yes,DSL,Two year,45.52,768.9,No
+7125-EM,Male,0,Yes,40,Yes,Fiber optic,Two year,71.19,2827.5,No
+9079-FP,Female,0,Yes,66,Yes,DSL,Month-to-month,55.97,3689.29,No
+5888-GS,Male,0,No,44,Yes,DSL,Month-to-month,65.57,2883.22,No
+3704-HV,Male,0,No,23,No,Fiber optic,One year,91.51,2104.43,No
+7260-IY,Male,0,No,6,No,DSL,Month-to-month,50.06,299.01,No
+5597-JB,Male,0,No,66,No,Fiber optic,Month-to-month,82.59,5464.94,No
+3904-KE,Male,0,No,21,No,No,Month-to-month,25.92,546.78,No
+2123-LH,Female,0,Yes,35,Yes,Fiber optic,Month-to-month,108.75,3800.06,No
+7935-MK,Male,0,Yes,29,Yes,Fiber optic,Month-to-month,96.89,2813.09,No
+5316-NN,Male,1,Yes,7,Yes,DSL,Two year,54.46,383.18,No
+3270-OQ,Female,0,No,53,No,DSL,Two year,41.27,2182.06,No
+3724-PT,Female,0,No,37,Yes,No,One year,20.48,,No
+9121-QW,Female,0,Yes,23,Yes,Fiber optic,Two year,100.67,2318.06,No
+8671-RZ,Male,1,No,8,Yes,Fiber optic,Month-to-month,81.82,659.68,Yes
+3258-SC,Male,0,No,48,Yes,Fiber optic,Month-to-month,70.86,3392.4,No
+4862-TF,Female,0,No,10,Yes,Fiber optic,Month-to-month,107.77,1080.94,Yes
+4646-UI,Female,1,Yes,24,Yes,DSL,One year,45.42,1097.13,No
+8025-VL,Female,0,No,47,Yes,Fiber optic,Two year,70.38,3317.3,No
+2271-WO,Female,0,Yes,53,Yes,Fiber optic,One year,79.49,4206.84,No
+9989-XR,Male,0,No,39,Yes,Fiber optic,Two year,79.4,3095.87,No
+4463-YU,Male,0,No,67,Yes,No,One year,25.32,,No
+9608-ZX,Male,0,Yes,66,Yes,DSL,Month-to-month,64.57,4265.0,No
+5941-AA,Male,0,No,6,Yes,DSL,Month-to-month,56.67,339.2,Yes
+1897-BD,Male,0,No,21,Yes,No,Month-to-month,19.37,403.19,No
+9244-CG,Female,0,No,36,Yes,Fiber optic,Month-to-month,86.44,3112.93,No
+1605-DJ,Male,0,Yes,3,Yes,Fiber optic,One year,92.2,274.91,No
+4677-EM,Female,0,No,42,Yes,DSL,Month-to-month,69.68,2929.37,No
+5547-FP,Female,0,No,45,Yes,DSL,One year,51.9,2331.45,No
+9652-GS,Female,1,No,44,Yes,Fiber optic,One year,107.57,4727.97,No
+1774-HV,Male,0,No,33,Yes,DSL,Month-to-month,44.68,1481.02,No
+6256-IY,Female,0,No,60,Yes,Fiber optic,Month-to-month,77.94,4687.76,Yes
+6491-JB,Male,0,Yes,70,Yes,No,Month-to-month,25.13,1768.21,Yes
+5030-KE,Female,0,Yes,26,No,Fiber optic,Month-to-month,89.66,2330.8,No
+6156-LH,Male,0,No,21,Yes,DSL,Two year,63.04,1329.12,No
+6773-MK,Female,0,No,2,Yes,Fiber optic,Month-to-month,75.92,148.41,No
+8175-NN,Male,0,Yes,47,Yes,DSL,One year,63.37,2980.93,No
+4518-OQ,Female,0,No,30,Yes,DSL,Two year,58.93,1764.98,No
+7775-PT,Female,0,No,27,Yes,DSL,Two year,55.42,1502.62,No
+8606-QW,Female,0,No,71,Yes,DSL,Two year,61.26,4355.08,No
+6378-RZ,Female,0,No,20,Yes,No,Month-to-month,24.76,505.58,Yes
+7673-SC,Male,0,No,50,Yes,DSL,Month-to-month,65.24,3260.85,No
+7444-TF,Male,0,No,23,Yes,DSL,Month-to-month,60.32,1395.26,Yes
+9676-UI,Male,0,No,13,Yes,No,Month-to-month,22.23,291.52,Yes
+4727-VL,Female,0,No,4,Yes,DSL,Two year,56.08,224.7,No
+4996-WO,Female,0,Yes,14,Yes,Fiber optic,One year,99.87,1399.86,No
+7381-XR,Female,0,Yes,20,No,DSL,Month-to-month,47.56,959.69,Yes
+7812-YU,Female,1,No,13,Yes,DSL,Month-to-month,51.43,667.93,No
+2989-ZX,Female,0,No,3,Yes,No,Month-to-month,30.0,89.59,Yes
+5345-AA,Female,0,No,47,Yes,DSL,One year,54.78,2564.33,No
+9174-BD,Male,1,No,3,Yes,Fiber optic,One year,89.32,267.22,Yes
+3714-CG,Male,0,Yes,1,Yes,DSL,Two year,50.39,51.71,No
+8046-DJ,Male,0,Yes,24,Yes,DSL,Two year,51.08,1222.11,No
+5186-EM,Male,0,Yes,35,No,DSL,Month-to-month,66.66,2328.06,Yes
+1338-FP,Male,0,Yes,14,No,DSL,Month-to-month,53.93,745.76,No
+6968-GS,Male,0,No,67,Yes,DSL,Month-to-month,55.48,3714.24,No
+8684-HV,Male,0,No,13,Yes,Fiber optic,Month-to-month,89.89,1175.68,Yes
+7721-IY,Male,0,No,47,Yes,Fiber optic,Two year,71.62,3358.73,No
+9361-JB,Female,0,Yes,50,Yes,DSL,One year,59.68,2987.95,No
+7505-KE,Female,0,No,26,Yes,Fiber optic,One year,109.93,2862.58,Yes
+7387-LH,Female,0,No,3,Yes,No,Month-to-month,23.14,81.68,Yes
+9010-MK,Female,0,Yes,51,Yes,No,Month-to-month,23.58,1207.77,No
+7476-NN,Female,0,Yes,40,Yes,Fiber optic,Month-to-month,75.74,3034.37,No
+4012-OQ,Female,0,Yes,68,Yes,No,Month-to-month,26.14,1779.36,Yes
+8484-PT,Female,0,Yes,36,Yes,DSL,One year,58.08,2090.88,No
+3610-QW,Male,0,Yes,51,No,DSL,Month-to-month,45.54,2326.8,No
+3473-RZ,Male,0,No,1,Yes,Fiber optic,One year,100.07,106.31,No
+6255-SC,Female,0,No,33,Yes,Fiber optic,Two year,87.99,2904.52,No
+3688-TF,Male,0,Yes,7,Yes,Fiber optic,Month-to-month,94.51,668.03,No
+5804-UI,Male,0,No,52,Yes,Fiber optic,One year,97.53,5085.98,Yes
+2290-VL,Male,0,No,11,Yes,No,Month-to-month,23.53,259.18,Yes
+9298-WO,Male,0,No,27,Yes,Fiber optic,One year,89.03,2404.31,No
+3607-XR,Male,0,No,14,Yes,Fiber optic,One year,95.8,1340.74,No
+9078-YU,Female,0,Yes,46,No,Fiber optic,Two year,92.3,4246.47,No
+2688-ZX,Male,0,No,10,Yes,DSL,Month-to-month,63.61,642.22,Yes
+7511-AA,Female,1,No,24,Yes,DSL,Month-to-month,50.03,1201.16,No
+9197-BD,Female,0,No,61,Yes,DSL,Month-to-month,66.44,4053.79,No
+9714-CG,Female,1,Yes,18,Yes,Fiber optic,Month-to-month,95.71,1721.53,No
+7672-DJ,Male,1,No,9,No,DSL,One year,64.67,584.48,Yes
+4343-EM,Female,0,Yes,17,Yes,Fiber optic,Two year,97.27,1651.07,No
+1065-FP,Female,0,Yes,58,No,DSL,Month-to-month,46.55,2693.77,Yes
+4410-GS,Female,0,Yes,13,Yes,Fiber optic,Month-to-month,79.67,1037.95,No
+3981-HV,Female,1,Yes,50,Yes,DSL,Month-to-month,51.13,2566.4,No
+6588-IY,Male,0,No,6,Yes,DSL,Month-to-month,60.92,364.07,Yes
+3815-JB,Female,1,Yes,51,Yes,No,Month-to-month,26.75,1359.04,Yes
+6096-KE,Female,0,Yes,36,No,Fiber optic,Month-to-month,108.88,3929.26,No
+3017-LH,Female,0,Yes,71,Yes,No,One year,22.74,1614.77,No
+7673-MK,Female,0,Yes,25,Yes,No,Month-to-month,29.8,749.72,No
+2742-NN,Male,0,Yes,11,Yes,DSL,Month-to-month,46.51,507.97,Yes
+6720-OQ,Female,0,No,44,Yes,DSL,One year,69.53,3059.37,No
+4509-PT,Female,0,Yes,14,Yes,No,Month-to-month,21.61,309.54,No
+7386-QW,Female,0,No,29,Yes,No,One year,19.32,560.93,No
+4534-RZ,Female,0,No,50,Yes,Fiber optic,One year,94.36,4718.72,No
+6136-SC,Female,0,Yes,5,Yes,Fiber optic,One year,97.51,480.11,No
+6585-TF,Female,0,No,72,Yes,Fiber optic,Month-to-month,88.85,6401.14,No
+9554-UI,Male,0,No,69,Yes,DSL,Month-to-month,56.15,3870.42,No
+8158-VL,Female,0,No,57,Yes,Fiber optic,Two year,87.75,5007.35,No
+2634-WO,Male,0,Yes,26,Yes,Fiber optic,One year,81.4,2117.41,No
+1524-XR,Male,0,Yes,6,Yes,Fiber optic,Month-to-month,105.84,636.5,Yes
+5926-YU,Female,0,Yes,16,Yes,DSL,Month-to-month,51.71,831.22,No
+2722-ZX,Male,0,Yes,60,No,DSL,Month-to-month,54.96,3299.48,No
+9611-AA,Female,0,Yes,12,Yes,DSL,Month-to-month,66.27,803.83,Yes
+7929-BD,Male,0,Yes,3,Yes,DSL,One year,43.26,137.58,No
+7157-CG,Female,0,Yes,63,Yes,No,Month-to-month,27.83,1747.2,Yes
+4864-DJ,Male,0,No,64,Yes,DSL,Month-to-month,45.12,2886.83,Yes
+2067-EM,Male,0,No,62,Yes,DSL,One year,41.1,2552.38,No
+7438-FP,Female,0,Yes,6,Yes,DSL,Month-to-month,45.57,268.71,No
+2419-GS,Male,0,No,19,Yes,Fiber optic,One year,105.55,1997.61,No
+8271-HV,Male,1,Yes,18,Yes,Fiber optic,One year,88.13,1582.54,Yes
+5002-IY,Male,1,Yes,43,Yes,DSL,Month-to-month,66.18,2845.16,No
+1629-JB,Male,0,Yes,3,Yes,DSL,One year,55.74,146.9,No
+2834-KE,Male,0,No,72,No,DSL,One year,40.67,2922.67,No
+6318-LH,Female,1,Yes,38,Yes,Fiber optic,Month-to-month,103.75,3933.61,No
+6000-MK,Male,0,Yes,68,Yes,DSL,Month-to-month,43.31,2950.81,No
+5131-NN,Male,0,Yes,44,Yes,No,Month-to-month,27.14,1198.82,Yes
+7729-OQ,Female,0,Yes,63,Yes,Fiber optic,Two year,77.17,4863.1,No
+3353-PT,Female,0,No,42,Yes,DSL,One year,50.36,2115.62,No
+4055-QW,Female,1,Yes,64,Yes,Fiber optic,Month-to-month,109.35,7001.12,No
+9203-RZ,Male,0,No,54,Yes,DSL,One year,68.63,3701.03,Yes
+4157-SC,Male,0,No,71,Yes,Fiber optic,Month-to-month,101.77,7231.93,No
+7082-TF,Male,0,Yes,37,Yes,DSL,One year,64.88,2401.03,No
+6863-UI,Male,0,Yes,4,Yes,Fiber optic,One year,71.59,290.95,Yes
+1956-VL,Female,1,No,2,No,Fiber optic,Month-to-month,100.52,205.42,Yes
+4858-WO,Female,0,No,44,Yes,No,Two year,19.0,838.67,No
+5808-XR,Male,0,No,67,Yes,DSL,One year,45.78,3068.82,No
+7138-YU,Male,0,No,68,Yes,DSL,One year,49.08,3338.63,No
+9432-ZX,Male,0,Yes,62,No,Fiber optic,Month-to-month,107.87,6687.63,Yes
+8884-AA,Male,0,No,1,Yes,No,Two year,26.49,28.9,No
+8041-BD,Female,0,No,17,Yes,No,Two year,25.46,433.85,No
+2955-CG,Female,0,No,16,Yes,DSL,Month-to-month,59.32,946.68,No
+5991-DJ,Male,0,No,9,Yes,DSL,Month-to-month,69.84,631.61,No
+5065-EM,Female,0,Yes,53,Yes,Fiber optic,Month-to-month,98.48,5220.84,Yes
+3803-FP,Male,0,Yes,59,Yes,DSL,One year,56.23,3323.62,No
+2024-GS,Male,0,Yes,9,No,DSL,One year,57.21,505.84,No
+9792-HV,Female,0,No,12,Yes,DSL,Month-to-month,67.43,809.34,Yes
+3329-IY,Male,0,No,41,Yes,Fiber optic,Two year,74.4,3046.78,No
+3698-JB,Female,0,Yes,15,Yes,No,Month-to-month,23.02,342.71,No
+5694-KE,Male,0,Yes,66,Yes,No,One year,18.53,1225.78,No
+4026-LH,Female,0,No,11,Yes,DSL,Month-to-month,48.07,521.59,Yes
+8847-MK,Male,0,Yes,8,Yes,Fiber optic,Month-to-month,101.86,815.55,No
+2011-NN,Female,0,No,55,Yes,No,Month-to-month,18.94,1041.85,No
+8043-OQ,Male,0,No,6,Yes,DSL,Month-to-month,41.58,,Yes
+6624-PT,Male,0,No,53,No,Fiber optic,One year,101.41,5375.52,No
+2700-QW,Female,1,No,20,Yes,Fiber optic,One year,74.88,1493.79,No
+1218-RZ,Male,0,No,39,No,DSL,Month-to-month,56.01,2195.38,No
+9078-SC,Female,1,No,72,Yes,Fiber optic,Month-to-month,78.46,5655.13,Yes
+9918-TF,Female,0,Yes,34,Yes,DSL,Month-to-month,67.98,2311.66,Yes
+8152-UI,Male,0,Yes,57,Yes,Fiber optic,One year,101.48,5782.2,No
+6826-VL,Male,0,Yes,19,Yes,DSL,One year,45.7,870.82,No
+6585-WO,Male,0,No,71,Yes,DSL,Month-to-month,50.3,3575.14,No
+9058-XR,Male,0,Yes,31,Yes,DSL,One year,58.4,1811.67,No
+1811-YU,Female,0,No,40,Yes,No,Month-to-month,18.85,748.92,Yes
+6456-ZX,Male,0,No,14,Yes,Fiber optic,Two year,78.87,1103.13,No
+8677-AA,Male,0,No,37,Yes,Fiber optic,Two year,78.8,2915.99,No
+5909-BD,Male,1,No,44,Yes,Fiber optic,One year,107.89,4748.61,No
+5709-CG,Female,1,Yes,9,Yes,Fiber optic,Two year,108.17,975.1,No
+5521-DJ,Male,0,Yes,58,Yes,DSL,Two year,57.39,3332.27,No
+5037-EM,Female,0,Yes,20,Yes,Fiber optic,Two year,102.31,2052.91,No
+9011-FP,Male,0,No,50,Yes,DSL,One year,67.92,3401.06,No
+1431-GS,Female,0,Yes,20,Yes,DSL,Month-to-month,67.97,1362.35,Yes
+9175-HV,Male,0,Yes,36,Yes,Fiber optic,Month-to-month,83.61,3003.67,No
+7548-IY,Male,0,Yes,27,Yes,DSL,Month-to-month,43.76,1187.45,No
+3539-JB,Female,0,No,72,Yes,DSL,One year,44.82,3231.13,No
+1390-KE,Male,1,Yes,32,Yes,Fiber optic,Month-to-month,101.56,3248.64,Yes
+1082-LH,Male,0,No,1,Yes,Fiber optic,Month-to-month,98.96,99.11,No
+2002-MK,Male,0,Yes,17,Yes,Fiber optic,Month-to-month,77.44,1316.81,No
+9672-NN,Female,0,No,9,Yes,Fiber optic,Month-to-month,106.38,955.23,No
+9968-OQ,Male,0,Yes,45,Yes,Fiber optic,One year,103.11,4631.21,No
+8396-PT,Female,0,Yes,66,Yes,Fiber optic,Two year,76.55,5046.72,No
+4256-QW,Female,0,Yes,32,Yes,DSL,One year,50.72,1618.51,Yes
+4244-RZ,Female,0,No,45,Yes,DSL,One year,66.73,2993.01,No
+7007-SC,Male,1,Yes,9,Yes,Fiber optic,One year,73.23,653.5,Yes
+1522-TF,Female,0,Yes,30,Yes,DSL,Month-to-month,64.18,1931.11,No
+2694-UI,Female,0,No,38,Yes,No,Month-to-month,26.0,990.43,No
+3252-VL,Male,0,No,60,Yes,Fiber optic,Two year,73.8,4423.15,No
+5837-WO,Female,0,No,1,Yes,DSL,Month-to-month,53.01,49.57,Yes
+8326-XR,Female,0,No,5,Yes,DSL,Month-to-month,53.72,274.75,Yes
+9469-YU,Male,0,Yes,63,Yes,DSL,One year,56.53,3567.41,No
+1147-ZX,Male,0,Yes,36,Yes,DSL,Month-to-month,43.17,1554.47,Yes
+9148-AA,Female,1,No,65,Yes,DSL,Month-to-month,69.74,4538.97,No
+4620-BD,Male,0,Yes,24,Yes,Fiber optic,Month-to-month,73.15,1751.77,Yes
+4709-CG,Male,0,No,4,Yes,No,Month-to-month,27.91,112.78,Yes
+5337-DJ,Male,0,Yes,68,Yes,Fiber optic,Month-to-month,79.96,5429.91,Yes
+6094-EM,Female,0,No,25,Yes,DSL,Month-to-month,56.12,1401.18,Yes
+8472-FP,Female,0,Yes,7,Yes,DSL,One year,53.19,372.47,No
+4363-GS,Male,0,No,13,Yes,Fiber optic,Two year,92.99,1200.44,No
+4023-HV,Female,0,No,68,Yes,Fiber optic,Month-to-month,83.12,5655.13,No
+2817-IY,Male,0,Yes,43,Yes,Fiber optic,Two year,102.81,4424.63,No
+1683-JB,Male,0,Yes,57,Yes,No,Month-to-month,19.4,1110.86,Yes
+6507-KE,Male,0,Yes,36,Yes,Fiber optic,Month-to-month,88.59,3200.91,Yes
+7731-LH,Male,0,No,14,Yes,Fiber optic,Month-to-month,70.55,989.78,No
+9808-MK,Male,0,Yes,72,Yes,DSL,One year,66.53,4789.84,No
+3910-NN,Female,0,No,27,Yes,Fiber optic,Month-to-month,72.23,1942.2,Yes
+3017-OQ,Female,0,Yes,37,Yes,DSL,One year,52.16,1931.88,Yes
+5223-PT,Female,0,Yes,71,Yes,Fiber optic,One year,101.62,7217.82,Yes
+3184-QW,Female,0,No,25,Yes,Fiber optic,Month-to-month,89.6,2233.22,Yes
+2357-RZ,Male,0,No,67,Yes,DSL,One year,53.76,3600.72,Yes
+7691-SC,Male,0,Yes,4,Yes,DSL,Two year,69.45,277.86,Yes
+7531-TF,Female,0,No,16,Yes,DSL,Month-to-month,45.98,738.33,No
+5666-UI,Female,0,No,19,Yes,DSL,Month-to-month,41.96,801.52,Yes
+8397-VL,Male,0,Yes,29,Yes,DSL,One year,65.78,1904.94,No
+3468-WO,Male,0,No,51,Yes,DSL,One year,66.05,3369.56,No
+8291-XR,Male,0,Yes,18,Yes,DSL,Month-to-month,54.16,977.75,No
+8255-YU,Female,0,Yes,58,Yes,DSL,Month-to-month,55.43,3214.03,No
+4920-ZX,Male,0,No,44,Yes,No,Month-to-month,29.76,1307.33,Yes
+5236-AA,Male,0,Yes,16,Yes,DSL,Month-to-month,62.16,998.12,No
+2939-BD,Female,0,No,65,Yes,DSL,Month-to-month,47.95,3115.86,Yes
+4856-CG,Female,0,Yes,2,Yes,Fiber optic,Two year,92.75,179.51,No
+1050-DJ,Female,0,No,56,Yes,No,One year,18.4,1037.27,No
+8130-EM,Male,0,No,28,Yes,Fiber optic,Month-to-month,97.89,2735.49,Yes
+2360-FP,Male,1,No,65,No,DSL,One year,66.88,4346.73,No
+7805-GS,Female,0,No,5,Yes,Fiber optic,Two year,70.55,354.36,No
+9557-HV,Male,0,No,22,No,Fiber optic,Month-to-month,84.21,1854.9,No
+7030-IY,Male,1,Yes,13,Yes,Fiber optic,Month-to-month,81.24,1056.97,Yes
+4045-JB,Male,0,Yes,65,Yes,Fiber optic,Month-to-month,80.49,5217.14,Yes
+1257-KE,Female,0,No,16,Yes,No,One year,23.24,368.33,No
+1044-LH,Female,0,Yes,64,Yes,No,Month-to-month,21.01,1346.12,No
+9460-MK,Male,0,No,32,Yes,Fiber optic,Two year,73.39,2347.93,No
+2334-NN,Male,0,No,51,Yes,Fiber optic,Month-to-month,99.66,5085.22,No
+1671-OQ,Male,1,Yes,58,Yes,Fiber optic,Month-to-month,97.74,5674.03,Yes
+8000-PT,Male,0,Yes,46,Yes,Fiber optic,Month-to-month,80.03,3683.91,No
+4638-QW,Female,0,No,52,Yes,DSL,Month-to-month,50.9,2643.15,Yes
+7085-RZ,Female,0,No,63,Yes,No,One year,20.4,1282.51,No
+1234-SC,Male,0,No,60,Yes,DSL,Two year,60.22,3621.36,No
+7834-TF,Male,0,No,65,Yes,Fiber optic,Month-to-month,105.06,6828.0,No
+4207-UI,Female,1,No,55,Yes,No,Two year,20.53,1128.67,No
+6564-VL,Male,1,No,57,Yes,DSL,Two year,48.7,2778.45,No
+3400-WO,Female,0,Yes,71,Yes,Fiber optic,Month-to-month,93.26,6627.65,No
+6089-XR,Male,1,No,26,Yes,DSL,One year,52.19,1352.43,No
+8551-YU,Female,0,No,12,Yes,DSL,Month-to-month,61.92,740.56,Yes
+6005-ZX,Male,0,Yes,71,Yes,DSL,One year,68.96,4888.14,No
+8490-AA,Male,0,No,46,Yes,DSL,Month-to-month,64.28,2955.4,Yes
+8740-BD,Female,0,No,47,Yes,DSL,One year,68.21,3208.71,No
+9631-CG,Female,0,Yes,38,No,No,Month-to-month,23.42,888.14,No
+6182-DJ,Male,0,No,21,No,No,Two year,23.22,496.42,No
+1650-EM,Male,0,Yes,14,Yes,DSL,Two year,56.73,794.8,No
+1033-FP,Female,0,No,2,Yes,Fiber optic,Month-to-month,85.84,171.17,No
+4032-GS,Female,0,Yes,72,Yes,DSL,Month-to-month,64.84,4666.72,Yes
+8644-HV,Male,1,Yes,70,Yes,DSL,Month-to-month,60.16,4204.4,Yes
+2110-IY,Male,0,Yes,33,Yes,DSL,One year,69.12,2280.51,No
+9653-JB,Female,0,No,6,Yes,No,Month-to-month,19.36,117.95,No
+9513-KE,Female,0,No,37,Yes,No,One year,18.64,689.09,No
+5510-LH,Female,0,Yes,14,Yes,DSL,Month-to-month,55.04,771.72,No
+2874-MK,Female,0,Yes,37,Yes,DSL,Month-to-month,47.18,1742.31,No
+4039-NN,Female,0,No,8,Yes,DSL,Month-to-month,57.7,455.38,Yes
+2256-OQ,Male,0,No,13,Yes,Fiber optic,Month-to-month,80.17,1041.68,Yes
+4240-PT,Male,0,No,40,Yes,Fiber optic,One year,80.36,3215.5,Yes
+5263-QW,Female,0,No,58,Yes,DSL,Two year,50.88,2950.2,No
+6269-RZ,Male,0,No,18,Yes,Fiber optic,Month-to-month,96.11,1731.0,No
+8717-SC,Male,0,Yes,57,Yes,DSL,Month-to-month,55.66,3176.5,Yes
+2409-TF,Female,0,No,38,Yes,No,Month-to-month,18.82,719.02,Yes
+2832-UI,Male,0,Yes,32,Yes,Fiber optic,One year,79.89,2560.77,No
+3024-VL,Male,0,No,66,No,Fiber optic,Month-to-month,108.95,7195.73,Yes
+6736-WO,Male,0,Yes,25,Yes,Fiber optic,One year,85.89,2149.74,No
+5993-XR,Female,1,Yes,58,Yes,Fiber optic,Two year,93.96,5451.46,No
+8634-YU,Female,0,No,33,Yes,DSL,Month-to-month,43.96,1460.39,No
+5957-ZX,Male,0,Yes,66,Yes,DSL,One year,55.23,3649.1,No
+4213-AA,Male,0,Yes,30,No,No,Month-to-month,24.73,737.67,Yes
+7208-BD,Male,0,Yes,34,Yes,DSL,Month-to-month,58.91,1993.62,Yes
+7453-CG,Male,0,Yes,69,Yes,DSL,Month-to-month,64.11,4422.38,No
+3753-DJ,Male,1,No,48,Yes,Fiber optic,Month-to-month,85.95,4128.72,No
+8328-EM,Male,1,Yes,40,Yes,Fiber optic,Month-to-month,75.48,3023.99,No
+1305-FP,Female,0,No,51,Yes,Fiber optic,Month-to-month,97.5,4966.25,Yes
+2384-GS,Male,0,Yes,13,Yes,No,Month-to-month,19.53,257.54,No
+4367-HV,Male,0,No,31,Yes,Fiber optic,Month-to-month,85.83,2666.4,No
+2574-IY,Female,0,No,39,No,DSL,One year,53.04,2071.6,No
+1872-JB,Male,0,No,63,Yes,Fiber optic,Two year,108.52,6838.84,No
+9360-KE,Male,0,Yes,48,Yes,Fiber optic,Month-to-month,103.26,4955.82,No
+6578-LH,Male,0,No,48,Yes,DSL,Month-to-month,45.25,2169.7,No
+2030-MK,Male,0,No,61,Yes,DSL,Month-to-month,50.16,3063.69,No
+8764-NN,Female,0,Yes,12,Yes,DSL,Two year,46.73,563.68,Yes
+7731-OQ,Male,0,No,56,Yes,Fiber optic,One year,90.48,5065.24,No
+7905-PT,Female,0,Yes,18,Yes,No,Month-to-month,21.88,406.55,Yes
+5442-QW,Male,0,Yes,27,Yes,Fiber optic,Month-to-month,76.45,2056.6,Yes
+4667-RZ,Male,1,No,28,Yes,No,Month-to-month,18.55,518.24,No
+2276-SC,Female,0,Yes,52,Yes,DSL,Month-to-month,63.6,3303.34,Yes
+7553-TF,Male,0,Yes,16,Yes,No,Two year,26.66,428.48,No
+1542-UI,Female,0,Yes,58,Yes,Fiber optic,Two year,88.25,5108.76,No
+9546-VL,Female,0,No,9,No,DSL,Month-to-month,57.82,526.73,Yes
+5808-WO,Female,0,Yes,26,Yes,No,Month-to-month,23.33,611.61,No
+8731-XR,Male,0,Yes,28,Yes,DSL,Month-to-month,65.07,1823.3,No
+1583-YU,Male,1,Yes,36,Yes,No,Month-to-month,25.95,932.65,Yes
+1510-ZX,Male,0,No,9,Yes,No,Two year,19.9,182.68,No
+7676-AA,Male,0,Yes,47,Yes,Fiber optic,Month-to-month,73.85,3472.59,Yes
+7671-BD,Female,0,No,51,Yes,Fiber optic,Month-to-month,81.43,4157.69,No
+8695-CG,Male,1,Yes,57,Yes,DSL,Month-to-month,65.85,3752.84,Yes
+4473-DJ,Male,0,No,32,Yes,Fiber optic,Two year,72.89,2331.57,No
+2198-EM,Female,1,No,67,Yes,DSL,One year,60.5,4058.89,Yes
+4995-FP,Female,1,No,57,Yes,Fiber optic,Month-to-month,90.97,5188.46,No
+5535-GS,Male,0,Yes,54,Yes,Fiber optic,Month-to-month,86.33,4660.95,No
+6871-HV,Female,0,Yes,16,No,No,Month-to-month,19.01,306.0,No
+4303-IY,Female,1,Yes,62,Yes,DSL,Two year,57.26,3551.04,No
+3447-JB,Female,0,No,56,Yes,Fiber optic,Month-to-month,82.23,4607.22,No
+8739-KE,Female,0,Yes,23,Yes,No,Month-to-month,21.08,491.19,Yes
+7844-LH,Female,0,Yes,17,Yes,Fiber optic,Month-to-month,98.95,1680.4,Yes
+2290-MK,Male,0,No,38,No,DSL,One year,41.29,1565.8,No
+6834-NN,Male,0,Yes,72,Yes,DSL,Month-to-month,60.27,4340.81,Yes
+8549-OQ,Male,0,Yes,30,Yes,DSL,Month-to-month,52.44,1570.52,Yes
+7687-PT,Male,0,No,58,Yes,Fiber optic,One year,94.72,5489.21,No
+9693-QW,Male,0,No,22,Yes,Fiber optic,One year,88.4,1949.77,No
+8428-RZ,Male,0,Yes,17,Yes,No,One year,21.91,371.03,No
+1386-SC,Male,1,No,15,Yes,DSL,Two year,52.47,777.71,Yes
+9603-TF,Female,0,Yes,48,Yes,DSL,Month-to-month,51.53,2477.68,Yes
+3006-UI,Male,0,Yes,32,Yes,Fiber optic,Month-to-month,105.29,3367.09,No
+6213-VL,Male,0,Yes,40,No,Fiber optic,Two year,86.09,3446.49,No
+3147-WO,Male,0,Yes,57,Yes,No,Month-to-month,28.89,1652.15,No
+4868-XR,Female,1,Yes,58,Yes,Fiber optic,One year,90.64,5258.07,No
+7037-YU,Male,0,No,16,Yes,Fiber optic,One year,83.84,1331.26,No
+7637-ZX,Male,0,No,28,Yes,Fiber optic,Month-to-month,96.89,2703.1,No
+1352-AA,Female,1,Yes,1,No,No,Month-to-month,20.68,17.32,Yes
+5964-BD,Male,1,No,41,Yes,Fiber optic,One year,89.42,3665.94,No
+4188-CG,Male,0,No,48,Yes,DSL,Two year,46.01,2214.48,No
+2302-DJ,Female,0,Yes,31,Yes,DSL,One year,57.38,1780.24,No
+8749-EM,Male,0,No,36,Yes,DSL,Month-to-month,54.0,1957.09,No
+1846-FP,Female,0,No,33,Yes,Fiber optic,Month-to-month,80.14,2637.16,Yes
+8521-GS,Male,0,Yes,33,Yes,DSL,Month-to-month,66.69,2201.38,No
+9717-HV,Male,0,Yes,23,Yes,DSL,Month-to-month,53.12,1219.53,Yes
+3524-IY,Male,0,Yes,60,Yes,DSL,Month-to-month,42.26,2536.77,Yes
+2878-JB,Female,0,Yes,30,Yes,Fiber optic,Two year,78.19,2354.46,No
+5105-KE,Female,0,Yes,45,Yes,DSL,One year,67.62,3051.97,No
+4630-LH,Female,1,Yes,39,Yes,Fiber optic,One year,100.58,3922.89,No
+8670-MK,Male,0,Yes,45,Yes,DSL,Month-to-month,54.04,2436.11,No
+7667-NN,Male,1,No,12,Yes,DSL,Month-to-month,42.79,514.56,No
+3819-OQ,Female,1,Yes,32,Yes,Fiber optic,Two year,107.24,3426.3,No
+6979-PT,Female,0,No,56,Yes,DSL,Month-to-month,42.26,2366.63,Yes
+9077-QW,Male,0,No,24,Yes,DSL,Month-to-month,42.06,1006.91,Yes
+3489-RZ,Male,0,Yes,13,Yes,DSL,Month-to-month,56.12,729.25,Yes
+6688-SC,Male,0,No,20,Yes,No,Two year,28.69,569.54,No
+4264-TF,Male,0,No,56,Yes,Fiber optic,Two year,108.52,6077.9,No
+7023-UI,Female,0,No,53,Yes,DSL,Month-to-month,52.69,2794.1,No
+3293-VL,Male,1,Yes,68,Yes,DSL,Two year,44.12,3003.68,No
+1674-WO,Male,0,No,54,Yes,No,Month-to-month,20.79,1124.21,No
+7257-XR,Male,0,No,34,Yes,Fiber optic,Month-to-month,94.74,3229.33,Yes
+2011-YU,Male,0,Yes,28,Yes,Fiber optic,Two year,103.53,2909.8,No
+9985-ZX,Male,0,No,50,Yes,Fiber optic,Two year,90.63,4529.48,No
+1232-AA,Male,1,No,2,Yes,Fiber optic,One year,85.08,175.01,Yes
+4027-BD,Male,0,No,26,Yes,Fiber optic,One year,106.87,2789.19,No
+4609-CG,Female,0,No,51,Yes,Fiber optic,Two year,71.45,3648.93,No
+3173-DJ,Female,0,No,47,Yes,Fiber optic,One year,104.25,4903.34,No
+4384-EM,Female,0,Yes,26,Yes,DSL,Two year,42.08,1084.97,No
+3328-FP,Male,0,No,61,Yes,No,One year,29.2,1778.41,No
+1797-GS,Female,0,Yes,23,Yes,Fiber optic,Two year,75.57,1736.05,No
+8121-HV,Male,0,No,37,Yes,DSL,Two year,62.19,2307.97,No
+4684-IY,Male,1,Yes,41,Yes,No,Month-to-month,19.26,786.01,Yes
+5487-JB,Male,1,Yes,52,Yes,No,Two year,28.04,1457.65,No
+8690-KE,Male,0,Yes,49,Yes,No,Month-to-month,22.9,1126.3,No
+3589-LH,Female,1,No,27,Yes,No,Month-to-month,21.15,567.17,Yes
+5701-MK,Male,0,No,6,Yes,No,One year,24.91,150.86,No
+9700-NN,Male,0,No,66,Yes,DSL,Month-to-month,62.08,4098.02,Yes
+8667-OQ,Female,0,No,24,Yes,Fiber optic,Month-to-month,87.87,2113.27,No
+7414-PT,Female,0,No,38,Yes,Fiber optic,Two year,76.93,2926.63,No
+2463-QW,Female,0,Yes,28,Yes,DSL,Month-to-month,67.22,1885.3,No
+4110-RZ,Male,0,Yes,28,Yes,DSL,Month-to-month,67.63,1894.64,Yes
+2047-SC,Female,0,Yes,66,Yes,No,Two year,23.09,1515.56,No
+5871-TF,Male,0,No,61,Yes,DSL,Month-to-month,55.35,3377.05,Yes
+6289-UI,Male,0,No,46,Yes,No,Month-to-month,28.55,1313.58,Yes
+5435-VL,Female,0,Yes,69,Yes,DSL,Month-to-month,68.07,4700.66,No
+9360-WO,Female,1,No,43,Yes,DSL,Month-to-month,53.74,2308.71,Yes
+2561-XR,Female,0,No,59,Yes,Fiber optic,One year,103.26,6092.55,No
+8859-YU,Male,0,Yes,2,Yes,DSL,Two year,52.98,106.33,No
+7805-ZX,Male,0,Yes,15,Yes,Fiber optic,Month-to-month,84.32,1261.24,No
+8812-AA,Male,0,No,37,Yes,Fiber optic,Two year,105.77,3907.72,No
+7286-BD,Male,0,No,71,Yes,DSL,Month-to-month,56.84,4037.55,No
+8843-CG,Male,0,Yes,20,Yes,DSL,Month-to-month,50.13,1007.64,No
+1574-DJ,Male,1,No,35,Yes,DSL,One year,42.15,1472.13,No
+5016-EM,Female,0,Yes,34,Yes,DSL,One year,68.31,2321.45,No
+8227-FP,Male,1,Yes,31,No,Fiber optic,One year,97.16,3016.11,No
+5024-GS,Female,0,Yes,19,Yes,Fiber optic,Month-to-month,100.54,1914.89,No
+9722-HV,Female,0,No,68,Yes,DSL,Month-to-month,51.01,3469.84,Yes
+1990-IY,Female,0,Yes,24,Yes,Fiber optic,Month-to-month,104.47,2509.35,No
+3120-JB,Female,0,Yes,39,Yes,DSL,Month-to-month,54.56,2130.5,No
+5964-KE,Female,0,No,54,Yes,DSL,One year,46.03,2489.18,No
+3441-LH,Male,0,Yes,39,Yes,DSL,Month-to-month,43.73,1700.11,No
+6877-MK,Male,0,No,17,Yes,No,One year,19.71,344.66,No
+3520-NN,Male,0,No,19,Yes,No,Month-to-month,21.11,402.46,No
+5408-OQ,Male,0,No,48,Yes,Fiber optic,Month-to-month,106.71,5125.73,No
+1951-PT,Female,0,Yes,35,Yes,DSL,Month-to-month,41.48,1447.99,Yes
+1964-QW,Female,1,Yes,32,No,DSL,Month-to-month,53.23,1702.43,Yes
+3134-RZ,Female,0,No,47,Yes,Fiber optic,Two year,91.3,4292.98,No
+5454-SC,Male,0,No,47,No,Fiber optic,Month-to-month,105.95,4970.63,Yes
+9886-TF,Male,0,No,64,Yes,No,Month-to-month,29.38,1875.81,Yes
+3244-UI,Male,0,Yes,46,Yes,DSL,Two year,44.5,2043.37,No
+3803-VL,Male,0,No,35,Yes,DSL,One year,63.52,2216.81,No
+4911-WO,Female,0,No,17,Yes,Fiber optic,Month-to-month,101.48,1725.69,Yes
+2408-XR,Female,0,No,42,Yes,Fiber optic,Month-to-month,108.53,4557.89,No
+6237-YU,Male,0,Yes,29,Yes,Fiber optic,One year,98.29,2857.53,No
+5593-ZX,Male,0,No,70,Yes,Fiber optic,Two year,73.19,5117.7,No
+9051-AA,Female,0,Yes,17,Yes,No,Two year,23.81,405.94,No
+9653-BD,Female,1,Yes,14,Yes,Fiber optic,Month-to-month,95.86,1337.64,No
+8663-CG,Female,0,No,24,Yes,No,Two year,18.71,440.45,No
+8113-DJ,Female,1,No,57,Yes,No,Month-to-month,24.67,1409.13,Yes
+9142-EM,Male,0,No,50,Yes,Fiber optic,Month-to-month,93.1,4658.35,No
+7377-FP,Female,0,Yes,57,Yes,DSL,Two year,66.33,3783.57,No
+9608-GS,Female,1,Yes,61,Yes,DSL,Month-to-month,43.11,2623.13,Yes
+6601-HV,Female,1,Yes,39,Yes,Fiber optic,Month-to-month,100.77,3930.45,No
+2388-IY,Female,0,No,55,Yes,Fiber optic,Month-to-month,98.91,5443.04,Yes
+7296-JB,Male,0,Yes,36,Yes,No,Month-to-month,24.54,888.2,No
+5367-KE,Male,0,No,37,Yes,DSL,One year,49.97,1852.03,No
+4978-LH,Male,0,No,14,Yes,DSL,One year,52.34,737.59,No
+5490-MK,Male,0,No,27,Yes,Fiber optic,Month-to-month,90.82,2457.48,Yes
+1852-NN,Male,0,Yes,31,Yes,DSL,Month-to-month,69.99,2170.21,Yes
+7377-OQ,Male,1,Yes,44,No,DSL,Two year,54.79,2413.25,No
+7501-PT,Female,0,Yes,68,Yes,DSL,Two year,46.25,3150.0,No
+9114-QW,Female,0,No,48,Yes,Fiber optic,Month-to-month,105.83,5081.79,No
+9428-RZ,Female,0,Yes,57,Yes,DSL,Two year,41.27,2358.38,No
+2056-SC,Female,0,Yes,22,Yes,No,One year,28.27,626.31,No
+3260-TF,Male,0,No,4,No,Fiber optic,Month-to-month,93.99,372.8,Yes
+1908-UI,Female,0,No,72,Yes,No,Month-to-month,28.02,2010.91,No
+1449-VL,Male,0,Yes,46,Yes,Fiber optic,Month-to-month,70.37,3237.12,Yes
+1568-WO,Female,1,No,59,Yes,DSL,One year,62.23,3665.66,No
+4498-XR,Female,0,Yes,34,Yes,DSL,Month-to-month,47.77,1624.6,Yes
+6870-YU,Female,0,No,11,Yes,DSL,Month-to-month,50.32,553.48,Yes
+2308-ZX,Male,0,No,31,Yes,Fiber optic,Month-to-month,80.34,2497.04,Yes
+1717-AA,Female,1,Yes,11,Yes,DSL,Two year,51.23,566.06,No
+4345-BD,Male,0,No,56,Yes,DSL,Month-to-month,62.82,3522.81,No
+8214-CG,Male,0,No,38,Yes,Fiber optic,Two year,85.16,3233.63,No
+8682-DJ,Female,0,No,21,Yes,DSL,Two year,63.8,1347.45,No
+3718-EM,Male,1,Yes,10,Yes,DSL,Month-to-month,63.07,635.17,Yes
+2455-FP,Male,0,No,26,Yes,Fiber optic,Month-to-month,74.77,1946.16,No
+8297-GS,Female,0,No,8,Yes,No,Month-to-month,24.38,186.01,No
+8035-HV,Female,1,Yes,8,Yes,DSL,Two year,68.18,551.33,No
+5230-IY,Female,0,Yes,60,Yes,DSL,Month-to-month,57.4,3452.87,Yes
+1531-JB,Female,0,No,72,Yes,No,Month-to-month,29.58,2129.82,No
+3267-KE,Female,0,No,34,Yes,DSL,Month-to-month,51.96,1766.8,No
+1332-LH,Female,0,No,16,Yes,No,Month-to-month,29.25,465.42,No
+6249-MK,Male,0,Yes,13,Yes,DSL,Two year,59.53,765.73,No
+8199-NN,Female,0,No,22,No,No,One year,24.87,544.33,No
+6721-OQ,Female,0,Yes,27,Yes,DSL,Two year,41.54,1129.88,Yes
+9012-PT,Male,0,Yes,64,Yes,No,Month-to-month,26.94,1729.56,No
+8928-QW,Female,1,No,2,Yes,DSL,Month-to-month,47.53,91.2,No
+7500-RZ,Male,0,No,26,Yes,Fiber optic,Two year,72.93,1893.29,No
+1400-SC,Female,0,Yes,69,Yes,DSL,Month-to-month,62.4,4316.28,No
+8039-TF,Female,0,No,30,Yes,DSL,Two year,56.88,1701.3,No
+4991-UI,Male,0,No,8,Yes,Fiber optic,Month-to-month,89.48,712.26,Yes
+2057-VL,Female,0,Yes,38,Yes,Fiber optic,Month-to-month,101.62,3859.41,Yes
+8933-WO,Male,0,No,61,No,No,One year,20.66,1253.47,No
+3993-XR,Female,1,Yes,65,Yes,Fiber optic,Two year,85.53,5556.76,No
+9233-YU,Female,0,No,67,Yes,No,Two year,18.73,1252.3,Yes
+1026-ZX,Male,1,Yes,46,Yes,Fiber optic,Month-to-month,90.03,4136.87,Yes
+4533-AA,Female,1,Yes,72,Yes,No,Month-to-month,22.56,1630.96,Yes
+3618-BD,Female,0,No,43,Yes,No,One year,18.54,791.39,No
+7639-CG,Male,0,Yes,59,Yes,DSL,One year,45.14,2662.55,No
+7629-DJ,Female,1,Yes,46,No,No,One year,22.7,1039.81,No
+8627-EM,Male,1,No,72,Yes,Fiber optic,Month-to-month,100.9,7263.75,Yes
+8042-FP,Female,0,No,35,Yes,DSL,Two year,66.02,2306.08,No
+9902-GS,Male,0,No,39,No,Fiber optic,One year,78.35,3056.03,No
+3018-HV,Female,0,Yes,51,Yes,DSL,Two year,55.35,2824.46,Yes
+5878-IY,Male,1,Yes,4,No,Fiber optic,Month-to-month,70.77,290.09,No
+3898-JB,Male,0,Yes,51,Yes,DSL,Month-to-month,45.78,2331.84,No
+7075-KE,Female,0,No,5,No,DSL,Two year,60.65,311.34,No
+3047-LH,Female,1,Yes,55,Yes,Fiber optic,One year,102.78,5648.87,No
+6202-MK,Male,0,Yes,20,Yes,Fiber optic,Two year,81.04,1619.61,No
+2558-NN,Female,0,No,24,No,No,Two year,19.33,472.74,Yes
+2722-OQ,Male,0,Yes,36,Yes,No,One year,23.29,852.95,No
+5052-PT,Female,1,No,34,Yes,Fiber optic,Month-to-month,93.42,3184.71,Yes
+2651-QW,Female,0,No,54,Yes,DSL,Month-to-month,66.44,3586.64,No
+6222-RZ,Male,0,No,34,Yes,Fiber optic,Month-to-month,96.3,3276.77,No
+2778-SC,Male,0,Yes,17,Yes,Fiber optic,Month-to-month,70.63,1204.12,No
+1683-TF,Female,0,Yes,5,Yes,Fiber optic,Month-to-month,72.57,364.58,Yes
+3010-UI,Female,0,Yes,18,Yes,DSL,Month-to-month,50.99,912.78,No
+3582-VL,Female,0,No,55,Yes,Fiber optic,Month-to-month,86.76,4772.97,No
+9505-WO,Female,0,No,53,Yes,DSL,Month-to-month,68.43,3624.26,No
+8443-XR,Female,0,No,50,Yes,Fiber optic,Month-to-month,105.53,5271.66,No
+6492-YU,Male,0,Yes,72,Yes,Fiber optic,Month-to-month,79.79,5743.32,No
+1443-ZX,Female,0,Yes,45,Yes,No,Month-to-month,27.0,1216.58,No
+2671-AA,Female,0,Yes,13,No,Fiber optic,One year,100.73,1314.5,No
+4266-BD,Male,0,Yes,16,Yes,DSL,Month-to-month,51.52,823.05,No
+8425-CG,Male,0,Yes,13,Yes,No,Month-to-month,27.72,359.97,Yes
+6909-DJ,Male,0,No,20,No,Fiber optic,One year,90.96,1823.22,No
+8014-EM,Female,0,Yes,66,Yes,DSL,Two year,52.45,3462.05,No
+6479-FP,Male,0,No,47,Yes,Fiber optic,Month-to-month,71.04,3340.79,No
+8819-GS,Male,0,No,19,Yes,DSL,One year,40.61,771.98,No
+6141-HV,Male,0,Yes,45,No,Fiber optic,Two year,95.07,4279.16,No
+1715-IY,Male,0,No,37,Yes,Fiber optic,Two year,72.94,2693.38,No
+1891-JB,Female,0,Yes,54,Yes,Fiber optic,Month-to-month,77.59,4190.47,No
+4807-KE,Female,0,Yes,6,Yes,DSL,One year,57.48,352.02,Yes
+1500-LH,Female,0,No,14,Yes,DSL,Month-to-month,44.3,621.04,No
+3640-MK,Male,0,Yes,4,Yes,No,One year,19.82,75.11,No
+9894-NN,Male,0,Yes,55,Yes,Fiber optic,Two year,106.45,5862.13,No
+3333-OQ,Male,0,No,34,Yes,DSL,Month-to-month,54.87,1869.19,No
+3194-PT,Male,0,No,27,Yes,DSL,Two year,66.11,1788.81,No
+7937-QW,Male,0,No,7,Yes,DSL,Month-to-month,63.28,446.66,No
+9575-RZ,Male,0,No,3,Yes,Fiber optic,Two year,96.91,285.1,No
+2591-SC,Female,0,No,47,Yes,Fiber optic,One year,93.55,4400.09,No
+6059-TF,Female,0,No,2,No,Fiber optic,Month-to-month,78.94,164.8,No
+5398-UI,Male,0,Yes,25,Yes,Fiber optic,One year,103.89,2594.85,No
+5440-VL,Female,1,Yes,60,Yes,Fiber optic,Month-to-month,89.68,5371.16,Yes
+2783-WO,Male,0,Yes,24,No,Fiber optic,Month-to-month,102.9,2471.43,Yes
+6385-XR,Male,0,No,15,Yes,DSL,Two year,47.09,706.51,No
+5117-YU,Female,0,Yes,14,Yes,Fiber optic,Month-to-month,109.39,1523.72,No
+7982-ZX,Male,0,No,54,Yes,No,One year,22.35,1209.93,No
+3583-AA,Female,0,Yes,6,Yes,Fiber optic,Month-to-month,108.64,654.49,Yes
+9454-BD,Male,0,No,18,Yes,Fiber optic,Month-to-month,90.57,1622.93,Yes
+3430-CG,Male,0,Yes,20,Yes,Fiber optic,Two year,88.95,1788.45,No
+6669-DJ,Female,0,No,62,Yes,No,Month-to-month,18.64,1159.44,Yes
+8060-EM,Male,0,No,40,Yes,Fiber optic,One year,105.21,4198.95,No
+9583-FP,Male,0,No,39,Yes,DSL,One year,40.87,1598.02,Yes
+3936-GS,Male,1,No,52,Yes,No,One year,20.44,1066.83,No
+9731-HV,Female,0,Yes,32,Yes,No,Two year,19.11,618.6,No
+7709-IY,Male,0,Yes,27,Yes,DSL,One year,68.35,1842.33,No
+5323-JB,Male,0,No,52,Yes,Fiber optic,Month-to-month,91.82,4778.81,No
+7616-KE,Male,0,No,63,No,Fiber optic,Two year,77.19,4861.79,No
+3419-LH,Female,0,No,63,Yes,DSL,Month-to-month,58.43,3678.31,Yes
+2399-MK,Female,0,Yes,17,Yes,No,Month-to-month,28.51,480.34,Yes
+3084-NN,Female,0,No,49,Yes,Fiber optic,Two year,75.84,3706.64,No
+8804-OQ,Female,0,No,23,Yes,No,One year,20.11,465.23,No
+7987-PT,Female,0,Yes,72,Yes,DSL,Two year,41.3,2972.23,Yes
+6156-QW,Male,0,No,13,Yes,Fiber optic,One year,74.83,959.14,No
+6309-RZ,Female,0,No,23,Yes,DSL,Two year,42.31,973.51,Yes
+2535-SC,Female,0,Yes,57,Yes,Fiber optic,Two year,92.52,5279.43,No
+5753-TF,Male,0,No,62,No,Fiber optic,Month-to-month,77.49,4797.85,Yes
+9281-UI,Female,0,No,54,Yes,Fiber optic,Month-to-month,102.02,5505.52,No
+8048-VL,Male,0,Yes,20,Yes,DSL,Month-to-month,51.51,1032.4,No
+5190-WO,Female,0,No,52,Yes,DSL,One year,43.57,2252.85,No
+2654-XR,Male,0,Yes,23,Yes,DSL,Month-to-month,47.35,1086.38,No
+8553-YU,Male,0,No,35,Yes,DSL,Month-to-month,43.0,1506.73,No
+8452-ZX,Female,0,No,67,No,Fiber optic,Month-to-month,99.91,6691.16,No
+9557-AA,Female,0,No,34,Yes,Fiber optic,Two year,81.26,2756.35,No
+4960-BD,Male,0,No,33,Yes,Fiber optic,One year,70.8,2330.15,No
+7834-CG,Male,0,No,46,Yes,Fiber optic,Month-to-month,91.65,4207.84,No
+6091-DJ,Male,0,Yes,45,No,DSL,Month-to-month,46.78,2101.93,No
+1518-EM,Male,0,No,19,Yes,DSL,Month-to-month,59.18,1129.7,No
+4710-FP,Male,0,No,15,Yes,DSL,Month-to-month,53.71,817.46,No
+1829-GS,Male,1,Yes,66,Yes,Fiber optic,Month-to-month,108.76,7178.34,No
+7627-HV,Male,0,Yes,39,Yes,Fiber optic,Two year,97.78,3817.26,No
+9462-IY,Female,0,No,18,Yes,DSL,Two year,54.74,980.62,No
+8988-JB,Male,0,Yes,70,Yes,DSL,Month-to-month,49.1,3426.54,Yes
+3986-KE,Female,1,No,59,Yes,No,Month-to-month,22.69,1347.97,No
+7775-LH,Female,0,Yes,32,Yes,Fiber optic,Month-to-month,97.55,3118.62,No
+7690-MK,Male,0,Yes,21,No,Fiber optic,Month-to-month,105.8,2225.39,No
+5814-NN,Male,0,No,40,Yes,Fiber optic,Month-to-month,97.98,3919.99,Yes
+9796-OQ,Female,0,Yes,27,Yes,DSL,Month-to-month,41.73,1131.68,Yes
+1176-PT,Male,0,No,2,Yes,No,Month-to-month,24.51,53.79,Yes
+9828-QW,Male,0,Yes,39,Yes,Fiber optic,One year,82.14,3204.85,No
+7170-RZ,Female,0,Yes,56,Yes,DSL,One year,65.99,3697.38,No
+3623-SC,Female,0,Yes,13,Yes,Fiber optic,One year,81.87,1070.37,No
+3778-TF,Female,0,No,56,Yes,Fiber optic,Month-to-month,92.51,5178.51,No
+4752-UI,Male,0,No,66,Yes,DSL,Two year,52.57,3477.4,No
+9852-VL,Male,0,Yes,56,Yes,Fiber optic,Two year,102.68,5746.54,No
+5365-WO,Female,0,No,28,Yes,DSL,Month-to-month,44.41,1243.86,Yes
+5340-XR,Male,0,No,64,Yes,DSL,Month-to-month,62.96,4032.59,Yes
+5755-YU,Female,1,No,71,Yes,Fiber optic,Month-to-month,94.11,6673.66,No
+9276-ZX,Male,1,Yes,64,Yes,DSL,Month-to-month,67.1,4301.31,No
+4670-AA,Female,0,No,56,Yes,Fiber optic,Month-to-month,91.68,5136.46,No
+4521-BD,Male,0,Yes,41,Yes,No,One year,27.9,1160.4,No
+2875-CG,Female,1,Yes,41,Yes,DSL,Month-to-month,64.82,2668.02,Yes
+4958-DJ,Male,0,Yes,4,No,Fiber optic,Month-to-month,84.06,336.19,No
+3136-EM,Male,0,Yes,57,Yes,Fiber optic,Month-to-month,72.53,4143.14,Yes
+1506-FP,Female,0,Yes,30,Yes,Fiber optic,Two year,109.44,3287.44,No
+9599-GS,Male,0,No,46,Yes,Fiber optic,Month-to-month,71.26,3279.12,Yes
+6390-HV,Male,0,No,56,Yes,DSL,One year,57.07,3187.62,Yes
+9715-IY,Female,1,Yes,31,Yes,Fiber optic,Month-to-month,84.85,2623.23,No
+6613-JB,Male,0,No,7,Yes,Fiber optic,Month-to-month,95.84,670.9,Yes
+7750-KE,Male,0,No,54,Yes,No,One year,22.52,1213.6,No
+4050-LH,Male,0,No,8,Yes,DSL,Month-to-month,45.74,367.05,No
+8092-MK,Female,0,No,55,Yes,No,Month-to-month,24.34,1345.56,No
+3397-NN,Female,0,No,69,Yes,DSL,Month-to-month,59.21,4089.81,No
+8912-OQ,Female,0,No,44,Yes,No,One year,22.57,989.6,No
+9519-PT,Female,0,No,13,Yes,Fiber optic,One year,96.28,1256.26,No
+2309-QW,Female,0,Yes,20,Yes,Fiber optic,Month-to-month,81.2,1619.43,No
+8202-RZ,Male,0,Yes,32,Yes,Fiber optic,One year,71.15,2271.09,No
+8700-SC,Male,0,Yes,60,Yes,DSL,Month-to-month,69.55,4174.91,Yes
+5718-TF,Female,1,No,50,Yes,DSL,One year,67.33,3362.43,No
+6950-UI,Male,0,No,27,Yes,DSL,Month-to-month,40.87,1100.28,No
+1755-VL,Male,0,Yes,25,Yes,DSL,One year,63.12,1582.97,No
+1145-WO,Male,0,No,52,Yes,DSL,Two year,43.31,2255.41,No
+6116-XR,Male,0,No,68,Yes,Fiber optic,Two year,82.61,5615.62,No
+4574-YU,Female,0,Yes,21,Yes,Fiber optic,Month-to-month,72.42,1512.69,No
+5923-ZX,Female,0,Yes,18,Yes,DSL,Two year,48.08,861.76,No
+2858-AA,Male,0,Yes,39,No,No,Month-to-month,19.35,764.36,No
+5722-BD,Male,0,No,15,Yes,Fiber optic,Two year,83.98,1264.53,No
+4598-CG,Female,0,No,53,No,No,Month-to-month,20.31,1083.55,No
+1629-DJ,Male,0,No,38,Yes,Fiber optic,Month-to-month,91.49,3477.9,Yes
+4518-EM,Male,0,Yes,48,Yes,DSL,Month-to-month,52.55,2520.64,No
+7558-FP,Male,0,Yes,52,Yes,Fiber optic,Month-to-month,90.45,4707.93,No
+5352-GS,Female,0,No,72,Yes,Fiber optic,One year,95.45,6878.81,No
+8429-HV,Female,0,Yes,28,Yes,DSL,Two year,61.3,1714.0,No
+6555-IY,Male,0,Yes,16,Yes,DSL,One year,62.85,1002.03,No
+8997-JB,Male,0,No,16,Yes,DSL,One year,68.15,1082.79,No
+1107-KE,Male,0,Yes,35,Yes,DSL,One year,43.41,,No
+6498-LH,Male,0,Yes,17,Yes,Fiber optic,Month-to-month,95.58,1628.2,No
+5255-MK,Male,1,Yes,52,Yes,Fiber optic,Month-to-month,104.91,5452.34,No
+5195-NN,Male,1,No,12,Yes,DSL,Month-to-month,68.63,828.22,No
+9456-OQ,Female,0,No,48,Yes,Fiber optic,Month-to-month,76.78,3695.28,No
+4821-PT,Female,0,Yes,22,Yes,Fiber optic,Month-to-month,100.26,2205.84,No
+1676-QW,Male,0,No,49,Yes,DSL,Month-to-month,60.42,2960.5,Yes
+6178-RZ,Female,0,No,52,No,DSL,Month-to-month,47.42,2468.58,Yes
+6566-SC,Male,0,No,1,Yes,DSL,Month-to-month,58.01,55.14,Yes
+4969-TF,Male,0,Yes,66,Yes,DSL,Two year,47.73,3146.94,No
+6420-UI,Female,0,No,64,Yes,DSL,Month-to-month,50.0,3196.91,Yes
+1607-VL,Female,1,Yes,8,Yes,DSL,Month-to-month,53.25,420.27,Yes
+6674-WO,Male,0,Yes,25,Yes,Fiber optic,One year,73.7,1847.0,Yes
+6888-XR,Male,0,No,66,Yes,Fiber optic,Month-to-month,98.5,6498.52,No
+6332-YU,Female,0,Yes,70,Yes,DSL,Month-to-month,54.8,3841.56,Yes
+8356-ZX,Female,0,No,51,Yes,DSL,Month-to-month,48.96,2499.61,No
+7786-AA,Male,0,No,53,Yes,Fiber optic,Month-to-month,88.91,4712.12,No
+3394-BD,Male,0,Yes,15,Yes,No,Month-to-month,23.71,359.7,Yes
+9070-CG,Male,0,Yes,50,Yes,Fiber optic,Month-to-month,104.82,5236.28,No
+6149-DJ,Female,0,No,71,Yes,Fiber optic,One year,76.82,5450.32,No
+7289-EM,Male,0,No,38,Yes,DSL,One year,63.58,2419.61,No
+3021-FP,Female,0,No,40,Yes,DSL,Month-to-month,45.08,1792.22,No
+8784-GS,Male,1,No,66,Yes,No,Month-to-month,25.84,1705.51,No
+5598-HV,Female,0,Yes,39,No,DSL,Month-to-month,62.48,2439.67,No
+4015-IY,Female,1,Yes,17,Yes,No,Two year,29.31,504.82,No
+6310-JB,Female,0,Yes,7,No,Fiber optic,Month-to-month,107.29,758.61,Yes
+3048-KE,Female,0,No,39,Yes,Fiber optic,One year,105.05,4096.3,No
+6969-LH,Male,0,Yes,68,Yes,DSL,One year,49.8,3390.25,Yes
+1893-MK,Female,0,Yes,35,No,Fiber optic,Month-to-month,93.45,3266.73,No
+7087-NN,Female,1,Yes,51,Yes,Fiber optic,Month-to-month,73.09,3725.37,Yes
+3933-OQ,Female,0,Yes,47,Yes,DSL,Month-to-month,42.37,1998.23,No
+3281-PT,Male,0,No,36,Yes,DSL,Month-to-month,43.53,1566.88,No
+9264-QW,Male,0,Yes,64,No,No,Month-to-month,28.91,1851.04,Yes
+2380-RZ,Male,0,Yes,13,Yes,Fiber optic,Month-to-month,105.01,,Yes
+1483-SC,Male,0,Yes,18,Yes,Fiber optic,Month-to-month,83.89,1512.13,No
+4779-TF,Male,0,Yes,21,Yes,DSL,Month-to-month,40.32,850.49,No
+7101-UI,Male,0,No,65,No,Fiber optic,Two year,87.34,,No
+5954-VL,Female,0,No,8,Yes,Fiber optic,Month-to-month,88.36,700.82,Yes
+6953-WO,Female,1,Yes,48,Yes,Fiber optic,Two year,108.78,5226.44,Yes
+7280-XR,Female,0,No,43,Yes,Fiber optic,Two year,81.85,3514.56,No
+1778-YU,Male,0,No,53,Yes,Fiber optic,Two year,95.09,5039.64,No
+4475-ZX,Female,0,No,27,Yes,Fiber optic,Two year,86.8,2335.51,No
+5723-AA,Female,0,No,19,Yes,DSL,Month-to-month,42.2,800.9,No
+7886-BD,Male,0,Yes,23,Yes,No,Month-to-month,29.18,666.12,Yes
+7713-CG,Female,0,No,50,Yes,Fiber optic,One year,102.53,5124.26,No
+9601-DJ,Male,0,No,51,Yes,DSL,One year,47.46,2420.76,No
+2059-EM,Female,0,Yes,43,Yes,Fiber optic,Two year,72.78,3133.68,No
+7373-FP,Male,0,Yes,51,Yes,Fiber optic,Two year,76.15,3887.61,No
+8394-GS,Male,0,Yes,69,Yes,DSL,Month-to-month,67.39,4638.22,No
+3309-HV,Male,0,Yes,41,Yes,DSL,Month-to-month,46.07,1892.26,Yes
+2600-IY,Female,0,No,72,No,Fiber optic,Month-to-month,92.6,6668.23,Yes
+3233-JB,Female,1,Yes,11,Yes,DSL,Month-to-month,59.11,647.41,Yes
+8353-KE,Male,0,No,52,Yes,Fiber optic,Month-to-month,105.53,5483.16,No
+1351-LH,Male,1,No,23,Yes,DSL,One year,53.02,1219.15,No
+7469-MK,Female,0,Yes,49,Yes,Fiber optic,Two year,102.48,5022.67,No
+9656-NN,Female,0,Yes,38,No,DSL,Month-to-month,54.65,2078.59,No
+4166-OQ,Male,0,No,47,No,DSL,Two year,52.04,2444.89,No
+6253-PT,Female,0,No,72,Yes,No,One year,29.24,2092.66,Yes
+3209-QW,Female,0,Yes,7,Yes,Fiber optic,Two year,104.59,729.65,Yes
+9747-RZ,Female,0,Yes,66,Yes,DSL,Month-to-month,44.02,2899.4,Yes
+1299-SC,Male,1,Yes,62,Yes,DSL,Two year,42.66,2655.2,Yes
+4866-TF,Male,0,No,29,Yes,Fiber optic,One year,72.06,2090.04,No
+9547-UI,Female,0,No,38,Yes,Fiber optic,Month-to-month,108.35,4121.01,No
+1563-VL,Male,0,Yes,33,Yes,No,Month-to-month,23.97,794.19,No
+5888-WO,Female,0,No,29,Yes,No,Two year,23.14,672.61,No
+2190-XR,Female,0,Yes,23,Yes,Fiber optic,Month-to-month,85.55,1965.57,No
+4210-YU,Male,0,No,3,Yes,Fiber optic,Month-to-month,74.76,221.56,Yes
+7378-ZX,Male,0,No,45,Yes,Fiber optic,Month-to-month,73.22,3284.8,No
+9447-AA,Male,0,Yes,8,Yes,Fiber optic,One year,76.26,610.79,No
+3418-BD,Female,1,Yes,29,Yes,DSL,Two year,47.21,1370.59,No
+3563-CG,Female,0,Yes,2,Yes,DSL,Month-to-month,52.2,104.16,Yes
+3951-DJ,Male,0,No,50,Yes,DSL,Month-to-month,65.98,3299.72,Yes
+8383-EM,Male,1,No,65,Yes,DSL,Two year,68.17,4425.02,No
+1269-FP,Male,0,Yes,20,Yes,DSL,One year,69.78,1394.13,No
+7619-GS,Female,0,No,52,No,Fiber optic,Two year,90.73,4714.71,No
+6647-HV,Female,0,Yes,37,Yes,Fiber optic,Month-to-month,90.87,3365.52,Yes
+9255-IY,Female,0,No,72,Yes,Fiber optic,Month-to-month,91.58,6593.96,Yes
+5555-JB,Male,0,Yes,27,Yes,DSL,Month-to-month,44.43,1196.41,Yes
+2042-KE,Male,0,No,47,No,DSL,One year,50.47,2371.29,Yes
+6444-LH,Female,0,No,6,Yes,Fiber optic,Month-to-month,70.07,415.22,Yes
+6003-MK,Male,0,No,60,Yes,DSL,Month-to-month,66.78,4005.16,No
+5188-NN,Male,0,No,45,Yes,Fiber optic,Month-to-month,74.06,3335.61,Yes
+4088-OQ,Male,1,Yes,44,Yes,No,Month-to-month,18.46,805.58,Yes
+2646-PT,Male,0,No,18,Yes,DSL,Two year,67.52,1215.05,No
+1487-QW,Female,0,Yes,65,Yes,DSL,Month-to-month,53.91,3500.4,No
+4081-RZ,Male,0,Yes,25,Yes,Fiber optic,One year,107.14,2671.84,No
+2747-SC,Female,1,Yes,27,Yes,No,Two year,24.66,675.15,No
+9940-TF,Female,0,Yes,7,Yes,Fiber optic,Month-to-month,107.56,759.19,No
+1527-UI,Male,0,No,44,Yes,No,One year,29.19,1281.37,No
+2167-VL,Female,1,Yes,29,Yes,DSL,Two year,53.16,1540.19,No
+5610-WO,Female,0,No,44,Yes,No,Two year,26.81,1169.53,No
+5472-XR,Male,1,No,36,Yes,DSL,Month-to-month,69.82,2505.56,No
+8661-YU,Female,0,No,19,Yes,DSL,Month-to-month,56.31,1064.25,No
+6804-ZX,Female,0,No,6,Yes,No,Month-to-month,21.63,129.61,No
+1483-AA,Female,1,Yes,25,Yes,No,One year,20.4,509.43,No
+1451-BD,Female,0,No,31,Yes,DSL,One year,44.68,1386.74,No
+5069-CG,Female,0,Yes,9,Yes,DSL,One year,45.68,414.51,Yes
+6655-DJ,Female,0,No,37,Yes,DSL,Month-to-month,64.24,2378.27,No
+8207-EM,Female,1,No,27,Yes,DSL,Month-to-month,47.82,1285.73,No
+5397-FP,Female,0,Yes,13,Yes,DSL,One year,63.98,833.36,No
+6671-GS,Male,0,No,41,Yes,No,Month-to-month,18.55,763.73,No
+4133-HV,Male,0,No,66,Yes,Fiber optic,One year,73.89,4874.6,No
+2773-IY,Male,0,No,24,Yes,Fiber optic,Month-to-month,104.23,2492.29,No
+6622-JB,Female,0,No,44,Yes,Fiber optic,Month-to-month,89.2,3930.72,No
+8412-KE,Female,0,No,60,No,Fiber optic,Month-to-month,103.09,6185.84,Yes
+3065-LH,Female,0,Yes,9,Yes,Fiber optic,Month-to-month,102.69,910.35,Yes
+9589-MK,Male,0,No,2,No,Fiber optic,Month-to-month,106.64,223.63,Yes
+7332-NN,Male,0,No,56,Yes,DSL,Month-to-month,63.49,3553.05,No
+8913-OQ,Male,0,Yes,30,Yes,Fiber optic,Month-to-month,107.99,3251.9,No
+2946-PT,Female,0,No,22,Yes,Fiber optic,Month-to-month,76.07,1675.43,No
+4415-QW,Male,1,Yes,13,Yes,Fiber optic,Month-to-month,73.28,951.63,No
+2394-RZ,Male,0,No,71,Yes,No,One year,23.27,1653.09,No
+3421-SC,Female,0,No,16,Yes,Fiber optic,Month-to-month,103.13,1646.53,Yes
+4919-TF,Male,0,Yes,45,Yes,Fiber optic,One year,88.94,4002.61,No
+8345-UI,Female,0,No,65,Yes,DSL,One year,53.98,3518.75,No
+4083-VL,Male,0,No,11,Yes,Fiber optic,One year,99.19,1086.6,No
+9030-WO,Female,0,Yes,70,Yes,DSL,Two year,48.94,3428.47,No
+9120-XR,Female,0,Yes,20,Yes,DSL,Month-to-month,45.48,906.0,No
+2844-YU,Female,1,No,63,Yes,DSL,One year,58.5,3684.66,Yes
+2804-ZX,Female,0,Yes,12,No,Fiber optic,Two year,105.93,1281.04,No
+3503-AA,Female,0,No,62,Yes,DSL,Two year,42.4,2631.43,No
+2893-BD,Male,0,Yes,42,Yes,No,Month-to-month,22.58,952.09,No
+2666-CG,Female,1,No,69,Yes,DSL,Month-to-month,58.25,4019.6,No
+5344-DJ,Female,0,Yes,58,Yes,No,Month-to-month,29.13,1703.02,No
+7591-EM,Female,0,Yes,5,Yes,Fiber optic,One year,84.33,416.9,No
+4065-FP,Female,0,Yes,27,Yes,DSL,One year,51.26,1376.12,No
+6075-GS,Male,0,Yes,28,Yes,DSL,Month-to-month,54.58,1536.67,No
+4075-HV,Female,0,Yes,26,Yes,Fiber optic,Month-to-month,77.48,2012.57,No
+2259-IY,Male,0,Yes,49,Yes,Fiber optic,One year,89.56,4390.49,No
+3220-JB,Female,0,Yes,21,Yes,Fiber optic,Month-to-month,101.92,2148.9,No
+6441-KE,Female,0,Yes,1,Yes,DSL,Two year,68.91,71.03,No
+9978-LH,Male,0,Yes,58,Yes,Fiber optic,One year,105.73,6143.49,No
