@@ -117,32 +117,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
     uploadBtn.addEventListener("click", async (e) => {
         e.preventDefault();
+        
+        // 1. Trường hợp bấm nút khi đang ở phiên cũ (không chọn file mới)
+        if (fileInput.files.length === 0 && appState.currentFileId) {
+            scrollToSection("profile-section");
+            showToast("Tiếp tục phiên làm việc hiện tại", "success");
+            return; // Dừng luôn ở đây, KHÔNG xóa pipeline, KHÔNG gọi lại API
+        }
+        
+        // Nếu không có file mới và cũng không có phiên cũ -> thoát
         if (fileInput.files.length === 0 && !appState.currentFileId) return;
 
+        // 2. Trường hợp thực sự tải file mới lên
         uploadBtn.disabled = true;
         try {
-            let fileId = appState.currentFileId;
-            if (fileInput.files.length > 0) {
-                clearSavedState();
-                uploadBtn.textContent = "Đang tải file lên...";
-                const uploadRes = await uploadDatasetAPI(fileInput.files[0]);
-                fileId = uploadRes.file_id;
-                appState.filename = uploadRes.filename || fileInput.files[0].name;
-            }
+            clearSavedState(); // Xóa phiên cũ
+            uploadBtn.textContent = "Đang tải file lên...";
+            const uploadRes = await uploadDatasetAPI(fileInput.files[0]);
+            const fileId = uploadRes.file_id;
+            appState.filename = uploadRes.filename || fileInput.files[0].name;
 
             uploadBtn.textContent = "Đang khám bệnh dữ liệu...";
             const profileData = await fetchDatasetProfileAPI(fileId);
             
+            // CHỈ KHI TẢI FILE MỚI THÌ MỚI XÓA PIPELINE
             appState.pipelineSteps = [];
             renderPipelineQueue();
             document.getElementById("result-section").classList.add("hidden");
             
-            appState.totalRows = profileData.total_rows; // Lưu total rows
+            appState.totalRows = profileData.total_rows;
             renderProfileData(profileData);
             updateColumnAvailability();
             
             selectedFileName.textContent = `Hoàn tất: ${appState.filename}`;
-            showToast("Tải và phân tích dữ liệu thành công");
+            showToast("Tải và phân tích dữ liệu thành công", "success");
             scrollToSection("profile-section");
         } catch (err) {
             showToast(err.message, "error");
@@ -313,34 +321,83 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-close-auth").addEventListener("click", () => document.getElementById("auth-modal").classList.add("hidden"));
     document.getElementById("btn-auth").addEventListener("click", () => document.getElementById("auth-modal").classList.remove("hidden"));
     
-    // Sửa lỗi #1: PreventDefault cho form đăng nhập
+    let isLogin = true; // Trạng thái mặc định là Đăng nhập
+
+    // Xử lý nút Chuyển đổi Đăng nhập / Đăng ký
+    document.getElementById("toggle-auth-mode").addEventListener("click", (e) => {
+        e.preventDefault();
+        isLogin = !isLogin;
+        
+        // Cập nhật Giao diện
+        document.getElementById("auth-title").textContent = isLogin ? "Đăng nhập hệ thống" : "Tạo tài khoản mới";
+        document.getElementById("auth-submit-btn").textContent = isLogin ? "Đăng nhập" : "Đăng ký";
+        e.target.textContent = isLogin ? "Đăng ký ngay" : "Đăng nhập";
+        
+        // Ẩn/Hiện khối Xác nhận mật khẩu & Điều khoản
+        const regFields = document.getElementById("register-fields");
+        const confirmPass = document.getElementById("auth-confirm-password");
+        const termsCheck = document.getElementById("auth-terms");
+        
+        if (isLogin) {
+            regFields.classList.add("hidden");
+            confirmPass.removeAttribute("required");
+            termsCheck.removeAttribute("required");
+        } else {
+            regFields.classList.remove("hidden");
+            confirmPass.setAttribute("required", "true");
+            termsCheck.setAttribute("required", "true");
+        }
+    });
+
+    // Xử lý Form Submit (Kiểm tra logic chặt chẽ)
     document.getElementById("auth-form").addEventListener("submit", (e) => {
         e.preventDefault(); 
-        appState.user = document.getElementById("auth-username").value;
+        
+        const username = document.getElementById("auth-username").value;
+        const pass = document.getElementById("auth-password").value;
+        
+        // Nếu đang ở chế độ ĐĂNG KÝ
+        if (!isLogin) {
+            const confirmPass = document.getElementById("auth-confirm-password").value;
+            const termsCheck = document.getElementById("auth-terms").checked;
+            
+            if (pass !== confirmPass) {
+                showToast("Mật khẩu xác nhận không khớp!", "error");
+                return;
+            }
+            if (!termsCheck) {
+                showToast("Bạn phải đồng ý với Điều khoản dịch vụ.", "error");
+                return;
+            }
+            
+            // Nếu hợp lệ: Giả lập lưu vào DB thành công và ép người dùng quay lại Đăng nhập
+            showToast("Đăng ký thành công! Vui lòng đăng nhập.", "success");
+            
+            // Xóa form và chuyển ngược lại chế độ Đăng nhập
+            document.getElementById("auth-password").value = "";
+            document.getElementById("auth-confirm-password").value = "";
+            document.getElementById("toggle-auth-mode").click(); 
+            return; // Dừng lại, bắt người dùng tự bấm đăng nhập
+        }
+        
+        // Nếu đang ở chế độ ĐĂNG NHẬP (Gọi API Login)
+        appState.user = username;
         document.getElementById("auth-modal").classList.add("hidden");
         document.getElementById("btn-auth").classList.add("hidden");
         document.getElementById("profile-badge").classList.remove("hidden");
         document.getElementById("username-display").textContent = appState.user;
+        
         showToast(`Đăng nhập thành công: ${appState.user}`, "success");
         saveStateToStorage();
     });
     
-    // Sửa lỗi #3: Sign Out và Chuyển Đăng ký
+    // Nút Đăng xuất
     document.getElementById("btn-logout").addEventListener("click", () => {
         appState.user = null;
         document.getElementById("profile-badge").classList.add("hidden");
         document.getElementById("btn-auth").classList.remove("hidden");
         saveStateToStorage();
         showToast("Đã đăng xuất", "success");
-    });
-    
-    let isLogin = true;
-    document.getElementById("toggle-auth-mode").addEventListener("click", (e) => {
-        e.preventDefault();
-        isLogin = !isLogin;
-        document.getElementById("auth-title").textContent = isLogin ? "Đăng nhập hệ thống" : "Đăng ký tài khoản";
-        document.querySelector("#auth-form button[type='submit']").textContent = isLogin ? "Đăng nhập" : "Đăng ký";
-        e.target.textContent = isLogin ? "Đăng ký ngay" : "Đăng nhập";
     });
 
     // Drawer Lịch sử
@@ -357,5 +414,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 </li>
             `;
         }
+    });
+
+    // Xử lý Đăng nhập bằng Google (Mock UI)
+    document.getElementById("btn-google-login").addEventListener("click", () => {
+        // Tự động gán một tên tài khoản Google giả định
+        appState.user = "Google User (Dev)";
+        
+        // Cập nhật giao diện
+        document.getElementById("auth-modal").classList.add("hidden");
+        document.getElementById("btn-auth").classList.add("hidden");
+        document.getElementById("profile-badge").classList.remove("hidden");
+        document.getElementById("username-display").textContent = appState.user;
+        
+        showToast("Đã liên kết tài khoản Google thành công!", "success");
+        saveStateToStorage();
     });
 });
