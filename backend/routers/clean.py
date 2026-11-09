@@ -1,13 +1,20 @@
 from backend.services.adapter import clean_dataframe
+import json
+import logging
+import sqlite3
 from backend.services.pipeline_runner import run_selected_pipeline
 from fastapi import APIRouter, HTTPException
 from pathlib import Path
 from backend.schemas import CleanRequest
+from backend.database import execute_query
+from backend.security import get_optional_current_user
+from fastapi import Depends
 import pandas as pd
 from zipfile import BadZipFile
 
 # Khoi tao Router
-router = APIRouter()
+router = APIRouter(tags=["Cleaning Pipeline"])
+logger = logging.getLogger(__name__)
 
 # Thu muc luu du lieu goc
 RAW_DIR = (
@@ -24,7 +31,7 @@ PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
 
 @router.post("/clean")
-def clean_file(request: CleanRequest):
+def clean_file(request: CleanRequest, current_user: dict | None = Depends(get_optional_current_user)):
 
     # BƯỚC 1: Tim file da upload
     file_path = None
@@ -83,7 +90,7 @@ def clean_file(request: CleanRequest):
         if request.pipeline is not None:
             pipeline = [step.model_dump(mode="json") for step in request.pipeline]
             is_ml_mode = (request.purpose == "ml")
-            test_size = max(0.05, min(0.5, 1.0 - request.train_ratio))
+            test_size = 1.0 - request.train_ratio
 
             if is_ml_mode:
                 cleaned_df, audit_summary, train_df, test_df = run_selected_pipeline(
@@ -138,6 +145,41 @@ def clean_file(request: CleanRequest):
             detail="Failed to save processed file"
         )
 
+    # Luu lich su chi khi request co session hop le (Online Workspace).
+    # Request an danh van xu ly binh thuong va khong tao ban ghi DB (Offline Mode).
+    history_id = None
+    if current_user is not None:
+        metadata_path = RAW_DIR / f"{request.file_id}.meta.json"
+        source_filename = file_path.name
+        if metadata_path.is_file():
+            try:
+                metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+                source_filename = metadata.get("filename") or source_filename
+            except (OSError, json.JSONDecodeError):
+                logger.warning("Could not read upload metadata for %s", request.file_id)
+
+        history_stats = {
+            "original_data": {"rows": total_rows, "columns": total_columns},
+            "processed_data": {"rows": len(cleaned_df), "columns": len(cleaned_df.columns)},
+            "audit_summary": audit_summary,
+            "purpose": request.purpose,
+        }
+        if train_df is not None and test_df is not None:
+            history_stats["ml_split"] = {
+                "train_rows": len(train_df),
+                "test_rows": len(test_df),
+                "train_file": f"{request.file_id}_train_cleaned.csv",
+                "test_file": f"{request.file_id}_test_cleaned.csv",
+            }
+        try:
+            history_id = execute_query(
+                "INSERT INTO pipeline_history (user_id, filename, file_id, stats_json) VALUES (?, ?, ?, ?)",
+                (int(current_user["id"]), source_filename, str(request.file_id), json.dumps(history_stats, ensure_ascii=False, default=str)),
+            )
+        except sqlite3.Error:
+            # A history-storage issue must not discard an otherwise valid clean result.
+            logger.exception("Failed to persist pipeline history for file %s", request.file_id)
+
     # BƯỚC 8: Tra ket qua ve Frontend
     response_data = {
         "message": "Dataset processed and saved",
@@ -161,7 +203,8 @@ def clean_file(request: CleanRequest):
         "cleaning_applied": True,
         "audit_summary": audit_summary,
         "options": options,
-        "purpose": request.purpose
+        "purpose": request.purpose,
+        "history_id": history_id
     }
 
     if train_df is not None and test_df is not None:
