@@ -4,6 +4,7 @@ from pathlib import Path
 from uuid import uuid4
 from io import BytesIO
 from zipfile import is_zipfile
+import json
 
 router = APIRouter()
 
@@ -48,6 +49,11 @@ async def upload_file(file: UploadFile = File(...)):
             )
 
     saved_path.write_bytes(content)
+    metadata_path = RAW_DIR / f"{file_id}.meta.json"
+    metadata_path.write_text(
+        json.dumps({"filename": file.filename}, ensure_ascii=False),
+        encoding="utf-8",
+    )
 
     return {
         "message": "Upload successful",
