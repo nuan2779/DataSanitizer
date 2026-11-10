@@ -1,5 +1,21 @@
 import { appState, saveStateToStorage, clearSavedState, loadStateFromStorage } from "./state.js";
-import { uploadDatasetAPI, fetchDatasetProfileAPI, executePipelineAPI, downloadExportFileAPI, loadSampleDatasetAPI, benchmarkAIAPI, saveRecipeAPI, registerAPI, loginAPI, logoutAPI, googleLoginAPI } from "./api.js";
+import { 
+    uploadDatasetAPI, 
+    fetchDatasetProfileAPI, 
+    executePipelineAPI, 
+    downloadExportFileAPI, 
+    loadSampleDatasetAPI, 
+    benchmarkAIAPI, 
+    saveRecipeAPI,
+    loginAPI,
+    registerAPI,
+    logoutAPI,
+    getMeAPI,
+    fetchHistoryAPI,
+    downloadHistoryFileAPI,
+    deleteHistoryItemAPI,
+    googleLoginAPI
+} from "./api.js";
 import { renderProfileData, updateStepIndicator } from "./ui-profiler.js";
 import { handleStepTypeChange, addStepToPipeline, renderPipelineQueue, renderAuditResult, updateColumnAvailability } from "./ui-pipeline.js";
 import { showToast } from "./dom-safe.js";
@@ -52,41 +68,195 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("pipeline-section").classList.remove("hidden");
     }
 
-    // --- 2. CHUYỂN ĐỔI CHẾ ĐỘ OFFLINE / ONLINE ---
-    const modeToggle = document.getElementById("mode-toggle");
-    modeToggle.addEventListener("change", (e) => {
-        appState.mode = e.target.checked ? 'online' : 'offline';
+    // --- 2. QUẢN LÝ CHẾ ĐỘ OFFLINE / ONLINE & XÁC THỰC BẮT BUỘC TRÊN CLOUD ---
+    function applyWorkspaceMode(mode, silent = false) {
+        appState.mode = mode;
         saveStateToStorage();
         
         const offlineBadge = document.getElementById("offline-badge");
         const kaggleHub = document.getElementById("kaggle-hub");
         const btnHistory = document.getElementById("btn-history");
         const btnAuth = document.getElementById("btn-auth");
+        const profileBadge = document.getElementById("profile-badge");
+        const usernameDisplay = document.getElementById("username-display");
         const recipeLib = document.getElementById("recipe-library");
         const btnSaveRecipe = document.getElementById("btn-save-recipe");
-        
-        if (appState.mode === 'online') {
+        const subNavBar = document.querySelector(".sub-nav-bar");
+        const onlineAuthSection = document.getElementById("online-auth-section");
+        const uploadSection = document.getElementById("upload-section");
+        const profileSection = document.getElementById("profile-section");
+        const pipelineSection = document.getElementById("pipeline-section");
+        const resultSection = document.getElementById("result-section");
+
+        if (mode === 'online') {
             offlineBadge.classList.add("hidden");
-            kaggleHub.classList.remove("hidden");
-            btnHistory.classList.remove("hidden");
-            if (!appState.user) btnAuth.classList.remove("hidden");
-            recipeLib.classList.remove("hidden");
-            btnSaveRecipe.classList.remove("hidden");
-            showToast("Đã chuyển sang Cloud Workspace", "success");
-        } else {
-            offlineBadge.classList.remove("hidden");
-            kaggleHub.classList.add("hidden");
-            btnHistory.classList.add("hidden");
             btnAuth.classList.add("hidden");
-            document.getElementById("profile-badge").classList.add("hidden");
-            recipeLib.classList.add("hidden");
-            btnSaveRecipe.classList.add("hidden");
-            document.getElementById("ml-benchmark").classList.add("hidden");
-            showToast("Đã chuyển sang Chế độ Cục bộ", "success");
+
+            if (!appState.user) {
+                // CHƯA ĐĂNG NHẬP: Bỏ hỏi đưa file, chỉ hiển thị màn hình đăng nhập
+                if (onlineAuthSection) onlineAuthSection.classList.remove("hidden");
+                if (subNavBar) subNavBar.classList.add("hidden");
+                if (uploadSection) uploadSection.classList.add("hidden");
+                if (profileSection) profileSection.classList.add("hidden");
+                if (pipelineSection) pipelineSection.classList.add("hidden");
+                if (resultSection) resultSection.classList.add("hidden");
+                if (kaggleHub) kaggleHub.classList.add("hidden");
+                if (btnHistory) btnHistory.classList.add("hidden");
+                if (profileBadge) profileBadge.classList.add("hidden");
+                if (recipeLib) recipeLib.classList.add("hidden");
+                if (btnSaveRecipe) btnSaveRecipe.classList.add("hidden");
+                if (!silent) showToast("Vui lòng đăng nhập để sử dụng Cloud Workspace", "info");
+            } else {
+                // ĐÃ ĐĂNG NHẬP: Hiển thị đầy đủ giao diện làm việc
+                if (onlineAuthSection) onlineAuthSection.classList.add("hidden");
+                if (subNavBar) subNavBar.classList.remove("hidden");
+                if (uploadSection) uploadSection.classList.remove("hidden");
+                if (kaggleHub) kaggleHub.classList.remove("hidden");
+                if (btnHistory) btnHistory.classList.remove("hidden");
+                if (profileBadge) profileBadge.classList.remove("hidden");
+                if (usernameDisplay) usernameDisplay.textContent = appState.user;
+                if (recipeLib) recipeLib.classList.remove("hidden");
+                if (btnSaveRecipe) btnSaveRecipe.classList.remove("hidden");
+                if (!silent) showToast(`Chào mừng trở lại, ${appState.user}`, "success");
+            }
+        } else {
+            // CHẾ ĐỘ OFFLINE: Xử lý cục bộ 100%, không cần đăng nhập
+            if (onlineAuthSection) onlineAuthSection.classList.add("hidden");
+            if (subNavBar) subNavBar.classList.remove("hidden");
+            if (uploadSection) uploadSection.classList.remove("hidden");
+            if (offlineBadge) offlineBadge.classList.remove("hidden");
+            if (kaggleHub) kaggleHub.classList.add("hidden");
+            if (btnHistory) btnHistory.classList.add("hidden");
+            if (btnAuth) btnAuth.classList.add("hidden");
+            if (profileBadge) profileBadge.classList.add("hidden");
+            if (recipeLib) recipeLib.classList.add("hidden");
+            if (btnSaveRecipe) btnSaveRecipe.classList.add("hidden");
+            const mlBenchmark = document.getElementById("ml-benchmark");
+            if (mlBenchmark) mlBenchmark.classList.add("hidden");
+            if (!silent) showToast("Đã chuyển sang Chế độ Cục bộ (Offline)", "info");
+        }
+    }
+
+    const modeToggle = document.getElementById("mode-toggle");
+    modeToggle.addEventListener("change", (e) => {
+        const selectedMode = e.target.checked ? 'online' : 'offline';
+        applyWorkspaceMode(selectedMode);
+    });
+
+    // --- TAB CHUYỂN ĐỔI GIỮA ĐĂNG NHẬP VÀ ĐĂNG KÝ TRÊN ONLINE AUTH CARD ---
+    const tabLoginBtn = document.getElementById("tab-login-btn");
+    const tabRegisterBtn = document.getElementById("tab-register-btn");
+    const loginForm = document.getElementById("online-login-form");
+    const registerForm = document.getElementById("online-register-form");
+    const loginErr = document.getElementById("online-login-error");
+    const regErr = document.getElementById("online-reg-error");
+
+    function switchAuthTab(targetTab) {
+        if (targetTab === "login") {
+            tabLoginBtn?.classList.add("active");
+            tabRegisterBtn?.classList.remove("active");
+            loginForm?.classList.remove("hidden");
+            registerForm?.classList.add("hidden");
+            if (loginErr) loginErr.classList.add("hidden");
+        } else {
+            tabRegisterBtn?.classList.add("active");
+            tabLoginBtn?.classList.remove("active");
+            registerForm?.classList.remove("hidden");
+            loginForm?.classList.add("hidden");
+            if (regErr) regErr.classList.add("hidden");
+        }
+    }
+
+    tabLoginBtn?.addEventListener("click", () => switchAuthTab("login"));
+    tabRegisterBtn?.addEventListener("click", () => switchAuthTab("register"));
+
+    // --- XỬ LÝ SUBMIT FORM ĐĂNG NHẬP CLOUD WORKSPACE ---
+    loginForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const identifier = document.getElementById("online-login-identifier").value.trim();
+        const password = document.getElementById("online-login-password").value;
+        const submitBtn = document.getElementById("btn-submit-online-login");
+
+        if (loginErr) loginErr.classList.add("hidden");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Đang xác thực...";
+
+        try {
+            const data = await loginAPI(identifier, password);
+            appState.user = data.user.username;
+            saveStateToStorage();
+            loginForm.reset();
+            applyWorkspaceMode("online");
+            showToast(`Đăng nhập thành công: ${appState.user}`, "success");
+        } catch (err) {
+            if (loginErr) {
+                loginErr.textContent = err.message || "Tên đăng nhập hoặc mật khẩu không chính xác.";
+                loginErr.classList.remove("hidden");
+            }
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Đăng nhập vào Cloud";
         }
     });
+
+    // --- XỬ LÝ SUBMIT FORM ĐĂNG KÝ CLOUD WORKSPACE ---
+    registerForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const username = document.getElementById("online-reg-username").value.trim();
+        const email = document.getElementById("online-reg-email").value.trim();
+        const password = document.getElementById("online-reg-password").value;
+        const confirmPass = document.getElementById("online-reg-confirm").value;
+        const submitBtn = document.getElementById("btn-submit-online-reg");
+
+        if (regErr) regErr.classList.add("hidden");
+
+        if (password !== confirmPass) {
+            if (regErr) {
+                regErr.textContent = "Mật khẩu xác nhận không khớp. Vui lòng kiểm tra lại.";
+                regErr.classList.remove("hidden");
+            }
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Đang khởi tạo tài khoản...";
+
+        try {
+            const data = await registerAPI(username, email, password);
+            appState.user = data.user.username;
+            saveStateToStorage();
+            registerForm.reset();
+            applyWorkspaceMode("online");
+            showToast(`Đăng ký tài khoản thành công! Chào mừng ${appState.user}`, "success");
+        } catch (err) {
+            if (regErr) {
+                regErr.textContent = err.message || "Đăng ký không thành công. Vui lòng kiểm tra lại thông tin.";
+                regErr.classList.remove("hidden");
+            }
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Tạo tài khoản";
+        }
+    });
+
+    // Khởi tạo trạng thái ban đầu theo mode đã lưu
+    if (appState.mode === 'online') {
+        getMeAPI().then(me => {
+            if (me && me.user) {
+                appState.user = me.user.username;
+                saveStateToStorage();
+            } else if (!appState.user) {
+                appState.user = null;
+                saveStateToStorage();
+            }
+            applyWorkspaceMode(appState.mode, true);
+        }).catch(() => {
+            applyWorkspaceMode(appState.mode, true);
+        });
+    } else {
+        applyWorkspaceMode("offline", true);
+    }
     modeToggle.checked = (appState.mode === 'online');
-    modeToggle.dispatchEvent(new Event('change'));
 
     // --- 3. ĐIỀU HƯỚNG TƯƠNG TÁC ---
     function scrollToSection(targetId) {
@@ -104,7 +274,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.addEventListener("click", () => scrollToSection(btn.dataset.target));
     });
 
-    // --- 4. UPLOAD & KAGGLE HUB ---
+    // --- 4. UPLOAD & BENCHMARK DATA HUB ---
     const fileInput = document.getElementById("file-input");
     const uploadBtn = document.getElementById("btn-upload");
     const selectedFileName = document.getElementById("selected-file-name");
@@ -161,34 +331,55 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    document.querySelectorAll(".btn-sample").forEach(btn => {
-        btn.addEventListener("click", async () => {
-            const sampleId = btn.dataset.id;
-            uploadBtn.textContent = "Đang nạp dữ liệu Kaggle...";
-            uploadBtn.disabled = true;
-            try {
-                clearSavedState();
-                const uploadRes = await loadSampleDatasetAPI(sampleId);
-                appState.filename = uploadRes.filename;
-                
-                const profileData = await fetchDatasetProfileAPI(uploadRes.file_id);
-                appState.totalRows = profileData.total_rows;
-                appState.pipelineSteps = [];
-                renderPipelineQueue();
-                document.getElementById("result-section").classList.add("hidden");
-                
-                renderProfileData(profileData);
-                updateColumnAvailability();
-                
-                selectedFileName.textContent = `Dữ liệu mẫu: ${appState.filename}`;
-                showToast(`Đã nạp bộ dữ liệu ${sampleId}`, "success");
-                scrollToSection("profile-section");
-            } catch (err) {
-                showToast(err.message, "error");
-            } finally {
-                uploadBtn.textContent = "Bắt đầu phân tích dữ liệu";
-                uploadBtn.disabled = false;
+    async function handleLoadSample(sampleId, triggerElement) {
+        uploadBtn.textContent = "Đang nạp dữ liệu mẫu...";
+        uploadBtn.disabled = true;
+        if (triggerElement) {
+            triggerElement.style.opacity = "0.7";
+            triggerElement.style.pointerEvents = "none";
+        }
+
+        try {
+            clearSavedState();
+            const uploadRes = await loadSampleDatasetAPI(sampleId);
+            appState.filename = uploadRes.filename;
+            
+            const profileData = await fetchDatasetProfileAPI(uploadRes.file_id);
+            appState.totalRows = profileData.total_rows;
+            appState.pipelineSteps = [];
+            renderPipelineQueue();
+            document.getElementById("result-section").classList.add("hidden");
+            
+            renderProfileData(profileData);
+            updateColumnAvailability();
+            
+            selectedFileName.textContent = `Dữ liệu mẫu: ${appState.filename}`;
+            showToast(`Đã nạp thành công bộ dữ liệu mẫu [${sampleId}]`, "success");
+            scrollToSection("profile-section");
+        } catch (err) {
+            showToast(err.message, "error");
+        } finally {
+            uploadBtn.textContent = "Bắt đầu phân tích dữ liệu";
+            uploadBtn.disabled = false;
+            if (triggerElement) {
+                triggerElement.style.opacity = "1";
+                triggerElement.style.pointerEvents = "auto";
             }
+        }
+    }
+
+    document.querySelectorAll(".kaggle-card").forEach(card => {
+        card.addEventListener("click", (e) => {
+            const sampleId = card.dataset.id;
+            if (sampleId) handleLoadSample(sampleId, card);
+        });
+    });
+
+    document.querySelectorAll(".btn-sample").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation(); // Ngăn double-click từ thẻ cha kaggle-card
+            const sampleId = btn.dataset.id;
+            if (sampleId) handleLoadSample(sampleId, btn);
         });
     });
 
@@ -253,19 +444,50 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
     
+    // Thư viện các kịch bản chuẩn mẫu (Preset Recipes)
+    const PRESET_RECIPES = {
+        preset_1: {
+            name: "Bộ lọc khuyết thiếu & Chuẩn hóa Null",
+            steps: [
+                { step_type: "standardize_nulls", config: {} },
+                { step_type: "missing_values", config: { columns: null, strategy: "median" } }
+            ]
+        },
+        preset_2: {
+            name: "Xử lý nhiễu & Cắt lọc ngoại lai (IQR)",
+            steps: [
+                { step_type: "standardize_nulls", config: {} },
+                { step_type: "outlier", config: { columns: null, method: "iqr", threshold: 1.5, handling: "remove" } }
+            ]
+        },
+        preset_3: {
+            name: "Chuẩn hóa dữ liệu số và Categorical",
+            steps: [
+                { step_type: "clean_numeric", config: { columns: null } },
+                { step_type: "encoding", config: { columns: null, method: "one_hot" } },
+                { step_type: "scaling", config: { columns: null, method: "min_max" } }
+            ]
+        }
+    };
+
     document.getElementById("btn-apply-recipe").addEventListener("click", () => {
         const selected = document.getElementById("recipe-select").value;
         if (!selected) {
-            showToast("Vui lòng chọn 1 Recipe từ thư viện", "error");
+            showToast("Vui lòng chọn 1 kịch bản mẫu từ danh sách", "error");
             return;
         }
-        // Mock data để demo
-        appState.pipelineSteps.push({
-            step_type: "missing_values", config: { columns: null, strategy: "median" }
-        });
+
+        const preset = PRESET_RECIPES[selected];
+        if (!preset) {
+            showToast("Kịch bản không tồn tại", "error");
+            return;
+        }
+
+        // Nạp đúng các bước tương ứng của công thức mẫu
+        appState.pipelineSteps = JSON.parse(JSON.stringify(preset.steps));
         renderPipelineQueue();
         saveStateToStorage();
-        showToast("Đã nạp Recipe vào danh sách chờ", "success");
+        showToast(`Đã áp dụng mẫu: "${preset.name}" (${preset.steps.length} bước)`, "success");
     });
 
     const executeBtn = document.getElementById("btn-execute-pipeline");
@@ -281,6 +503,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const response = await executePipelineAPI(appState.currentFileId, appState.pipelineSteps, appState.purpose, appState.trainSplit);
             renderAuditResult(response.audit_summary);
             showToast("Làm sạch dữ liệu thành công", "success");
+            
+            // Tự động đánh giá sức khỏe chất lượng dữ liệu khi ở Cloud/Online mode (cho cả EDA và ML)
+            if (appState.mode === 'online') {
+                runDataQualityEvaluation(false);
+            }
         } catch (err) {
             showToast(err.message, "error");
         } finally {
@@ -289,27 +516,120 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    document.getElementById("btn-test-ai").addEventListener("click", async (e) => {
-        e.preventDefault();
-        const btn = e.target;
-        btn.disabled = true;
-        btn.textContent = "Đang chạy Baseline...";
+    async function runDataQualityEvaluation(showToastFeedback = true) {
+        const btn = document.getElementById("btn-test-ai");
+        const btnLabel = document.getElementById("btn-test-ai-label");
+        if (btn) btn.disabled = true;
+        if (btnLabel) btnLabel.textContent = "Đang kiểm tra sức khỏe...";
+
         try {
             const result = await benchmarkAIAPI(appState.currentFileId);
+            const overall = result.overall_score !== undefined ? result.overall_score : (result.ml_readiness_score || 0);
+
+            // 1. Cập nhật thanh & số tổng thể
             const fill = document.getElementById("health-score-fill");
             const txt = document.getElementById("health-score-text");
-            const score = result.ml_readiness_score || 0;
-            fill.style.width = `${score}%`;
-            txt.textContent = `${score}/100`;
-            if (score > 80) fill.style.backgroundColor = "var(--success)";
-            else if (score > 50) fill.style.backgroundColor = "#eab308";
-            else fill.style.backgroundColor = "var(--danger)";
+            const ratingEl = document.getElementById("health-score-rating");
+
+            if (fill) {
+                fill.style.width = `${Math.min(100, overall)}%`;
+                fill.style.backgroundColor = "var(--primary)";
+            }
+            if (txt) txt.textContent = `${overall}/100`;
+            if (ratingEl) {
+                ratingEl.textContent = result.rating || "Đạt chuẩn";
+                if (result.badge_color === "success") ratingEl.style.color = "var(--primary)";
+                else if (result.badge_color === "danger") ratingEl.style.color = "var(--danger)";
+                else if (result.badge_color === "warning") ratingEl.style.color = "#d97706";
+                else ratingEl.style.color = "var(--primary)";
+            }
+
+            // 2. Cập nhật 4 sub-meters
+            const bd = result.breakdown || {};
+            
+            // Completeness (30đ)
+            const compScore = bd.completeness_score !== undefined ? bd.completeness_score : 0;
+            const compEl = document.getElementById("sub-score-completeness");
+            const compBar = document.getElementById("sub-bar-completeness");
+            const compInfo = document.getElementById("sub-detail-completeness");
+            if (compEl) compEl.textContent = `${compScore} / 30đ`;
+            if (compBar) compBar.style.width = `${Math.min(100, (compScore / 30) * 100)}%`;
+            if (compInfo) compInfo.textContent = `Tỷ lệ ô khuyết: ${bd.missing_cell_rate || 0}%`;
+
+            // Deduplication (20đ)
+            const dedupScore = bd.deduplication_score !== undefined ? bd.deduplication_score : 0;
+            const dedupEl = document.getElementById("sub-score-dedup");
+            const dedupBar = document.getElementById("sub-bar-dedup");
+            const dedupInfo = document.getElementById("sub-detail-dedup");
+            if (dedupEl) dedupEl.textContent = `${dedupScore} / 20đ`;
+            if (dedupBar) dedupBar.style.width = `${Math.min(100, (dedupScore / 20) * 100)}%`;
+            if (dedupInfo) dedupInfo.textContent = `Tỷ lệ trùng lặp: ${bd.duplicate_rate || 0}%`;
+
+            // Type Uniformity (25đ)
+            const typeScore = bd.type_uniformity_score !== undefined ? bd.type_uniformity_score : 0;
+            const typeEl = document.getElementById("sub-score-uniformity");
+            const typeBar = document.getElementById("sub-bar-uniformity");
+            const typeInfo = document.getElementById("sub-detail-uniformity");
+            if (typeEl) typeEl.textContent = `${typeScore} / 25đ`;
+            if (typeBar) typeBar.style.width = `${Math.min(100, (typeScore / 25) * 100)}%`;
+            if (typeInfo) typeInfo.textContent = `${bd.numeric_or_cat_columns || 0}/${bd.total_columns || 0} cột số/phân loại`;
+
+            // Data Retention (25đ)
+            const retScore = bd.retention_score !== undefined ? bd.retention_score : 0;
+            const retEl = document.getElementById("sub-score-retention");
+            const retBar = document.getElementById("sub-bar-retention");
+            const retInfo = document.getElementById("sub-detail-retention");
+            if (retEl) retEl.textContent = `${retScore} / 25đ`;
+            if (retBar) retBar.style.width = `${Math.min(100, (retScore / 25) * 100)}%`;
+            if (retInfo) retInfo.textContent = `Bảo toàn: ${bd.retention_rate || 100}% số dòng`;
+
+            // 3. Diagnostics & Warnings
+            const diagBox = document.getElementById("dq-diagnostics-box");
+            const diagList = document.getElementById("dq-diagnostics-list");
+            if (diagBox && diagList) {
+                diagList.innerHTML = "";
+                const diags = result.diagnostics || {};
+                const zeroVars = diags.zero_variance_columns || [];
+                const highCards = diags.high_cardinality_text_columns || [];
+
+                if (zeroVars.length > 0 || highCards.length > 0) {
+                    diagBox.classList.remove("hidden", "dq-diag-clean");
+                    zeroVars.forEach(col => {
+                        const li = document.createElement("li");
+                        li.className = "dq-diag-item";
+                        li.textContent = `Cột "${col}" có phương sai bằng 0 (chỉ chứa 1 giá trị duy nhất, không mang lại thông tin phân tích/ML). Khuyên loại bỏ.`;
+                        diagList.appendChild(li);
+                    });
+                    highCards.forEach(col => {
+                        const li = document.createElement("li");
+                        li.className = "dq-diag-item";
+                        li.textContent = `Cột văn bản "${col}" có quá nhiều giá trị riêng biệt (>50 categories). Cần cân nhắc mã hóa hoặc loại bỏ.`;
+                        diagList.appendChild(li);
+                    });
+                } else {
+                    diagBox.classList.remove("hidden");
+                    diagBox.classList.add("dq-diag-clean");
+                    const li = document.createElement("li");
+                    li.className = "dq-diag-item";
+                    li.textContent = "Dữ liệu đạt chuẩn: Không phát hiện cột zero-variance hay văn bản rác bất thường.";
+                    diagList.appendChild(li);
+                }
+            }
+
+            if (showToastFeedback) {
+                showToast(`Đã đánh giá chất lượng dữ liệu: ${overall}/100 (${result.rating})`, "success");
+            }
         } catch (err) {
-            showToast("Backend chưa có API chấm điểm AI", "error");
+            showToast("Không thể tải đánh giá chất lượng: " + err.message, "error");
         } finally {
-            btn.textContent = "Chấm điểm dữ liệu & Test AI";
-            btn.disabled = false;
+            if (btn) btn.disabled = false;
+            if (btnLabel) btnLabel.textContent = "Đánh giá lại sức khỏe dữ liệu";
         }
+    }
+
+    document.getElementById("btn-test-ai").addEventListener("click", async (e) => {
+        e.preventDefault();
+        await runDataQualityEvaluation(true);
     });
 
     // --- 6. XUẤT DỮ LIỆU TẢI VỀ ---
@@ -349,119 +669,109 @@ document.addEventListener("DOMContentLoaded", () => {
             termsCheck.setAttribute("required", "true");
         }
     });
-
-    // Xử lý Form Submit (Kiểm tra logic chặt chẽ)
-    // Xử lý Form Submit (ĐÃ NỐI API THẬT)
-    document.getElementById("auth-form").addEventListener("submit", async (e) => {
-        e.preventDefault(); 
-        
-        const username = document.getElementById("auth-username").value;
-        const pass = document.getElementById("auth-password").value;
-        const submitBtn = document.getElementById("auth-submit-btn");
-        
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Đang xử lý...";
-        
-        try {
-            // Chế độ ĐĂNG KÝ
-            if (!isLogin) {
-                const confirmPass = document.getElementById("auth-confirm-password").value;
-                const termsCheck = document.getElementById("auth-terms").checked;
-                
-                if (pass !== confirmPass) throw new Error("Mật khẩu xác nhận không khớp!");
-                if (!termsCheck) throw new Error("Bạn phải đồng ý với Điều khoản dịch vụ.");
-                
-                // Gọi API Đăng ký thật
-                await registerAPI(username, pass);
-                showToast("Đăng ký thành công! Vui lòng đăng nhập.", "success");
-                
-                document.getElementById("auth-password").value = "";
-                document.getElementById("auth-confirm-password").value = "";
-                document.getElementById("toggle-auth-mode").click(); 
-                return;
-            }
-            
-            // Chế độ ĐĂNG NHẬP
-            const data = await loginAPI(username, pass); // Gọi API Đăng nhập thật
-            
-            // Lưu token vào state để dùng cho các request sau
-            appState.user = username;
-            appState.authToken = data.token; 
-            
-            document.getElementById("auth-modal").classList.add("hidden");
-            document.getElementById("btn-auth").classList.add("hidden");
-            document.getElementById("profile-badge").classList.remove("hidden");
-            document.getElementById("username-display").textContent = appState.user;
-            
-            showToast(`Đăng nhập thành công: ${appState.user}`, "success");
-            saveStateToStorage();
-
-        } catch (err) {
-            showToast(err.message, "error");
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = isLogin ? "Đăng nhập" : "Đăng ký";
-        }
-    });
-
-    // Sửa lại Nút Đăng xuất
+    
+    // Sign Out khỏi hệ thống
     document.getElementById("btn-logout").addEventListener("click", async () => {
         try {
-            if (appState.authToken) {
-                await logoutAPI(appState.authToken); // Gọi API Đăng xuất thật
-            }
-        } catch (err) {
-            console.warn("Lỗi server khi đăng xuất, vẫn dọn dẹp client:", err);
+            await logoutAPI();
+        } catch (e) {
+            console.warn("Logout error:", e);
         }
-        
         appState.user = null;
-        appState.authToken = null;
-        document.getElementById("profile-badge").classList.add("hidden");
-        document.getElementById("btn-auth").classList.remove("hidden");
         saveStateToStorage();
-        showToast("Đã đăng xuất", "success");
+        const historyList = document.getElementById("history-list");
+        if (historyList) historyList.innerHTML = `<li class="empty-state">Chưa có lịch sử xử lý nào.</li>`;
+        applyWorkspaceMode(appState.mode, true);
+        showToast("Đã đăng xuất khỏi Cloud Workspace", "info");
     });
 
-    // Drawer Lịch sử
+    // Drawer Lịch sử (Gọi API thật từ backend, lưu riêng biệt theo từng tài khoản)
     document.getElementById("btn-close-history").addEventListener("click", () => document.getElementById("history-drawer").classList.add("hidden"));
     document.getElementById("btn-history").addEventListener("click", async () => {
         document.getElementById("history-drawer").classList.remove("hidden");
-        // Giả lập logic gọi API hiển thị
         const list = document.getElementById("history-list");
-        if(appState.filename && appState.pipelineSteps.length > 0) {
-            list.innerHTML = `
-                <li class="history-item">
-                    <div class="history-title">${appState.filename}</div>
-                    <div class="history-meta">Vừa xong • ${appState.pipelineSteps.length} bước</div>
-                </li>
-            `;
+        list.innerHTML = `<li class="empty-state">Đang tải lịch sử của tài khoản ${appState.user || ""}...</li>`;
+        
+        try {
+            const history = await fetchHistoryAPI();
+            if (!history || history.length === 0) {
+                list.innerHTML = `<li class="empty-state">Chưa có lịch sử xử lý nào trên tài khoản này.</li>`;
+                return;
+            }
+            list.innerHTML = history.map(item => {
+                const rows = item.stats?.processed_data?.rows;
+                const purpose = item.stats?.purpose === "ml" ? "Học máy (ML)" : "Khám phá (EDA)";
+                const metaInfo = [
+                    item.created_at || "Vừa xong",
+                    rows !== undefined ? `${rows} dòng` : "Đã xử lý",
+                    purpose
+                ].join(" • ");
+
+                return `
+                    <li class="history-item" id="history-item-${item.id}">
+                        <div class="history-title">${item.filename || "Tập dữ liệu"}</div>
+                        <div class="history-meta">${metaInfo}</div>
+                        <div class="history-actions" style="display: flex; gap: 8px; margin-top: 8px;">
+                            <button type="button" class="btn btn-outline btn-dl-history" data-id="${item.id}" style="padding: 3px 8px; font-size: 11px;">Tải lại CSV</button>
+                            <button type="button" class="btn-link text-danger btn-del-history" data-id="${item.id}" style="font-size: 11px;">Xóa</button>
+                        </div>
+                    </li>
+                `;
+            }).join("");
+
+            // Gán sự kiện Tải lại và Xóa
+            list.querySelectorAll(".btn-dl-history").forEach(btn => {
+                btn.addEventListener("click", () => downloadHistoryFileAPI(btn.dataset.id));
+            });
+
+            list.querySelectorAll(".btn-del-history").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    const id = btn.dataset.id;
+                    try {
+                        await deleteHistoryItemAPI(id);
+                        document.getElementById(`history-item-${id}`)?.remove();
+                        if (list.children.length === 0) {
+                            list.innerHTML = `<li class="empty-state">Chưa có lịch sử xử lý nào trên tài khoản này.</li>`;
+                        }
+                        showToast("Đã xóa bản ghi lịch sử", "info");
+                    } catch (err) {
+                        showToast("Lỗi xóa: " + err.message, "error");
+                    }
+                });
+            });
+        } catch (err) {
+            list.innerHTML = `<li class="empty-state">Không thể tải lịch sử: ${err.message}</li>`;
         }
     });
 
     // Xử lý Đăng nhập bằng Google
+    // Xử lý Đăng nhập bằng Google
     window.handleCredentialResponse = async function(response) {
-        const submitBtn = document.getElementById("auth-submit-btn"); // Nút mượn tạm để vô hiệu hóa form
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Đang xác thực Google...";
+        const submitBtn = document.getElementById("auth-submit-btn");
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Đang xác thực Google...";
+        }
         try {
-            // 1. Gọi API gửi Token về Backend
             const data = await googleLoginAPI(response.credential);
-            // 2. Lưu thông tin (token backend trả về) vào hệ thống của bạn
-            // Giả sử API Backend trả về { "access_token": "...", "name": "...", "email": "..." }
             appState.user = data.name || data.email || "Google User"; 
             appState.authToken = data.access_token;
-            // 3. Cập nhật giao diện
-            document.getElementById("auth-modal").classList.add("hidden");
-            document.getElementById("btn-auth").classList.add("hidden");
-            document.getElementById("profile-badge").classList.remove("hidden");
+
+            document.getElementById("auth-modal")?.classList.add("hidden");
+            document.getElementById("btn-auth")?.classList.add("hidden");
+            document.getElementById("profile-badge")?.classList.remove("hidden");
             document.getElementById("username-display").textContent = appState.user;
-            showToast(`Đăng nhập Google thành công: ${appState.user}`, "success");
+            
             saveStateToStorage();
+            applyWorkspaceMode(appState.mode, true);
+            showToast(`Đăng nhập Google thành công: ${appState.user}`, "success");
         } catch (err) {
             showToast(err.message, "error");
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Đăng nhập";
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Đăng nhập";
+            }
         }
     };
 });

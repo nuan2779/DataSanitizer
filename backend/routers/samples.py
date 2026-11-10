@@ -52,7 +52,7 @@ def _count_csv_rows(path: Path) -> int | None:
 
 @router.get("")
 def get_sample_catalog():
-    """Return the available datasets and their actual row counts."""
+    """Tra ve danh muc 4 bo du lieu mau thuc nghiem (Benchmark Datasets)."""
     catalog = []
     for sample_id, info in SAMPLE_MAP.items():
         file_path = SAMPLES_DIR / info["file"]

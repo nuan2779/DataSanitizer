@@ -73,3 +73,40 @@ def test_benchmark_api_compatibility():
     assert "overall_score" in data
     assert 0 <= data["ml_readiness_score"] <= 100
     assert "breakdown" in data
+
+def test_eda_mode_pipeline_execution_and_quality_health_benchmark():
+    # 1. Nap dataset Melbourne Housing
+    load_res = client.post("/api/samples/melbourne/load")
+    assert load_res.status_code == 200
+    file_id = load_res.json()["file_id"]
+
+    # 2. Chay pipeline o che do EDA (khong tach train/test)
+    clean_payload = {
+        "file_id": file_id,
+        "purpose": "eda",
+        "pipeline": [
+            {"step_type": "standardize_nulls", "config": {}},
+            {"step_type": "missing_values", "config": {"strategy": "drop_rows"}}
+        ]
+    }
+    clean_res = client.post("/api/clean", json=clean_payload)
+    assert clean_res.status_code == 200
+    clean_data = clean_res.json()
+    assert clean_data["purpose"] == "eda"
+
+    # 3. Goi API danh gia chat luong du lieu cho file da lam sach theo che do EDA
+    bench_res = client.get(f"/api/benchmark/{file_id}")
+    assert bench_res.status_code == 200
+    bench_data = bench_res.json()
+
+    assert "overall_score" in bench_data
+    assert "rating" in bench_data
+    assert "breakdown" in bench_data
+    bd = bench_data["breakdown"]
+    assert "completeness_score" in bd
+    assert "deduplication_score" in bd
+    assert "type_uniformity_score" in bd
+    assert "retention_score" in bd
+    # Sau khi drop_rows cac dong missing, missing_cell_rate phai bang 0
+    assert bd["missing_cell_rate"] == 0.0
+    assert "diagnostics" in bench_data
