@@ -1,8 +1,9 @@
 import { appState, saveStateToStorage, clearSavedState, loadStateFromStorage } from "./state.js";
-import { uploadDatasetAPI, fetchDatasetProfileAPI, executePipelineAPI, downloadExportFileAPI, loadSampleDatasetAPI, benchmarkAIAPI, saveRecipeAPI } from "./api.js";
+import { uploadDatasetAPI, fetchDatasetProfileAPI, executePipelineAPI, downloadExportFileAPI, loadSampleDatasetAPI, benchmarkAIAPI, saveRecipeAPI, registerAPI, loginAPI, logoutAPI } from "./api.js";
 import { renderProfileData, updateStepIndicator } from "./ui-profiler.js";
 import { handleStepTypeChange, addStepToPipeline, renderPipelineQueue, renderAuditResult, updateColumnAvailability } from "./ui-pipeline.js";
 import { showToast } from "./dom-safe.js";
+
 
 document.addEventListener("DOMContentLoaded", () => {
     
@@ -350,50 +351,71 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Xử lý Form Submit (Kiểm tra logic chặt chẽ)
-    document.getElementById("auth-form").addEventListener("submit", (e) => {
+    // Xử lý Form Submit (ĐÃ NỐI API THẬT)
+    document.getElementById("auth-form").addEventListener("submit", async (e) => {
         e.preventDefault(); 
         
         const username = document.getElementById("auth-username").value;
         const pass = document.getElementById("auth-password").value;
+        const submitBtn = document.getElementById("auth-submit-btn");
         
-        // Nếu đang ở chế độ ĐĂNG KÝ
-        if (!isLogin) {
-            const confirmPass = document.getElementById("auth-confirm-password").value;
-            const termsCheck = document.getElementById("auth-terms").checked;
-            
-            if (pass !== confirmPass) {
-                showToast("Mật khẩu xác nhận không khớp!", "error");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Đang xử lý...";
+        
+        try {
+            // Chế độ ĐĂNG KÝ
+            if (!isLogin) {
+                const confirmPass = document.getElementById("auth-confirm-password").value;
+                const termsCheck = document.getElementById("auth-terms").checked;
+                
+                if (pass !== confirmPass) throw new Error("Mật khẩu xác nhận không khớp!");
+                if (!termsCheck) throw new Error("Bạn phải đồng ý với Điều khoản dịch vụ.");
+                
+                // Gọi API Đăng ký thật
+                await registerAPI(username, pass);
+                showToast("Đăng ký thành công! Vui lòng đăng nhập.", "success");
+                
+                document.getElementById("auth-password").value = "";
+                document.getElementById("auth-confirm-password").value = "";
+                document.getElementById("toggle-auth-mode").click(); 
                 return;
             }
-            if (!termsCheck) {
-                showToast("Bạn phải đồng ý với Điều khoản dịch vụ.", "error");
-                return;
+            
+            // Chế độ ĐĂNG NHẬP
+            const data = await loginAPI(username, pass); // Gọi API Đăng nhập thật
+            
+            // Lưu token vào state để dùng cho các request sau
+            appState.user = username;
+            appState.authToken = data.token; 
+            
+            document.getElementById("auth-modal").classList.add("hidden");
+            document.getElementById("btn-auth").classList.add("hidden");
+            document.getElementById("profile-badge").classList.remove("hidden");
+            document.getElementById("username-display").textContent = appState.user;
+            
+            showToast(`Đăng nhập thành công: ${appState.user}`, "success");
+            saveStateToStorage();
+
+        } catch (err) {
+            showToast(err.message, "error");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = isLogin ? "Đăng nhập" : "Đăng ký";
+        }
+    });
+
+    // Sửa lại Nút Đăng xuất
+    document.getElementById("btn-logout").addEventListener("click", async () => {
+        try {
+            if (appState.authToken) {
+                await logoutAPI(appState.authToken); // Gọi API Đăng xuất thật
             }
-            
-            // Nếu hợp lệ: Giả lập lưu vào DB thành công và ép người dùng quay lại Đăng nhập
-            showToast("Đăng ký thành công! Vui lòng đăng nhập.", "success");
-            
-            // Xóa form và chuyển ngược lại chế độ Đăng nhập
-            document.getElementById("auth-password").value = "";
-            document.getElementById("auth-confirm-password").value = "";
-            document.getElementById("toggle-auth-mode").click(); 
-            return; // Dừng lại, bắt người dùng tự bấm đăng nhập
+        } catch (err) {
+            console.warn("Lỗi server khi đăng xuất, vẫn dọn dẹp client:", err);
         }
         
-        // Nếu đang ở chế độ ĐĂNG NHẬP (Gọi API Login)
-        appState.user = username;
-        document.getElementById("auth-modal").classList.add("hidden");
-        document.getElementById("btn-auth").classList.add("hidden");
-        document.getElementById("profile-badge").classList.remove("hidden");
-        document.getElementById("username-display").textContent = appState.user;
-        
-        showToast(`Đăng nhập thành công: ${appState.user}`, "success");
-        saveStateToStorage();
-    });
-    
-    // Nút Đăng xuất
-    document.getElementById("btn-logout").addEventListener("click", () => {
         appState.user = null;
+        appState.authToken = null;
         document.getElementById("profile-badge").classList.add("hidden");
         document.getElementById("btn-auth").classList.remove("hidden");
         saveStateToStorage();
