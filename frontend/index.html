@@ -80,14 +80,110 @@
                     </div>
                 </form>
 
-                <!-- Thẻ Kaggle Hub (Chỉ hiện Online) -->
+                <!-- Thẻ Kho Dữ Liệu Thực Nghiệm (Chỉ hiện Online) -->
                 <div id="kaggle-hub" class="kaggle-hub hidden">
-                    <h3>Kaggle Sample Datasets</h3>
-                    <div class="sample-grid">
-                        <button class="btn-sample" data-id="melbourne">Melbourne Housing<br><small style="color:var(--text-muted);font-weight:normal;">34k dòng | Dự đoán giá nhà</small></button>
-                        <button class="btn-sample" data-id="titanic">Titanic Disaster<br><small style="color:var(--text-muted);font-weight:normal;">891 dòng | Nhiều null values</small></button>
-                        <button class="btn-sample" data-id="iris">Iris Species<br><small style="color:var(--text-muted);font-weight:normal;">150 dòng | Phân loại thực vật</small></button>
-                        <button class="btn-sample" data-id="churn">Customer Churn<br><small style="color:var(--text-muted);font-weight:normal;">7k dòng | Rời bỏ viễn thông</small></button>
+                    <div class="kaggle-hub-header">
+                        <div class="kaggle-title-row">
+                            <span class="kaggle-pill">
+                                <svg class="k-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14h-2v-4H8v-2h2V9h2v2h2v2h-2v4z"/>
+                                </svg>
+                                Benchmark Data Hub
+                            </span>
+                            <span class="kaggle-live-badge">4 Bộ Dữ Liệu Tiêu Chuẩn</span>
+                        </div>
+                        <h3 class="kaggle-heading">Kho Dữ Liệu Mẫu Thực Nghiệm (Benchmark Datasets)</h3>
+                        <p class="kaggle-desc">Nạp 1-click để trải nghiệm ngay các bài toán Phân tích khám phá (EDA) và Học máy (Machine Learning) với bộ dữ liệu thực tế.</p>
+                    </div>
+
+                    <div class="kaggle-showcase-grid">
+                        <!-- Card 1: Melbourne Housing -->
+                        <div class="kaggle-card" data-id="melbourne">
+                            <h4 class="kcard-title">Melbourne Housing</h4>
+                            <p class="kcard-snippet">Thị trường bất động sản Úc với nhiều biến số thực tế, tỷ lệ ô khuyết cao và ngoại lai cần xử lý.</p>
+                            <div class="kcard-meta-row">
+                                <span class="kcard-meta-item">13,580 dòng</span>
+                                <span class="kcard-meta-dot">•</span>
+                                <span class="kcard-meta-item">21 cột</span>
+                                <span class="kcard-meta-dot">•</span>
+                                <span class="kcard-badge-format">CSV</span>
+                            </div>
+                            <div class="kcard-tags">
+                                <span class="ktag">#BấtĐộngSản</span>
+                                <span class="ktag">#DựĐoánGiá</span>
+                                <span class="ktag">#MissingValues</span>
+                            </div>
+                            <button type="button" class="btn-sample btn-kcard-action" data-id="melbourne">
+                                <span>Nạp dữ liệu này</span>
+                                <span class="karrow">→</span>
+                            </button>
+                        </div>
+
+                        <!-- Card 2: Titanic Disaster -->
+                        <div class="kaggle-card" data-id="titanic">
+                            <h4 class="kcard-title">Titanic Disaster</h4>
+                            <p class="kcard-snippet">Dữ liệu thảm họa kinh điển thế giới. Đầy đủ thử thách: Missing Age, High Nulls Cabin, Encoding Giới tính.</p>
+                            <div class="kcard-meta-row">
+                                <span class="kcard-meta-item">891 dòng</span>
+                                <span class="kcard-meta-dot">•</span>
+                                <span class="kcard-meta-item">12 cột</span>
+                                <span class="kcard-meta-dot">•</span>
+                                <span class="kcard-badge-format">CSV</span>
+                            </div>
+                            <div class="kcard-tags">
+                                <span class="ktag">#Survival</span>
+                                <span class="ktag">#Categorical</span>
+                                <span class="ktag">#Benchmark</span>
+                            </div>
+                            <button type="button" class="btn-sample btn-kcard-action" data-id="titanic">
+                                <span>Nạp dữ liệu này</span>
+                                <span class="karrow">→</span>
+                            </button>
+                        </div>
+
+                        <!-- Card 3: Iris Species -->
+                        <div class="kaggle-card" data-id="iris">
+                            <h4 class="kcard-title">Iris Species</h4>
+                            <p class="kcard-snippet">Phân loại 3 loài hoa của R.A. Fisher. Cấu trúc số học hoàn hảo, lý tưởng để thử nghiệm Scaling & Trực quan hóa.</p>
+                            <div class="kcard-meta-row">
+                                <span class="kcard-meta-item">150 dòng</span>
+                                <span class="kcard-meta-dot">•</span>
+                                <span class="kcard-meta-item">5 cột</span>
+                                <span class="kcard-meta-dot">•</span>
+                                <span class="kcard-badge-format">CSV</span>
+                            </div>
+                            <div class="kcard-tags">
+                                <span class="ktag">#SinhHọc</span>
+                                <span class="ktag">#PhânLoại3Lớp</span>
+                                <span class="ktag">#ChuẩnHóa</span>
+                            </div>
+                            <button type="button" class="btn-sample btn-kcard-action" data-id="iris">
+                                <span>Nạp dữ liệu này</span>
+                                <span class="karrow">→</span>
+                            </button>
+                        </div>
+
+                        <!-- Card 4: Customer Churn -->
+                        <div class="kaggle-card" data-id="churn">
+                            <h4 class="kcard-title">Customer Churn</h4>
+                            <p class="kcard-snippet">Dữ liệu viễn thông thực tế dự đoán rời mạng. Đa dạng biến hợp đồng, thanh toán, TotalCharges dạng text.</p>
+                            <div class="kcard-meta-row">
+                                <span class="kcard-meta-item">7,043 dòng</span>
+                                <span class="kcard-meta-dot">•</span>
+                                <span class="kcard-meta-item">21 cột</span>
+                                <span class="kcard-meta-dot">•</span>
+                                <span class="kcard-badge-format">CSV</span>
+                            </div>
+                            <div class="kcard-tags">
+                                <span class="ktag">#ViễnThông</span>
+                                <span class="ktag">#KháchHàng</span>
+                                <span class="ktag">#FinTech</span>
+                            </div>
+                            <button type="button" class="btn-sample btn-kcard-action" data-id="churn">
+                                <span>Nạp dữ liệu này</span>
+                                <span class="karrow">→</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -181,6 +277,26 @@
                         <input type="range" id="train-split" min="50" max="90" value="80" step="5">
                         <span id="split-display">Train: 80% | Test: 20%</span>
                     </div>
+                </div>
+            </div>
+
+            <!-- THANH MẪU KỊCH BẢN CÓ SẴN (PRESET RECIPES) -->
+            <div id="recipe-library" class="recipe-toolbar hidden">
+                <div class="recipe-toolbar-title">
+                    <span class="recipe-badge-icon">⚡</span>
+                    <div>
+                        <strong>Kịch bản mẫu chuẩn hóa (Preset Recipes):</strong>
+                        <p class="recipe-hint">Chọn một kịch bản có sẵn để nạp nhanh quy trình chuẩn vào danh sách</p>
+                    </div>
+                </div>
+                <div class="recipe-toolbar-form">
+                    <select id="recipe-select" class="form-control">
+                        <option value="">-- Chọn kịch bản mẫu có sẵn --</option>
+                        <option value="preset_1">1. Bộ lọc khuyết thiếu & Chuẩn hóa Null</option>
+                        <option value="preset_2">2. Xử lý nhiễu & Cắt lọc ngoại lai (IQR)</option>
+                        <option value="preset_3">3. Chuẩn hóa dữ liệu số và Categorical</option>
+                    </select>
+                    <button type="button" id="btn-apply-recipe" class="btn btn-outline">Áp dụng mẫu này</button>
                 </div>
             </div>
 
@@ -308,16 +424,6 @@
                             <button type="button" id="btn-clear-pipeline" class="btn-link text-danger">Xóa tất cả</button>
                         </div>
                     </div>
-                    
-                    <div id="recipe-library" class="recipe-library hidden">
-                        <select id="recipe-select" class="form-control">
-                            <option value="">-- Chọn Recipe đã lưu --</option>
-                            <option value="preset_1">Bộ lọc dữ liệu khuyết thiếu</option>
-                            <option value="preset_2">Xử lý nhiễu & Ngoại lai</option>
-                            <option value="preset_3">Chuẩn hóa dữ liệu số và Categorical</option>
-                        </select>
-                        <button id="btn-apply-recipe" class="btn btn-outline">Áp dụng</button>
-                    </div>
 
                     <ul id="pipeline-list" class="pipeline-list">
                         <li class="empty-state">Chưa có bước xử lý nào.</li>
@@ -356,16 +462,97 @@
                     </div>
                 </div>
 
-                <div id="ml-benchmark" class="ml-benchmark hidden">
-                    <div class="section-title">ML-Readiness Benchmark (Chấm điểm dữ liệu)</div>
-                    <div class="health-meter">
+                <!-- BÁO CÁO SỨC KHỎE & ĐỘ SẠCH DỮ LIỆU (DATA QUALITY HEALTH CARD) - CHO CẢ EDA VÀ ML -->
+                <div id="ml-benchmark" class="data-quality-card hidden">
+                    <div class="dq-header">
+                        <div class="dq-title-group">
+                            <div class="dq-badge-row">
+                                <span class="dq-badge-shield">🛡️ Data Quality Health</span>
+                                <span id="dq-purpose-badge" class="badge badge-info">Phân tích Khám phá & Trực quan hóa (EDA / BI)</span>
+                            </div>
+                            <h3 class="dq-main-title">Báo Cáo Sức Khỏe & Độ Sạch Dữ Liệu</h3>
+                            <p class="dq-subtitle">Đánh giá toàn diện 4 tiêu chuẩn vệ sinh dữ liệu quốc tế: Độ đầy đủ, Khử trùng lặp, Đồng nhất kiểu và Bảo toàn mẫu.</p>
+                        </div>
+                        <div class="dq-score-summary">
+                            <div class="dq-score-ring-box">
+                                <div class="dq-score-number" id="health-score-text">--/100</div>
+                                <div class="dq-score-label" id="health-score-rating">Đang chờ đánh giá</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thanh đo tổng thể -->
+                    <div class="health-meter dq-overall-meter">
                         <div class="meter-bar">
                             <div class="meter-fill" id="health-score-fill" style="width: 0%;"></div>
                         </div>
-                        <span id="health-score-text">Đang đánh giá...</span>
                     </div>
-                    <button id="btn-test-ai" class="btn btn-outline">Chấm điểm & Test AI</button>
-                    <div id="ai-results" class="ai-results hidden">
+
+                    <!-- 4 Sub-meters Breakdown -->
+                    <div class="dq-submeters-grid">
+                        <!-- 1. Completeness (30 pts) -->
+                        <div class="dq-submeter-card">
+                            <div class="dq-submeter-top">
+                                <span class="dq-submeter-label">1. Độ đầy đủ (Completeness)</span>
+                                <strong class="dq-submeter-score" id="sub-score-completeness">-- / 30đ</strong>
+                            </div>
+                            <div class="dq-mini-bar">
+                                <div class="dq-mini-fill" id="sub-bar-completeness" style="width: 0%;"></div>
+                            </div>
+                            <div class="dq-submeter-info" id="sub-detail-completeness">Tỷ lệ ô khuyết: --%</div>
+                        </div>
+
+                        <!-- 2. Deduplication (20 pts) -->
+                        <div class="dq-submeter-card">
+                            <div class="dq-submeter-top">
+                                <span class="dq-submeter-label">2. Khử trùng lặp (Deduplication)</span>
+                                <strong class="dq-submeter-score" id="sub-score-dedup">-- / 20đ</strong>
+                            </div>
+                            <div class="dq-mini-bar">
+                                <div class="dq-mini-fill" id="sub-bar-dedup" style="width: 0%;"></div>
+                            </div>
+                            <div class="dq-submeter-info" id="sub-detail-dedup">Tỷ lệ trùng lặp: --%</div>
+                        </div>
+
+                        <!-- 3. Type Uniformity (25 pts) -->
+                        <div class="dq-submeter-card">
+                            <div class="dq-submeter-top">
+                                <span class="dq-submeter-label">3. Đồng nhất kiểu (Uniformity)</span>
+                                <strong class="dq-submeter-score" id="sub-score-uniformity">-- / 25đ</strong>
+                            </div>
+                            <div class="dq-mini-bar">
+                                <div class="dq-mini-fill" id="sub-bar-uniformity" style="width: 0%;"></div>
+                            </div>
+                            <div class="dq-submeter-info" id="sub-detail-uniformity">Cột số & phân loại sạch</div>
+                        </div>
+
+                        <!-- 4. Data Retention (25 pts) -->
+                        <div class="dq-submeter-card">
+                            <div class="dq-submeter-top">
+                                <span class="dq-submeter-label">4. Bảo toàn dòng (Retention)</span>
+                                <strong class="dq-submeter-score" id="sub-score-retention">-- / 25đ</strong>
+                            </div>
+                            <div class="dq-mini-bar">
+                                <div class="dq-mini-fill" id="sub-bar-retention" style="width: 0%;"></div>
+                            </div>
+                            <div class="dq-submeter-info" id="sub-detail-retention">Tỷ lệ giữ lại dòng: --%</div>
+                        </div>
+                    </div>
+
+                    <!-- Khung chẩn đoán chuyên sâu (Diagnostics) -->
+                    <div id="dq-diagnostics-box" class="dq-diagnostics-box hidden">
+                        <div class="dq-diag-header">
+                            <span class="dq-diag-icon">🔍</span>
+                            <strong>Chẩn đoán chi tiết & Cảnh báo chất lượng:</strong>
+                        </div>
+                        <ul id="dq-diagnostics-list" class="dq-diag-list"></ul>
+                    </div>
+
+                    <div class="dq-action-row">
+                        <button id="btn-test-ai" class="btn btn-outline dq-btn-check">
+                            <span class="btn-icon">⚡</span>
+                            <span id="btn-test-ai-label">Đánh giá sức khỏe dữ liệu</span>
+                        </button>
                     </div>
                 </div>
 

@@ -4,13 +4,13 @@ import { updateStepIndicator } from "./ui-profiler.js";
 import { escapeHtml } from "./dom-safe.js";
 
 const STEP_NAMES = {
-    standardize_nulls: "Standardize Null Signatures",
-    clean_numeric: "Currency Formatting & Numeric Cast",
-    missing_values: "Missing Value Imputation",
-    outlier: "Outlier Handling",
-    encoding: "Categorical Encoding",
-    scaling: "Feature Scaling",
-    round: "Numeric Rounding"
+    standardize_nulls: "Chuẩn hóa ký tự lạ thành Null",
+    clean_numeric: "Lọc ký tự tiền tệ & Ép kiểu số",
+    missing_values: "Xử lý giá trị thiếu (Missing Values)",
+    outlier: "Phát hiện & Xử lý ngoại lai (Outliers)",
+    encoding: "Mã hóa phân loại (Categorical Encoding)",
+    scaling: "Chuẩn hóa thang đo (Feature Scaling)",
+    round: "Làm tròn số thập phân (Rounding)"
 };
 
 const MONEY_PATTERN = /^\s*[+-]?\s*\$?\s*(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?\s*(?:đ|₫|vnd|vnđ)?\s*$/i;
@@ -168,7 +168,7 @@ export function renderPipelineQueue() {
     listEl.innerHTML = "";
 
     if (appState.pipelineSteps.length === 0) {
-        listEl.innerHTML = `<li class="empty-state">Queue is empty.</li>`;
+        listEl.innerHTML = `<li class="empty-state">Chưa có bước xử lý nào trong danh sách.</li>`;
         executeBtn.disabled = true;
         return;
     }
@@ -180,20 +180,47 @@ export function renderPipelineQueue() {
         li.className = "pipeline-item";
 
         const colsText = step.config.columns && step.config.columns.length > 0
-            ? `Features: ${step.config.columns.join(", ")}`
-            : "Scope: Global";
+            ? `Cột: ${step.config.columns.join(", ")}`
+            : "Phạm vi: Toàn bảng (Global)";
 
         const details = Object.entries(step.config)
             .filter(([key]) => key !== "columns")
-            .map(([key, val]) => `${key}: ${val}`)
+            .map(([key, val]) => {
+                if (key === "strategy") {
+                    const stratMap = {
+                        mean: "Trung bình",
+                        median: "Trung vị",
+                        mode: "Yếu vị (Mode)",
+                        interpolate: "Nội suy",
+                        drop_row: "Xóa dòng Null",
+                        drop_col: "Xóa cột Null",
+                        constant: `Điền: ${step.config.fill_value || ''}`
+                    };
+                    return `Phương pháp: ${stratMap[val] || val}`;
+                }
+                if (key === "method") {
+                    const methodMap = {
+                        iqr: "IQR 1.5",
+                        z_score: "Z-Score",
+                        one_hot: "One-Hot",
+                        label: "Label",
+                        min_max: "Min-Max (0-1)",
+                        standard: "Standard Scaler"
+                    };
+                    return `Phương pháp: ${methodMap[val] || val}`;
+                }
+                if (key === "handling") return `Cách xử lý: ${val === 'remove' ? 'Xóa bỏ' : 'Cắt ngọn'}`;
+                if (key === "decimals") return `Làm tròn: ${val} số`;
+                return `${key}: ${val}`;
+            })
             .join(" | ");
 
         li.innerHTML = `
             <div class="step-info">
-                <div class="step-title">Step ${index + 1}: ${escapeHtml(STEP_NAMES[step.step_type] || step.step_type)}</div>
+                <div class="step-title">Bước ${index + 1}: ${escapeHtml(STEP_NAMES[step.step_type] || step.step_type)}</div>
                 <div class="step-detail">${escapeHtml(colsText)}${details ? ` — (${escapeHtml(details)})` : ""}</div>
             </div>
-            <button type="button" class="btn-remove-step" data-index="${index}" title="Remove step">&times;</button>
+            <button type="button" class="btn-remove-step" data-index="${index}" title="Xóa bước này">&times;</button>
         `;
         listEl.appendChild(li);
     });
@@ -240,18 +267,31 @@ export function renderAuditResult(auditData) {
         btnJson.classList.add("hidden");
         btnTrain.classList.remove("hidden");
         btnTest.classList.remove("hidden");
-        
-        // Hiện khung đánh giá AI
-        if (appState.mode === 'online') {
-            document.getElementById("ml-benchmark").classList.remove("hidden");
-            document.getElementById("health-score-text").textContent = "Ready to evaluate";
-        }
     } else {
         btnCsv.classList.remove("hidden");
         btnJson.classList.remove("hidden");
         btnTrain.classList.add("hidden");
         btnTest.classList.add("hidden");
-        document.getElementById("ml-benchmark").classList.add("hidden");
+    }
+
+    // Hiển thị Thẻ Sức Khỏe & Độ Sạch Dữ Liệu cho CẢ EDA VÀ ML (khi ở Online mode)
+    const dqCard = document.getElementById("ml-benchmark");
+    const purposeBadge = document.getElementById("dq-purpose-badge");
+    if (dqCard) {
+        if (appState.mode === 'online') {
+            dqCard.classList.remove("hidden");
+            if (purposeBadge) {
+                if (appState.purpose === "ml") {
+                    purposeBadge.className = "badge badge-primary";
+                    purposeBadge.textContent = "Học máy & Tách Train/Test (ML-Readiness)";
+                } else {
+                    purposeBadge.className = "badge badge-info";
+                    purposeBadge.textContent = "Phân tích Khám phá & Trực quan hóa (EDA / BI)";
+                }
+            }
+        } else {
+            dqCard.classList.add("hidden");
+        }
     }
 
     const resultSection = document.getElementById("result-section");

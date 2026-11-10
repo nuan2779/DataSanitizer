@@ -58,7 +58,7 @@ export function downloadExportFileAPI(fileId, format = "csv", suffix = "") {
 
 // --- LUỒNG TÍNH NĂNG MỚI (ENTERPRISE EDITION) ---
 
-// Kaggle Hub: Nạp dữ liệu mẫu
+// Benchmark Data Hub: Nạp dữ liệu mẫu
 export async function loadSampleDatasetAPI(sampleId) {
     const response = await fetch(`${API_BASE_URL}/samples/${encodeURIComponent(sampleId)}/load`, {
         method: "POST"

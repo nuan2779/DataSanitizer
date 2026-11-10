@@ -42,7 +42,7 @@ SAMPLE_MAP = {
 
 @router.get("/samples")
 def get_sample_catalog():
-    """Tra ve danh muc 4 bo du lieu mau Kaggle Hub."""
+    """Tra ve danh muc 4 bo du lieu mau thuc nghiem (Benchmark Datasets)."""
     catalog = []
     for key, info in SAMPLE_MAP.items():
         file_path = SAMPLES_DIR / info["file"]
