@@ -1,5 +1,20 @@
 import { appState, saveStateToStorage, clearSavedState, loadStateFromStorage } from "./state.js";
-import { uploadDatasetAPI, fetchDatasetProfileAPI, executePipelineAPI, downloadExportFileAPI, loadSampleDatasetAPI, benchmarkAIAPI, saveRecipeAPI } from "./api.js";
+import { 
+    uploadDatasetAPI, 
+    fetchDatasetProfileAPI, 
+    executePipelineAPI, 
+    downloadExportFileAPI, 
+    loadSampleDatasetAPI, 
+    benchmarkAIAPI, 
+    saveRecipeAPI,
+    loginAPI,
+    registerAPI,
+    logoutAPI,
+    getMeAPI,
+    fetchHistoryAPI,
+    downloadHistoryFileAPI,
+    deleteHistoryItemAPI
+} from "./api.js";
 import { renderProfileData, updateStepIndicator } from "./ui-profiler.js";
 import { handleStepTypeChange, addStepToPipeline, renderPipelineQueue, renderAuditResult, updateColumnAvailability } from "./ui-pipeline.js";
 import { showToast } from "./dom-safe.js";
@@ -51,41 +66,195 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("pipeline-section").classList.remove("hidden");
     }
 
-    // --- 2. CHUYỂN ĐỔI CHẾ ĐỘ OFFLINE / ONLINE ---
-    const modeToggle = document.getElementById("mode-toggle");
-    modeToggle.addEventListener("change", (e) => {
-        appState.mode = e.target.checked ? 'online' : 'offline';
+    // --- 2. QUẢN LÝ CHẾ ĐỘ OFFLINE / ONLINE & XÁC THỰC BẮT BUỘC TRÊN CLOUD ---
+    function applyWorkspaceMode(mode, silent = false) {
+        appState.mode = mode;
         saveStateToStorage();
         
         const offlineBadge = document.getElementById("offline-badge");
         const kaggleHub = document.getElementById("kaggle-hub");
         const btnHistory = document.getElementById("btn-history");
         const btnAuth = document.getElementById("btn-auth");
+        const profileBadge = document.getElementById("profile-badge");
+        const usernameDisplay = document.getElementById("username-display");
         const recipeLib = document.getElementById("recipe-library");
         const btnSaveRecipe = document.getElementById("btn-save-recipe");
-        
-        if (appState.mode === 'online') {
+        const subNavBar = document.querySelector(".sub-nav-bar");
+        const onlineAuthSection = document.getElementById("online-auth-section");
+        const uploadSection = document.getElementById("upload-section");
+        const profileSection = document.getElementById("profile-section");
+        const pipelineSection = document.getElementById("pipeline-section");
+        const resultSection = document.getElementById("result-section");
+
+        if (mode === 'online') {
             offlineBadge.classList.add("hidden");
-            kaggleHub.classList.remove("hidden");
-            btnHistory.classList.remove("hidden");
-            if (!appState.user) btnAuth.classList.remove("hidden");
-            recipeLib.classList.remove("hidden");
-            btnSaveRecipe.classList.remove("hidden");
-            showToast("Đã chuyển sang Cloud Workspace", "success");
-        } else {
-            offlineBadge.classList.remove("hidden");
-            kaggleHub.classList.add("hidden");
-            btnHistory.classList.add("hidden");
             btnAuth.classList.add("hidden");
-            document.getElementById("profile-badge").classList.add("hidden");
-            recipeLib.classList.add("hidden");
-            btnSaveRecipe.classList.add("hidden");
-            document.getElementById("ml-benchmark").classList.add("hidden");
-            showToast("Đã chuyển sang Chế độ Cục bộ", "success");
+
+            if (!appState.user) {
+                // CHƯA ĐĂNG NHẬP: Bỏ hỏi đưa file, chỉ hiển thị màn hình đăng nhập
+                if (onlineAuthSection) onlineAuthSection.classList.remove("hidden");
+                if (subNavBar) subNavBar.classList.add("hidden");
+                if (uploadSection) uploadSection.classList.add("hidden");
+                if (profileSection) profileSection.classList.add("hidden");
+                if (pipelineSection) pipelineSection.classList.add("hidden");
+                if (resultSection) resultSection.classList.add("hidden");
+                if (kaggleHub) kaggleHub.classList.add("hidden");
+                if (btnHistory) btnHistory.classList.add("hidden");
+                if (profileBadge) profileBadge.classList.add("hidden");
+                if (recipeLib) recipeLib.classList.add("hidden");
+                if (btnSaveRecipe) btnSaveRecipe.classList.add("hidden");
+                if (!silent) showToast("Vui lòng đăng nhập để sử dụng Cloud Workspace", "info");
+            } else {
+                // ĐÃ ĐĂNG NHẬP: Hiển thị đầy đủ giao diện làm việc
+                if (onlineAuthSection) onlineAuthSection.classList.add("hidden");
+                if (subNavBar) subNavBar.classList.remove("hidden");
+                if (uploadSection) uploadSection.classList.remove("hidden");
+                if (kaggleHub) kaggleHub.classList.remove("hidden");
+                if (btnHistory) btnHistory.classList.remove("hidden");
+                if (profileBadge) profileBadge.classList.remove("hidden");
+                if (usernameDisplay) usernameDisplay.textContent = appState.user;
+                if (recipeLib) recipeLib.classList.remove("hidden");
+                if (btnSaveRecipe) btnSaveRecipe.classList.remove("hidden");
+                if (!silent) showToast(`Chào mừng trở lại, ${appState.user}`, "success");
+            }
+        } else {
+            // CHẾ ĐỘ OFFLINE: Xử lý cục bộ 100%, không cần đăng nhập
+            if (onlineAuthSection) onlineAuthSection.classList.add("hidden");
+            if (subNavBar) subNavBar.classList.remove("hidden");
+            if (uploadSection) uploadSection.classList.remove("hidden");
+            if (offlineBadge) offlineBadge.classList.remove("hidden");
+            if (kaggleHub) kaggleHub.classList.add("hidden");
+            if (btnHistory) btnHistory.classList.add("hidden");
+            if (btnAuth) btnAuth.classList.add("hidden");
+            if (profileBadge) profileBadge.classList.add("hidden");
+            if (recipeLib) recipeLib.classList.add("hidden");
+            if (btnSaveRecipe) btnSaveRecipe.classList.add("hidden");
+            const mlBenchmark = document.getElementById("ml-benchmark");
+            if (mlBenchmark) mlBenchmark.classList.add("hidden");
+            if (!silent) showToast("Đã chuyển sang Chế độ Cục bộ (Offline)", "info");
+        }
+    }
+
+    const modeToggle = document.getElementById("mode-toggle");
+    modeToggle.addEventListener("change", (e) => {
+        const selectedMode = e.target.checked ? 'online' : 'offline';
+        applyWorkspaceMode(selectedMode);
+    });
+
+    // --- TAB CHUYỂN ĐỔI GIỮA ĐĂNG NHẬP VÀ ĐĂNG KÝ TRÊN ONLINE AUTH CARD ---
+    const tabLoginBtn = document.getElementById("tab-login-btn");
+    const tabRegisterBtn = document.getElementById("tab-register-btn");
+    const loginForm = document.getElementById("online-login-form");
+    const registerForm = document.getElementById("online-register-form");
+    const loginErr = document.getElementById("online-login-error");
+    const regErr = document.getElementById("online-reg-error");
+
+    function switchAuthTab(targetTab) {
+        if (targetTab === "login") {
+            tabLoginBtn?.classList.add("active");
+            tabRegisterBtn?.classList.remove("active");
+            loginForm?.classList.remove("hidden");
+            registerForm?.classList.add("hidden");
+            if (loginErr) loginErr.classList.add("hidden");
+        } else {
+            tabRegisterBtn?.classList.add("active");
+            tabLoginBtn?.classList.remove("active");
+            registerForm?.classList.remove("hidden");
+            loginForm?.classList.add("hidden");
+            if (regErr) regErr.classList.add("hidden");
+        }
+    }
+
+    tabLoginBtn?.addEventListener("click", () => switchAuthTab("login"));
+    tabRegisterBtn?.addEventListener("click", () => switchAuthTab("register"));
+
+    // --- XỬ LÝ SUBMIT FORM ĐĂNG NHẬP CLOUD WORKSPACE ---
+    loginForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const identifier = document.getElementById("online-login-identifier").value.trim();
+        const password = document.getElementById("online-login-password").value;
+        const submitBtn = document.getElementById("btn-submit-online-login");
+
+        if (loginErr) loginErr.classList.add("hidden");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Đang xác thực...";
+
+        try {
+            const data = await loginAPI(identifier, password);
+            appState.user = data.user.username;
+            saveStateToStorage();
+            loginForm.reset();
+            applyWorkspaceMode("online");
+            showToast(`Đăng nhập thành công: ${appState.user}`, "success");
+        } catch (err) {
+            if (loginErr) {
+                loginErr.textContent = err.message || "Tên đăng nhập hoặc mật khẩu không chính xác.";
+                loginErr.classList.remove("hidden");
+            }
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Đăng nhập vào Cloud";
         }
     });
+
+    // --- XỬ LÝ SUBMIT FORM ĐĂNG KÝ CLOUD WORKSPACE ---
+    registerForm?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const username = document.getElementById("online-reg-username").value.trim();
+        const email = document.getElementById("online-reg-email").value.trim();
+        const password = document.getElementById("online-reg-password").value;
+        const confirmPass = document.getElementById("online-reg-confirm").value;
+        const submitBtn = document.getElementById("btn-submit-online-reg");
+
+        if (regErr) regErr.classList.add("hidden");
+
+        if (password !== confirmPass) {
+            if (regErr) {
+                regErr.textContent = "Mật khẩu xác nhận không khớp. Vui lòng kiểm tra lại.";
+                regErr.classList.remove("hidden");
+            }
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Đang khởi tạo tài khoản...";
+
+        try {
+            const data = await registerAPI(username, email, password);
+            appState.user = data.user.username;
+            saveStateToStorage();
+            registerForm.reset();
+            applyWorkspaceMode("online");
+            showToast(`Đăng ký tài khoản thành công! Chào mừng ${appState.user}`, "success");
+        } catch (err) {
+            if (regErr) {
+                regErr.textContent = err.message || "Đăng ký không thành công. Vui lòng kiểm tra lại thông tin.";
+                regErr.classList.remove("hidden");
+            }
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Tạo tài khoản";
+        }
+    });
+
+    // Khởi tạo trạng thái ban đầu theo mode đã lưu
+    if (appState.mode === 'online') {
+        getMeAPI().then(me => {
+            if (me && me.user) {
+                appState.user = me.user.username;
+                saveStateToStorage();
+            } else if (!appState.user) {
+                appState.user = null;
+                saveStateToStorage();
+            }
+            applyWorkspaceMode(appState.mode, true);
+        }).catch(() => {
+            applyWorkspaceMode(appState.mode, true);
+        });
+    } else {
+        applyWorkspaceMode("offline", true);
+    }
     modeToggle.checked = (appState.mode === 'online');
-    modeToggle.dispatchEvent(new Event('change'));
 
     // --- 3. ĐIỀU HƯỚNG TƯƠNG TÁC ---
     function scrollToSection(targetId) {
@@ -475,17 +644,23 @@ document.addEventListener("DOMContentLoaded", () => {
         saveStateToStorage();
     });
     
-    // Sửa lỗi #3: Sign Out và Chuyển Đăng ký
-    document.getElementById("btn-logout").addEventListener("click", () => {
+    // Sign Out khỏi hệ thống
+    document.getElementById("btn-logout").addEventListener("click", async () => {
+        try {
+            await logoutAPI();
+        } catch (e) {
+            console.warn("Logout error:", e);
+        }
         appState.user = null;
-        document.getElementById("profile-badge").classList.add("hidden");
-        document.getElementById("btn-auth").classList.remove("hidden");
         saveStateToStorage();
-        showToast("Đã đăng xuất", "success");
+        const historyList = document.getElementById("history-list");
+        if (historyList) historyList.innerHTML = `<li class="empty-state">Chưa có lịch sử xử lý nào.</li>`;
+        applyWorkspaceMode(appState.mode, true);
+        showToast("Đã đăng xuất khỏi Cloud Workspace", "info");
     });
     
     let isLogin = true;
-    document.getElementById("toggle-auth-mode").addEventListener("click", (e) => {
+    document.getElementById("toggle-auth-mode")?.addEventListener("click", (e) => {
         e.preventDefault();
         isLogin = !isLogin;
         document.getElementById("auth-title").textContent = isLogin ? "Đăng nhập hệ thống" : "Đăng ký tài khoản";
@@ -493,19 +668,62 @@ document.addEventListener("DOMContentLoaded", () => {
         e.target.textContent = isLogin ? "Đăng ký ngay" : "Đăng nhập";
     });
 
-    // Drawer Lịch sử
+    // Drawer Lịch sử (Gọi API thật từ backend, lưu riêng biệt theo từng tài khoản)
     document.getElementById("btn-close-history").addEventListener("click", () => document.getElementById("history-drawer").classList.add("hidden"));
     document.getElementById("btn-history").addEventListener("click", async () => {
         document.getElementById("history-drawer").classList.remove("hidden");
-        // Giả lập logic gọi API hiển thị
         const list = document.getElementById("history-list");
-        if(appState.filename && appState.pipelineSteps.length > 0) {
-            list.innerHTML = `
-                <li class="history-item">
-                    <div class="history-title">${appState.filename}</div>
-                    <div class="history-meta">Vừa xong • ${appState.pipelineSteps.length} bước</div>
-                </li>
-            `;
+        list.innerHTML = `<li class="empty-state">Đang tải lịch sử của tài khoản ${appState.user || ""}...</li>`;
+        
+        try {
+            const history = await fetchHistoryAPI();
+            if (!history || history.length === 0) {
+                list.innerHTML = `<li class="empty-state">Chưa có lịch sử xử lý nào trên tài khoản này.</li>`;
+                return;
+            }
+            list.innerHTML = history.map(item => {
+                const rows = item.stats?.processed_data?.rows;
+                const purpose = item.stats?.purpose === "ml" ? "Học máy (ML)" : "Khám phá (EDA)";
+                const metaInfo = [
+                    item.created_at || "Vừa xong",
+                    rows !== undefined ? `${rows} dòng` : "Đã xử lý",
+                    purpose
+                ].join(" • ");
+
+                return `
+                    <li class="history-item" id="history-item-${item.id}">
+                        <div class="history-title">${item.filename || "Tập dữ liệu"}</div>
+                        <div class="history-meta">${metaInfo}</div>
+                        <div class="history-actions" style="display: flex; gap: 8px; margin-top: 8px;">
+                            <button type="button" class="btn btn-outline btn-dl-history" data-id="${item.id}" style="padding: 3px 8px; font-size: 11px;">Tải lại CSV</button>
+                            <button type="button" class="btn-link text-danger btn-del-history" data-id="${item.id}" style="font-size: 11px;">Xóa</button>
+                        </div>
+                    </li>
+                `;
+            }).join("");
+
+            // Gán sự kiện Tải lại và Xóa
+            list.querySelectorAll(".btn-dl-history").forEach(btn => {
+                btn.addEventListener("click", () => downloadHistoryFileAPI(btn.dataset.id));
+            });
+
+            list.querySelectorAll(".btn-del-history").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    const id = btn.dataset.id;
+                    try {
+                        await deleteHistoryItemAPI(id);
+                        document.getElementById(`history-item-${id}`)?.remove();
+                        if (list.children.length === 0) {
+                            list.innerHTML = `<li class="empty-state">Chưa có lịch sử xử lý nào trên tài khoản này.</li>`;
+                        }
+                        showToast("Đã xóa bản ghi lịch sử", "info");
+                    } catch (err) {
+                        showToast("Lỗi xóa: " + err.message, "error");
+                    }
+                });
+            });
+        } catch (err) {
+            list.innerHTML = `<li class="empty-state">Không thể tải lịch sử: ${err.message}</li>`;
         }
     });
 });

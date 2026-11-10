@@ -43,6 +43,7 @@ export async function executePipelineAPI(fileId, pipeline, purpose, trainSplit) 
     const response = await fetch(`${API_BASE_URL}/clean`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload)
     });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Pipeline execution failed"));
@@ -61,7 +62,8 @@ export function downloadExportFileAPI(fileId, format = "csv", suffix = "") {
 // Benchmark Data Hub: Nạp dữ liệu mẫu
 export async function loadSampleDatasetAPI(sampleId) {
     const response = await fetch(`${API_BASE_URL}/samples/${encodeURIComponent(sampleId)}/load`, {
-        method: "POST"
+        method: "POST",
+        credentials: "include"
     });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Failed to load sample dataset"));
     return await response.json();
@@ -72,6 +74,7 @@ export async function saveRecipeAPI(name, steps) {
     const response = await fetch(`${API_BASE_URL}/recipes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ name: name, steps: steps })
     });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Failed to save recipe"));
@@ -82,6 +85,76 @@ export async function saveRecipeAPI(name, steps) {
 export async function benchmarkAIAPI(fileId) {
     const response = await fetch(`${API_BASE_URL}/benchmark/${encodeURIComponent(fileId)}`);
     if (!response.ok) throw new Error(await getErrorMsg(response, "AI Benchmark failed"));
+    return await response.json();
+}
+
+// --- XÁC THỰC NGƯỜI DÙNG & PHIÊN LÀM VIỆC (AUTH & SESSION) ---
+
+export async function loginAPI(identifier, password) {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ identifier, password })
+    });
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Đăng nhập thất bại"));
+    return await response.json();
+}
+
+export async function registerAPI(username, email, password) {
+    const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username, email, password })
+    });
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Đăng ký thất bại"));
+    return await response.json();
+}
+
+export async function logoutAPI() {
+    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include"
+    });
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Đăng xuất thất bại"));
+    return await response.json();
+}
+
+export async function getMeAPI() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/me`, {
+            method: "GET",
+            credentials: "include"
+        });
+        if (!response.ok) return null;
+        return await response.json();
+    } catch {
+        return null;
+    }
+}
+
+export async function fetchHistoryAPI() {
+    const response = await fetch(`${API_BASE_URL}/history`, {
+        method: "GET",
+        credentials: "include"
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.history || [];
+}
+
+export function downloadHistoryFileAPI(historyId, format = "csv") {
+    const url = `${API_BASE_URL}/history/${encodeURIComponent(historyId)}/download?file_format=${format}`;
+    window.open(url, "_blank");
+}
+
+export async function deleteHistoryItemAPI(historyId) {
+    const response = await fetch(`${API_BASE_URL}/history/${encodeURIComponent(historyId)}`, {
+        method: "DELETE",
+        credentials: "include"
+    });
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Không thể xóa lịch sử"));
     return await response.json();
 }
 

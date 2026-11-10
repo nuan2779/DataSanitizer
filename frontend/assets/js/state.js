@@ -23,7 +23,8 @@ export function saveStateToStorage() {
             pipelineSteps: appState.pipelineSteps,
             purpose: appState.purpose,
             trainSplit: appState.trainSplit,
-            totalRows: appState.totalRows // Lưu vào localStorage
+            totalRows: appState.totalRows, // Lưu vào localStorage
+            user: appState.user
         };
         localStorage.setItem('datasanitizer_state', JSON.stringify(stateToSave));
     } catch (e) {

@@ -58,6 +58,81 @@
     <!-- ================= MAIN CONTENT ================= -->
     <main class="container main-content">
 
+        <!-- GIAO DIỆN XÁC THỰC BẮT BUỘC TRÊN CLOUD WORKSPACE (CHỈ HIỆN KHI CHUYỂN SANG ONLINE VÀ CHƯA ĐĂNG NHẬP) -->
+        <section id="online-auth-section" class="online-auth-section hidden">
+            <div class="online-auth-card">
+                <div class="online-auth-badge">Cloud Workspace</div>
+                
+                <!-- Tab chuyển đổi giữa Đăng nhập và Đăng ký -->
+                <div class="auth-tabs" role="tablist">
+                    <button type="button" class="auth-tab-btn active" id="tab-login-btn">Đăng nhập</button>
+                    <button type="button" class="auth-tab-btn" id="tab-register-btn">Đăng ký tài khoản</button>
+                </div>
+
+                <!-- 1. Form Đăng nhập -->
+                <form id="online-login-form" class="auth-form-panel">
+                    <div class="auth-header-text">
+                        <h2 class="auth-main-title">Đăng nhập hệ thống</h2>
+                        <p class="auth-desc">Truy cập không gian làm việc đám mây để lưu trữ lịch sử, quản lý kịch bản chuẩn hóa và khai thác Kho dữ liệu mẫu.</p>
+                    </div>
+
+                    <div id="online-login-error" class="auth-alert auth-alert-danger hidden"></div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="online-login-identifier">Tên đăng nhập hoặc Email</label>
+                        <input type="text" id="online-login-identifier" class="form-control" placeholder="Nhập username hoặc địa chỉ email" autocomplete="username" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="online-login-password">Mật khẩu</label>
+                        <input type="password" id="online-login-password" class="form-control" placeholder="Nhập mật khẩu" autocomplete="current-password" required>
+                    </div>
+
+                    <button type="submit" id="btn-submit-online-login" class="btn btn-primary btn-full auth-submit-btn">
+                        Đăng nhập vào Cloud
+                    </button>
+                </form>
+
+                <!-- 2. Form Đăng ký -->
+                <form id="online-register-form" class="auth-form-panel hidden">
+                    <div class="auth-header-text">
+                        <h2 class="auth-main-title">Đăng ký tài khoản mới</h2>
+                        <p class="auth-desc">Tạo tài khoản cá nhân để lưu trữ không giới hạn kịch bản làm sạch và làm việc an toàn.</p>
+                    </div>
+
+                    <div id="online-reg-error" class="auth-alert auth-alert-danger hidden"></div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="online-reg-username">Tên người dùng (Username)</label>
+                        <input type="text" id="online-reg-username" class="form-control" placeholder="Từ 3 đến 30 ký tự, không dấu" autocomplete="username" required minlength="3" maxlength="30">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="online-reg-email">Địa chỉ Email</label>
+                        <input type="email" id="online-reg-email" class="form-control" placeholder="name@domain.com" autocomplete="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="online-reg-password">Mật khẩu</label>
+                        <input type="password" id="online-reg-password" class="form-control" placeholder="Tối thiểu 8 ký tự" autocomplete="new-password" required minlength="8">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="online-reg-confirm">Xác nhận mật khẩu</label>
+                        <input type="password" id="online-reg-confirm" class="form-control" placeholder="Nhập lại mật khẩu để xác nhận" autocomplete="new-password" required minlength="8">
+                    </div>
+
+                    <button type="submit" id="btn-submit-online-reg" class="btn btn-primary btn-full auth-submit-btn">
+                        Tạo tài khoản
+                    </button>
+                </form>
+
+                <div class="online-auth-footer">
+                    <p class="auth-switch-hint">Chưa muốn đăng nhập? Bạn có thể chuyển công tắc phía trên góc phải về <strong>Offline</strong> để xử lý dữ liệu cục bộ ngay lập tức.</p>
+                </div>
+            </div>
+        </section>
+
         <!-- 1. KHU VỰC UPLOAD FILE -->
         <section id="upload-section" class="card">
             <div class="card-header">
