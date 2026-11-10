@@ -90,13 +90,13 @@ class DataCleaner:
     ):
         target_cols = columns if columns else self.df.columns.tolist()
 
-        if strategy == "drop_row":
+        if strategy in ("drop_row", "drop_rows", "drop"):
             self.df = self.df.dropna(subset=target_cols)
             if self.is_split and self.train_df is not None and self.test_df is not None:
                 self.train_df = self.train_df.dropna(subset=target_cols)
                 self.test_df = self.test_df.dropna(subset=target_cols)
 
-        elif strategy == "drop_col":
+        elif strategy in ("drop_col", "drop_cols"):
             self.df = self.df.drop(columns=target_cols)
             if self.is_split and self.train_df is not None and self.test_df is not None:
                 self.train_df = self.train_df.drop(columns=target_cols)

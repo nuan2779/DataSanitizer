@@ -216,6 +216,10 @@ def run_selected_pipeline(
 
         if kind == "missing_values":
             method = config.get("strategy", "mean")
+            if method in {"drop", "drop_rows"}:
+                method = "drop_row"
+            elif method in {"drop_cols"}:
+                method = "drop_col"
             if method not in {"mean", "median", "mode", "interpolate", "drop_row", "drop_col", "constant"}:
                 raise ValueError(f"Unsupported missing value strategy: {method}")
             if method in {"mean", "median", "interpolate"}:
