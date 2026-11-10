@@ -92,6 +92,33 @@
                     <button type="submit" id="btn-submit-online-login" class="btn btn-primary btn-full auth-submit-btn">
                         Đăng nhập vào Cloud
                     </button>
+                    <!-- BẮT ĐẦU: Khối Đăng nhập Google -->
+                    <div class="auth-divider" style="display: flex; align-items: center; text-align: center; margin: 20px 0; color: var(--text-muted); font-size: 13px;">
+                        <span style="flex: 1; border-bottom: 1px solid var(--border-color);"></span>
+                        <span style="padding: 0 10px;">Hoặc tiếp tục với</span>
+                        <span style="flex: 1; border-bottom: 1px solid var(--border-color);"></span>
+                    </div>
+
+                    <div style="display: flex; justify-content: center; margin-bottom: 16px; width: 100%;">
+                        <!-- Thẻ cài đặt cấu hình ngầm -->
+                         <div id="g_id_onload"
+                            data-client_id="520371049518-9pu7p17g7susaqavcqtj7vfo7e0u2ipf.apps.googleusercontent.com"
+                            data-context="signin"
+                            data-ux_mode="popup"
+                            data-callback="handleCredentialResponse"
+                            data-auto_prompt="false">
+                        </div>
+                    <!-- Nút hiển thị thực tế -->
+                        <div class="g_id_signin"
+                            data-type="standard"
+                            data-shape="rectangular"
+                            data-theme="outline"
+                            data-text="signin_with"
+                            data-size="large"
+                            data-logo_alignment="left"
+                            data-width="100%">
+                        </div>
+                    </div>
                 </form>
 
                 <!-- 2. Form Đăng ký -->
@@ -739,33 +766,6 @@
                     </div>
 
                     <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-full">Đăng nhập</button>
-                    <!-- BẮT ĐẦU: Khối Đăng nhập Google -->
-                    <div class="auth-divider" style="display: flex; align-items: center; text-align: center; margin: 20px 0; color: var(--text-muted); font-size: 13px;">
-                        <span style="flex: 1; border-bottom: 1px solid var(--border-color);"></span>
-                        <span style="padding: 0 10px;">Hoặc tiếp tục với</span>
-                        <span style="flex: 1; border-bottom: 1px solid var(--border-color);"></span>
-                    </div>
-
-                    <div style="display: flex; justify-content: center; margin-bottom: 16px; width: 100%;">
-                        <!-- Thẻ cài đặt cấu hình ngầm -->
-                         <div id="g_id_onload"
-                            data-client_id="520371049518-9pu7p17g7susaqavcqtj7vfo7e0u2ipf.apps.googleusercontent.com"
-                            data-context="signin"
-                            data-ux_mode="popup"
-                            data-callback="handleCredentialResponse"
-                            data-auto_prompt="false">
-                        </div>
-                    <!-- Nút hiển thị thực tế -->
-                        <div class="g_id_signin"
-                            data-type="standard"
-                            data-shape="rectangular"
-                            data-theme="outline"
-                            data-text="signin_with"
-                            data-size="large"
-                            data-logo_alignment="left"
-                            data-width="100%">
-                        </div>
-                    </div>
                     <p class="auth-switch">Chưa có tài khoản? <a href="#" id="toggle-auth-mode">Đăng ký ngay</a></p>
                 </form>
             </div>

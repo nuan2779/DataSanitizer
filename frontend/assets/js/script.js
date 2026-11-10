@@ -745,7 +745,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Xử lý Đăng nhập bằng Google
-    // Xử lý Đăng nhập bằng Google
     window.handleCredentialResponse = async function(response) {
         const submitBtn = document.getElementById("auth-submit-btn");
         if (submitBtn) {
@@ -754,7 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         try {
             const data = await googleLoginAPI(response.credential);
-            appState.user = data.name || data.email || "Google User"; 
+            appState.user = data.user?.username || data.user?.email || "Google User";
             appState.authToken = data.access_token;
 
             document.getElementById("auth-modal")?.classList.add("hidden");

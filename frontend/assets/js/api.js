@@ -180,51 +180,16 @@ async function getErrorMsg(response, fallback) {
 
 // --- LUỒNG XÁC THỰC (AUTHENTICATION) ---
 
-// Đăng ký tài khoản
-export async function registerAPI(username, password) {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // ĐỔI 'username' THÀNH 'identifier'
-        body: JSON.stringify({ identifier: username, password: password }) 
-    });
-    if (!response.ok) throw new Error(await getErrorMsg(response, "Đăng ký thất bại"));
-    return await response.json();
-}
-
-// Đăng nhập lấy Token
-export async function loginAPI(username, password) {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // ĐỔI 'username' THÀNH 'identifier'
-        body: JSON.stringify({ identifier: username, password: password })
-    });
-    if (!response.ok) throw new Error(await getErrorMsg(response, "Sai tên đăng nhập hoặc mật khẩu"));
-    return await response.json(); 
-}
 
 // Đăng nhập bằng Google
 export async function googleLoginAPI(googleToken) {
     const response = await fetch(`${API_BASE_URL}/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // <-- Thêm đúng 1 dòng này
         // Gửi token nhận được từ Google sang cho Backend xác minh
         body: JSON.stringify({ token: googleToken })
     });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Đăng nhập Google thất bại"));
     return await response.json(); 
-}
-
-// Đăng xuất
-export async function logoutAPI(token) {
-    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: "POST",
-        headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}` 
-        }
-    });
-    if (!response.ok) throw new Error("Lỗi khi đăng xuất");
-    return true;
 }
