@@ -354,14 +354,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (fill) {
                 fill.style.width = `${Math.min(100, overall)}%`;
-                if (overall >= 80) fill.style.backgroundColor = "var(--success)";
-                else if (overall >= 50) fill.style.backgroundColor = "#eab308";
-                else fill.style.backgroundColor = "var(--danger)";
+                fill.style.backgroundColor = "var(--primary)";
             }
             if (txt) txt.textContent = `${overall}/100`;
             if (ratingEl) {
                 ratingEl.textContent = result.rating || "Đạt chuẩn";
-                if (result.badge_color === "success") ratingEl.style.color = "var(--success)";
+                if (result.badge_color === "success") ratingEl.style.color = "var(--primary)";
                 else if (result.badge_color === "danger") ratingEl.style.color = "var(--danger)";
                 else if (result.badge_color === "warning") ratingEl.style.color = "#d97706";
                 else ratingEl.style.color = "var(--primary)";
