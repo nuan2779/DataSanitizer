@@ -669,6 +669,43 @@ document.addEventListener("DOMContentLoaded", () => {
             termsCheck.setAttribute("required", "true");
         }
     });
+
+    const authForm = document.getElementById("auth-form");
+    if (authForm) {
+        authForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const identifier = document.getElementById("auth-username").value;
+            const pass = document.getElementById("auth-password").value;
+            const submitBtn = document.getElementById("auth-submit-btn");
+            
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Đang xử lý...";
+            }
+            
+            try {
+                const data = await loginAPI(identifier, pass);
+                appState.user = data.user?.username || identifier;
+                appState.authToken = data.token;
+                saveStateToStorage();
+                
+                document.getElementById("auth-modal").classList.add("hidden");
+                document.getElementById("btn-auth").classList.add("hidden");
+                document.getElementById("profile-badge").classList.remove("hidden");
+                document.getElementById("username-display").textContent = appState.user;
+                
+                showToast(`Đăng nhập thành công: ${appState.user}`, "success");
+                authForm.reset();
+            } catch (err) {
+                showToast(err.message || "Đăng nhập thất bại", "error");
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Đăng nhập";
+                }
+            }
+        });
+    }
     
     // Sign Out khỏi hệ thống
     document.getElementById("btn-logout").addEventListener("click", async () => {
@@ -746,7 +783,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Xử lý Đăng nhập bằng Google
     window.handleCredentialResponse = async function(response) {
-        const submitBtn = document.getElementById("auth-submit-btn");
+        const submitBtn = document.getElementById("btn-submit-online-login");
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.textContent = "Đang xác thực Google...";
