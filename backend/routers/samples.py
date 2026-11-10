@@ -1,83 +1,119 @@
-from fastapi import APIRouter, HTTPException
-from pathlib import Path
+"""One-click provisioning of the bundled sample datasets."""
+from __future__ import annotations
+
+import csv
+import json
 import shutil
-import uuid
+from pathlib import Path
+from uuid import uuid4
 
-router = APIRouter()
+from fastapi import APIRouter, HTTPException
 
-SAMPLES_DIR = Path(__file__).resolve().parents[2] / "data" / "samples"
-RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
-RAW_DIR.mkdir(parents=True, exist_ok=True)
+router = APIRouter(prefix="/samples", tags=["Sample Datasets"])
+BASE_DIR = Path(__file__).resolve().parents[2]
+SAMPLES_DIR = BASE_DIR / "data" / "samples"
+RAW_DIR = BASE_DIR / "data" / "raw"
 
 SAMPLE_MAP = {
     "melbourne": {
         "file": "melbourne_housing.csv",
-        "display_name": "melbourne_housing.csv",
         "title": "Melbourne Housing",
-        "description": "34k dòng | Dự đoán giá nhà (dữ liệu hỗn hợp)",
-        "task": "Regression / Valuation"
+        "description": "Dữ liệu nhà ở với nhiều kiểu dữ liệu và giá trị cần tiền xử lý",
+        "task": "Regression / Valuation",
     },
     "titanic": {
         "file": "titanic.csv",
-        "display_name": "titanic.csv",
         "title": "Titanic Disaster",
-        "description": "891 dòng | Dự đoán sống sót (nhiều ô khuyết thiếu)",
-        "task": "Binary Classification"
+        "description": "Dữ liệu hành khách với các giá trị khuyết thiếu",
+        "task": "Binary Classification",
     },
     "iris": {
         "file": "iris.csv",
-        "display_name": "iris.csv",
         "title": "Iris Species",
-        "description": "150 dòng | Phân loại 3 loài hoa Iris chuẩn số học",
-        "task": "Multi-class Classification"
+        "description": "Dữ liệu số học dùng cho bài toán phân loại ba loài hoa Iris",
+        "task": "Multi-class Classification",
     },
     "churn": {
         "file": "customer_churn.csv",
-        "display_name": "customer_churn.csv",
         "title": "Customer Churn",
-        "description": "7k dòng | Dự đoán khách hàng rời bỏ viễn thông",
-        "task": "Binary Classification"
-    }
+        "description": "Dữ liệu khách hàng viễn thông dùng cho bài toán dự đoán rời bỏ",
+        "task": "Binary Classification",
+    },
 }
 
-@router.get("/samples")
+
+def _count_csv_rows(path: Path) -> int | None:
+    try:
+        with path.open("r", encoding="utf-8-sig", newline="") as handle:
+            return max(sum(1 for _ in csv.reader(handle)) - 1, 0)
+    except (OSError, UnicodeError, csv.Error):
+        return None
+
+
+@router.get("")
 def get_sample_catalog():
     """Tra ve danh muc 4 bo du lieu mau thuc nghiem (Benchmark Datasets)."""
     catalog = []
-    for key, info in SAMPLE_MAP.items():
+    for sample_id, info in SAMPLE_MAP.items():
         file_path = SAMPLES_DIR / info["file"]
-        catalog.append({
-            "id": key,
-            "title": info["title"],
-            "filename": info["display_name"],
-            "description": info["description"],
-            "task": info["task"],
-            "available": file_path.is_file()
-        })
+        available = file_path.is_file()
+        catalog.append(
+            {
+                "id": sample_id,
+                "title": info["title"],
+                "filename": info["file"],
+                "description": info["description"],
+                "task": info["task"],
+                "available": available,
+                "rows": _count_csv_rows(file_path) if available else None,
+                "size_bytes": file_path.stat().st_size if available else None,
+            }
+        )
     return {"samples": catalog}
 
-@router.post("/samples/{sample_id}/load")
+
+@router.post("/{sample_id}/load")
 def load_sample_dataset(sample_id: str):
-    """Cap phat 1-click du lieu mau vao phien lam viec."""
-    normalized_id = sample_id.lower().strip()
-    if normalized_id not in SAMPLE_MAP:
+    """Copy one bundled CSV into raw/ under a new UUID for a fresh session."""
+    normalized_id = sample_id.strip().lower()
+    info = SAMPLE_MAP.get(normalized_id)
+    if info is None:
         raise HTTPException(
             status_code=404,
-            detail=f"Sample '{sample_id}' not found. Available samples: {list(SAMPLE_MAP.keys())}"
+            detail=f"Sample '{sample_id}' not found. Available samples: {list(SAMPLE_MAP)}",
         )
 
-    info = SAMPLE_MAP[normalized_id]
-    src_path = SAMPLES_DIR / info["file"]
-    if not src_path.is_file():
-        raise HTTPException(status_code=500, detail=f"Sample file '{info['file']}' is missing on server.")
+    source_path = SAMPLES_DIR / info["file"]
+    if not source_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Sample file '{info['file']}' is missing")
 
-    # Sinh UUID moi va copy sang data/raw/
-    new_file_id = uuid.uuid4()
-    dst_path = RAW_DIR / f"{new_file_id}.csv"
-    shutil.copyfile(src_path, dst_path)
+    RAW_DIR.mkdir(parents=True, exist_ok=True)
+    file_id = uuid4()
+    destination = RAW_DIR / f"{file_id}.csv"
+    metadata_path = RAW_DIR / f"{file_id}.meta.json"
+
+    try:
+        shutil.copyfile(source_path, destination)
+        metadata_path.write_text(
+            json.dumps(
+                {
+                    "filename": info["file"],
+                    "sample_id": normalized_id,
+                    "title": info["title"],
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+    except OSError as exc:
+        destination.unlink(missing_ok=True)
+        metadata_path.unlink(missing_ok=True)
+        raise HTTPException(status_code=500, detail="Could not provision sample dataset") from exc
 
     return {
-        "file_id": str(new_file_id),
-        "filename": info["display_name"],
-        "message": f"Successfully provisioned sample dataset: {info['title']}"
+        "file_id": str(file_id),
+        "filename": info["file"],
+        "sample_id": normalized_id,
+        "rows": _count_csv_rows(destination),
+        "message": f"Successfully provisioned sample dataset: {info['title']}",
     }
