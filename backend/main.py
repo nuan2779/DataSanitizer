@@ -6,6 +6,9 @@ from backend.routers.clean import router as clean_router
 from backend.routers.download import router as download_router
 from backend.routers.samples import router as samples_router
 from backend.routers.benchmark import router as benchmark_router
+from backend.routers.auth import router as auth_router
+from backend.routers.recipes import router as recipes_router
+from backend.routers.history import router as history_router
 from backend.database import init_db
 
 # Initialize FastAPI
@@ -44,6 +47,9 @@ app.include_router(download_router, prefix="/api")
 app.include_router(profile_router, prefix="/api")
 app.include_router(samples_router, prefix="/api")
 app.include_router(benchmark_router, prefix="/api")
+app.include_router(auth_router, prefix="/api")
+app.include_router(recipes_router, prefix="/api")
+app.include_router(history_router, prefix="/api")
 
 @app.get("/")
 def home():
