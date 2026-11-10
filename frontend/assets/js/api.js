@@ -86,10 +86,20 @@ export async function benchmarkAIAPI(fileId) {
 }
 
 // Helper: Trích xuất lỗi từ FastAPI Pydantic
+// Helper: Trích xuất lỗi từ FastAPI Pydantic
 async function getErrorMsg(response, fallback) {
     try {
         const errData = await response.json();
-        return errData.detail || response.statusText || fallback;
+        // Kiểm tra xem errData.detail có phải là chuỗi không
+        if (typeof errData.detail === 'string') {
+            return errData.detail;
+        } 
+        // Nếu errData.detail là một mảng (thường xảy ra với lỗi validation của FastAPI)
+        else if (Array.isArray(errData.detail)) {
+            // Lấy thông báo lỗi đầu tiên trong mảng
+            return errData.detail[0].msg || fallback;
+        }
+        return response.statusText || fallback;
     } catch {
         return `${fallback} (${response.status})`;
     }
@@ -102,7 +112,8 @@ export async function registerAPI(username, password) {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username, password: password })
+        // ĐỔI 'username' THÀNH 'identifier'
+        body: JSON.stringify({ identifier: username, password: password }) 
     });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Đăng ký thất bại"));
     return await response.json();
@@ -113,10 +124,23 @@ export async function loginAPI(username, password) {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username, password: password })
+        // ĐỔI 'username' THÀNH 'identifier'
+        body: JSON.stringify({ identifier: username, password: password })
     });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Sai tên đăng nhập hoặc mật khẩu"));
-    return await response.json(); // Trả về { token: "..." }
+    return await response.json(); 
+}
+
+// Đăng nhập bằng Google
+export async function googleLoginAPI(googleToken) {
+    const response = await fetch(`${API_BASE_URL}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // Gửi token nhận được từ Google sang cho Backend xác minh
+        body: JSON.stringify({ token: googleToken })
+    });
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Đăng nhập Google thất bại"));
+    return await response.json(); 
 }
 
 // Đăng xuất

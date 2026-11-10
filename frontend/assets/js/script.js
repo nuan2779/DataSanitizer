@@ -1,5 +1,5 @@
 import { appState, saveStateToStorage, clearSavedState, loadStateFromStorage } from "./state.js";
-import { uploadDatasetAPI, fetchDatasetProfileAPI, executePipelineAPI, downloadExportFileAPI, loadSampleDatasetAPI, benchmarkAIAPI, saveRecipeAPI, registerAPI, loginAPI, logoutAPI } from "./api.js";
+import { uploadDatasetAPI, fetchDatasetProfileAPI, executePipelineAPI, downloadExportFileAPI, loadSampleDatasetAPI, benchmarkAIAPI, saveRecipeAPI, registerAPI, loginAPI, logoutAPI, googleLoginAPI } from "./api.js";
 import { renderProfileData, updateStepIndicator } from "./ui-profiler.js";
 import { handleStepTypeChange, addStepToPipeline, renderPipelineQueue, renderAuditResult, updateColumnAvailability } from "./ui-pipeline.js";
 import { showToast } from "./dom-safe.js";
@@ -438,18 +438,30 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Xử lý Đăng nhập bằng Google (Mock UI)
-    document.getElementById("btn-google-login").addEventListener("click", () => {
-        // Tự động gán một tên tài khoản Google giả định
-        appState.user = "Google User (Dev)";
-        
-        // Cập nhật giao diện
-        document.getElementById("auth-modal").classList.add("hidden");
-        document.getElementById("btn-auth").classList.add("hidden");
-        document.getElementById("profile-badge").classList.remove("hidden");
-        document.getElementById("username-display").textContent = appState.user;
-        
-        showToast("Đã liên kết tài khoản Google thành công!", "success");
-        saveStateToStorage();
-    });
+    // Xử lý Đăng nhập bằng Google
+    window.handleCredentialResponse = async function(response) {
+        const submitBtn = document.getElementById("auth-submit-btn"); // Nút mượn tạm để vô hiệu hóa form
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Đang xác thực Google...";
+        try {
+            // 1. Gọi API gửi Token về Backend
+            const data = await googleLoginAPI(response.credential);
+            // 2. Lưu thông tin (token backend trả về) vào hệ thống của bạn
+            // Giả sử API Backend trả về { "access_token": "...", "name": "...", "email": "..." }
+            appState.user = data.name || data.email || "Google User"; 
+            appState.authToken = data.access_token;
+            // 3. Cập nhật giao diện
+            document.getElementById("auth-modal").classList.add("hidden");
+            document.getElementById("btn-auth").classList.add("hidden");
+            document.getElementById("profile-badge").classList.remove("hidden");
+            document.getElementById("username-display").textContent = appState.user;
+            showToast(`Đăng nhập Google thành công: ${appState.user}`, "success");
+            saveStateToStorage();
+        } catch (err) {
+            showToast(err.message, "error");
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Đăng nhập";
+        }
+    };
 });
