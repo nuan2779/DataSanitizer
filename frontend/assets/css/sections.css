@@ -479,11 +479,6 @@ input[type=range] {
 .recipe-toolbar-title {
     display: flex;
     align-items: center;
-    gap: 12px;
-}
-
-.recipe-badge-icon {
-    font-size: 20px;
 }
 
 .recipe-toolbar-title strong {
