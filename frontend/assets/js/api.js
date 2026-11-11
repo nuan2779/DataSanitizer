@@ -187,6 +187,21 @@ export async function deleteHistoryItemAPI(historyId) {
     return await response.json();
 }
 
+// Xóa tệp tạm thời trên server khi người dùng Offline reset/kết thúc phiên (Zero Retention)
+export async function deleteUploadedDatasetAPI(fileId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/upload/${encodeURIComponent(fileId)}`, {
+            method: "DELETE",
+            headers: getAuthHeaders(),
+            credentials: "include"
+        });
+        if (!response.ok) return null;
+        return await response.json();
+    } catch {
+        return null;
+    }
+}
+
 // Helper: Trích xuất lỗi từ FastAPI Pydantic
 async function getErrorMsg(response, fallback) {
     try {

@@ -1,7 +1,9 @@
-import pandas as pd 
+import gc
+from typing import Any, Dict, List, Optional
+
 import numpy as np
-from typing import List, Dict, Any, Optional
-from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler, OneHotEncoder
+import pandas as pd
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OneHotEncoder, StandardScaler
 
 class DataCleaner:
     def __init__(self, df: pd.DataFrame):
@@ -60,16 +62,29 @@ class DataCleaner:
             "details": details or {}
         })
 
+    def sync_full_df(self) -> pd.DataFrame:
+        """Tái hợp nhất duy nhất một lần ở bước cuối cùng từ train_df và test_df (tránh phình to RAM)."""
+        if self.is_split and self.train_df is not None and self.test_df is not None:
+            self.df = pd.concat([self.train_df, self.test_df], axis=0)
+        return self.df
+
     def get_audit_summary(self) -> Dict[str, Any]:
         # Xuất bản báo cáo
-        rows_diff = self.initial_shape[0] - len(self.df)
-        cols_diff = len(self.df.columns) - self.initial_shape[1]
+        if self.is_split and self.train_df is not None and self.test_df is not None:
+            current_rows = len(self.train_df) + len(self.test_df)
+            current_cols = len(self.train_df.columns)
+        else:
+            current_rows = len(self.df)
+            current_cols = len(self.df.columns)
+
+        rows_diff = self.initial_shape[0] - current_rows
+        cols_diff = current_cols - self.initial_shape[1]
         summary = {
             "initial_rows": self.initial_shape[0],
-            "final_rows": len(self.df),
+            "final_rows": current_rows,
             "rows_removed": rows_diff,
             "initial_columns": self.initial_shape[1],
-            "final_columns": len(self.df.columns),
+            "final_columns": current_cols,
             "columns_added_or_removed": cols_diff,
             "total_steps": len(self.audit_log),
             "history": self.audit_log,
@@ -235,9 +250,9 @@ class DataCleaner:
 
                     self.train_df = pd.concat([self.train_df.drop(columns=[col]), df_ohe_train], axis=1)
                     self.test_df = pd.concat([self.test_df.drop(columns=[col]), df_ohe_test], axis=1)
+                    del df_ohe_train, df_ohe_test, ohe_train, ohe_test
 
-            # Dong bo self.df
-            self.df = pd.concat([self.train_df, self.test_df], axis=0)
+            gc.collect()
             self._log("encoding", f"Đã mã hóa phân loại độc lập Train/Test chống Data Leakage (phương pháp '{method}') cho các cột: {columns}")
             return self
 
@@ -248,29 +263,35 @@ class DataCleaner:
             if method == "label":
                 le = LabelEncoder()
                 self.df[col] = le.fit_transform(self.df[col].astype(str))
+                del le
             elif method == "one_hot":
                 self.df = pd.get_dummies(self.df, columns=[col], prefix=col, drop_first=True)
 
+        gc.collect()
         self._log("encoding", f"Đã mã hóa phân loại (phương pháp '{method}') cho các cột: {columns}")
         return self
 
     # Chuẩn hóa dữ liệu (Co che Anti Data Leakage)
     def scale_features(self, columns: List[str], method: str = "standard"):
-        valid_cols = [c for c in columns if c in self.df.columns and pd.api.types.is_numeric_dtype(self.df[c])]
+        target_df = self.train_df if (self.is_split and self.train_df is not None) else self.df
+        valid_cols = [c for c in columns if c in target_df.columns and pd.api.types.is_numeric_dtype(target_df[c])]
         if not valid_cols:
             return self
 
         if self.is_split and self.train_df is not None and self.test_df is not None:
-            # FIT tren Train, TRANSFORM sang Test
+            # FIT tren Train, TRANSFORM sang Test (Khong concat lai self.df o tung buoc de tiet kiem RAM)
             scaler = StandardScaler() if method == "standard" else MinMaxScaler()
             self.train_df[valid_cols] = scaler.fit_transform(self.train_df[valid_cols])
             self.test_df[valid_cols] = scaler.transform(self.test_df[valid_cols])
-            self.df = pd.concat([self.train_df, self.test_df], axis=0)
+            del scaler
+            gc.collect()
             self._log("scaling", f"Đã chuẩn hóa thang đo độc lập Train/Test chống Data Leakage (phương pháp '{method}') cho các cột: {valid_cols}")
             return self
 
         scaler = StandardScaler() if method == "standard" else MinMaxScaler()
         self.df[valid_cols] = scaler.fit_transform(self.df[valid_cols])
+        del scaler
+        gc.collect()
         self._log("scaling", f"Đã chuẩn hóa thang đo (phương pháp '{method}') cho các cột: {valid_cols}")
         return self
 
@@ -414,4 +435,6 @@ class DataCleaner:
             elif step_type == "optimize_memory":
                 self.optimize_memory()
 
+        # Ghép lại duy nhất một lần ở cuối cùng sau khi hoàn tất mọi bước
+        self.sync_full_df()
         return self.df

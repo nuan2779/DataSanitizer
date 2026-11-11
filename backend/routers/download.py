@@ -1,9 +1,12 @@
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse, Response
 from pathlib import Path
-from uuid import UUID
-import pandas as pd
 from typing import Literal, Optional
+from uuid import UUID
+
+import pandas as pd
+from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi.responses import FileResponse, Response
+
+from backend.services.retention_guard import cleanup_ephemeral_files
 
 router = APIRouter()
 
@@ -17,8 +20,12 @@ PROCESSED_DIR = (
 def download_file(
     file_id: UUID,
     file_format: Literal["csv", "json"] = "csv",
-    suffix: Optional[str] = None
+    suffix: Optional[str] = None,
+    background_tasks: BackgroundTasks = BackgroundTasks(),
 ):
+    # Kích hoạt quét dọn dẹp các tệp tạm đã hết hạn TTL
+    background_tasks.add_task(cleanup_ephemeral_files)
+
     # Step 1: Find processed file (support optional suffix e.g. train_cleaned or test_cleaned)
     if suffix:
         file_path = PROCESSED_DIR / f"{file_id}_{suffix}.csv"

@@ -1,20 +1,26 @@
-from backend.services.adapter import clean_dataframe
+import asyncio
 import json
 import logging
 import sqlite3
-from backend.services.pipeline_runner import run_selected_pipeline
-from fastapi import APIRouter, HTTPException
 from pathlib import Path
-from backend.schemas import CleanRequest
-from backend.database import execute_query
-from backend.security import get_optional_current_user
-from fastapi import Depends
-import pandas as pd
 from zipfile import BadZipFile
+
+import pandas as pd
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+
+from backend.database import execute_query
+from backend.schemas import CleanRequest
+from backend.security import get_optional_current_user
+from backend.services.adapter import clean_dataframe
+from backend.services.pipeline_runner import run_selected_pipeline
+from backend.services.retention_guard import cleanup_ephemeral_files
 
 # Khoi tao Router
 router = APIRouter(tags=["Cleaning Pipeline"])
 logger = logging.getLogger(__name__)
+
+# Thoi gian timeout toi da cho 1 lan chay pipeline (15 giay de tranh nghen Threadpool)
+PIPELINE_TIMEOUT_SECONDS = 15.0
 
 # Thu muc luu du lieu goc
 RAW_DIR = (
@@ -31,7 +37,13 @@ PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 
 
 @router.post("/clean")
-def clean_file(request: CleanRequest, current_user: dict | None = Depends(get_optional_current_user)):
+async def clean_file(
+    request: CleanRequest,
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+    current_user: dict | None = Depends(get_optional_current_user),
+):
+    # Kích hoạt quét dọn dẹp các tệp tạm đã hết hạn TTL
+    background_tasks.add_task(cleanup_ephemeral_files)
 
     # BƯỚC 1: Tim file da upload
     file_path = None
@@ -53,9 +65,9 @@ def clean_file(request: CleanRequest, current_user: dict | None = Depends(get_op
     # BƯỚC 3: Doc du lieu bang Pandas
     try:
         if file_path.suffix == ".csv":
-            df = pd.read_csv(file_path)
+            df = await asyncio.to_thread(pd.read_csv, file_path)
         else:
-            df = pd.read_excel(file_path)
+            df = await asyncio.to_thread(pd.read_excel, file_path)
 
     except (
         pd.errors.EmptyDataError,
@@ -92,16 +104,44 @@ def clean_file(request: CleanRequest, current_user: dict | None = Depends(get_op
             is_ml_mode = (request.purpose == "ml")
             test_size = 1.0 - request.train_ratio
 
-            if is_ml_mode:
-                cleaned_df, audit_summary, train_df, test_df = run_selected_pipeline(
-                    df, pipeline, is_ml_mode=True, test_size=test_size, return_split_dfs=True
+            def _run_pipeline():
+                if is_ml_mode:
+                    return run_selected_pipeline(
+                        df, pipeline, is_ml_mode=True, test_size=test_size, return_split_dfs=True
+                    )
+                else:
+                    return run_selected_pipeline(
+                        df, pipeline, is_ml_mode=False
+                    )
+
+            try:
+                pipeline_result = await asyncio.wait_for(
+                    asyncio.to_thread(_run_pipeline),
+                    timeout=PIPELINE_TIMEOUT_SECONDS,
                 )
-            else:
-                cleaned_df, audit_summary = run_selected_pipeline(
-                    df, pipeline, is_ml_mode=False
+                if is_ml_mode:
+                    cleaned_df, audit_summary, train_df, test_df = pipeline_result
+                else:
+                    cleaned_df, audit_summary = pipeline_result
+            except asyncio.TimeoutError:
+                logger.error("Pipeline execution timed out (>%ss) for file_id %s", PIPELINE_TIMEOUT_SECONDS, request.file_id)
+                raise HTTPException(
+                    status_code=408,
+                    detail=f"Pipeline execution timed out (limit: {int(PIPELINE_TIMEOUT_SECONDS)}s). Dataset may be too large or complex for real-time processing."
                 )
         else:
-            cleaned_df = clean_dataframe(df, options)
+            try:
+                cleaned_df = await asyncio.wait_for(
+                    asyncio.to_thread(clean_dataframe, df, options),
+                    timeout=PIPELINE_TIMEOUT_SECONDS,
+                )
+            except asyncio.TimeoutError:
+                logger.error("Legacy cleaning timed out (>%ss) for file_id %s", PIPELINE_TIMEOUT_SECONDS, request.file_id)
+                raise HTTPException(
+                    status_code=408,
+                    detail=f"Cleaning timed out (limit: {int(PIPELINE_TIMEOUT_SECONDS)}s)."
+                )
+
             audit_summary = {
                 "initial_rows": total_rows,
                 "final_rows": len(cleaned_df),
@@ -117,6 +157,8 @@ def clean_file(request: CleanRequest, current_user: dict | None = Depends(get_op
                     "details": options,
                 }],
             }
+    except HTTPException:
+        raise
     except (ValueError, KeyError, TypeError) as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
@@ -130,14 +172,14 @@ def clean_file(request: CleanRequest, current_user: dict | None = Depends(get_op
     # BƯỚC 7: Luu du lieu sau xu ly
     output_path = PROCESSED_DIR / f"{request.file_id}.csv"
     try:
-        cleaned_df.to_csv(output_path, index=False)
+        await asyncio.to_thread(cleaned_df.to_csv, output_path, index=False)
 
         # Luu rieng 2 tap Train va Test neu chay o che do Machine Learning
         if train_df is not None and test_df is not None:
             train_path = PROCESSED_DIR / f"{request.file_id}_train_cleaned.csv"
             test_path = PROCESSED_DIR / f"{request.file_id}_test_cleaned.csv"
-            train_df.to_csv(train_path, index=False)
-            test_df.to_csv(test_path, index=False)
+            await asyncio.to_thread(train_df.to_csv, train_path, index=False)
+            await asyncio.to_thread(test_df.to_csv, test_path, index=False)
 
     except OSError:
         raise HTTPException(

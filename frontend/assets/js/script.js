@@ -14,6 +14,7 @@ import {
     fetchHistoryAPI,
     downloadHistoryFileAPI,
     deleteHistoryItemAPI,
+    deleteUploadedDatasetAPI,
     googleLoginAPI
 } from "./api.js";
 import { renderProfileData, updateStepIndicator } from "./ui-profiler.js";
@@ -173,12 +174,23 @@ document.addEventListener("DOMContentLoaded", () => {
         restoreSessionUI();
     }
 
-    // Sự kiện "Bắt đầu phiên mới": Xóa sạch session của tài khoản này
+    // Sự kiện "Bắt đầu phiên mới": Xóa sạch session của tài khoản này và giải phóng đĩa nếu là Offline
     document.addEventListener("click", (e) => {
         if (e.target && e.target.id === "btn-new-session") {
+            const oldFileId = appState.currentFileId;
+            if (oldFileId && appState.mode === 'offline') {
+                deleteUploadedDatasetAPI(oldFileId);
+            }
             clearSavedState(true);
             resetWorkspaceUI();
             showToast("Đã bắt đầu phiên làm việc mới", "info");
+        }
+    });
+
+    // Cam kết Zero Retention cho chế độ Offline: Tự động dọn sạch ổ đĩa khi đóng tab
+    window.addEventListener("beforeunload", () => {
+        if (appState.mode === 'offline' && appState.currentFileId) {
+            deleteUploadedDatasetAPI(appState.currentFileId);
         }
     });
 
