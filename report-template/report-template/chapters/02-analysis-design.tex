@@ -9,10 +9,10 @@ The functional architecture of DataSanitizer is categorized into nine principal 
   \item \textbf{Automated Global and Deep Column Profiling:} Upon ingestion, the system must parse the dataset and compute comprehensive dataset-level diagnostics: total row count, column count, exact duplicate row count, sorted null-value frequency per column, sample values, and pairwise Pearson correlation coefficients ($|r| \ge 0.85$) to alert users of potential multicollinearity. Detailed distribution metrics (mean, median, standard deviation, quartiles, IQR outlier count) are lazy-loaded upon explicit user request for individual columns.
   \item \textbf{Data Quality Health Score Benchmark (EDA / BI):} The system must compute an automated 100-point Data Quality Health Score evaluated across four international data hygiene standards:
   \begin{itemize}
-    \item \emph{Completeness (30 pts):} Evaluates global cell non-null proportion ($30 \times (1 - \text{null\_ratio})$).
-    \item \emph{Deduplication (20 pts):} Penalizes redundant rows ($20 \times (1 - \text{dup\_ratio})$).
-    \item \emph{Uniformity (25 pts):} Measures consistency of parsed data types across features ($25 \times (\text{valid\_typed\_cols} / \text{total\_cols})$).
-    \item \emph{Row Retention (25 pts):} Evaluates sample preservation after row-dropping transformations ($25 \times (\text{final\_rows} / \text{initial\_rows})$).
+    \item \emph{Completeness (30 pts):} Evaluates global non-null cell density, formulated as $30 \times (1 - \text{null\_ratio})$.
+    \item \emph{Deduplication (20 pts):} Penalizes redundant observation rows, evaluated via $20 \times (1 - \text{dup\_ratio})$.
+    \item \emph{Uniformity (25 pts):} Measures data type consistency across features ($25 \times \text{valid\_cols} / \text{total\_cols}$).
+    \item \emph{Row Retention (25 pts):} Evaluates sample preservation following row filtering ($25 \times \text{final\_rows} / \text{initial\_rows}$).
   \end{itemize}
   The health module must also output actionable diagnostic warnings (e.g., high-cardinality text columns, extreme skewness).
   \item \textbf{Ordered Pipeline Construction and Preset Recipes:} Users must be empowered to compose an ordered multi-step cleaning recipe containing operations such as null standardization, currency regex extraction, missing value imputation, outlier winsorization or deletion, categorical encoding, feature scaling, and feature rounding. Users can also load built-in preset recipes (EDA Baseline, ML Train-Ready, Strict Deduplication) or save private custom recipes to their account.
