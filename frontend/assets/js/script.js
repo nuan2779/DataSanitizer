@@ -20,6 +20,17 @@ import { renderProfileData, updateStepIndicator } from "./ui-profiler.js";
 import { handleStepTypeChange, addStepToPipeline, renderPipelineQueue, renderAuditResult, updateColumnAvailability } from "./ui-pipeline.js";
 import { showToast, escapeHtml } from "./dom-safe.js";
 
+// --- CẦU NỐI TOÀN CỤC CHO GOOGLE IDENTITY SERVICES (GIS) ---
+// Định nghĩa ngay ở cấp độ module để GIS luôn tìm thấy callback kể cả trước khi DOM hoàn tất nạp
+window._processGoogleLogin = null;
+window.handleCredentialResponse = async function(response) {
+    if (typeof window._processGoogleLogin === "function") {
+        await window._processGoogleLogin(response);
+    } else {
+        window._pendingGoogleCredential = response;
+    }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     // 0. KHÔI PHỤC TRẠNG THÁI ĐĂNG NHẬP & CHẾ ĐỘ LÀM VIỆC
     const storedUser = localStorage.getItem("user");
@@ -172,9 +183,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // --- 2. QUẢN LÝ CHẾ ĐỘ OFFLINE / ONLINE & XÁC THỰC BẮT BUỘC TRÊN CLOUD ---
+    const modeToggle = document.getElementById("mode-toggle");
+
     function applyWorkspaceMode(mode, silent = false) {
         appState.mode = mode;
         saveStateToStorage();
+        if (modeToggle) modeToggle.checked = (mode === 'online');
         
         const offlineBadge = document.getElementById("offline-badge");
         const kaggleHub = document.getElementById("kaggle-hub");
@@ -240,11 +254,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    const modeToggle = document.getElementById("mode-toggle");
-    modeToggle.addEventListener("change", (e) => {
-        const selectedMode = e.target.checked ? 'online' : 'offline';
-        applyWorkspaceMode(selectedMode);
-    });
+    if (modeToggle) {
+        modeToggle.addEventListener("change", (e) => {
+            const selectedMode = e.target.checked ? 'online' : 'offline';
+            applyWorkspaceMode(selectedMode);
+        });
+    }
 
     // --- TAB CHUYỂN ĐỔI GIỮA ĐĂNG NHẬP VÀ ĐĂNG KÝ TRÊN ONLINE AUTH CARD ---
     const tabLoginBtn = document.getElementById("tab-login-btn");
@@ -955,7 +970,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Xử lý Đăng nhập bằng Google
-    window.handleCredentialResponse = async function(response) {
+    window._processGoogleLogin = async function(response) {
         const submitBtn = document.getElementById("btn-submit-online-login");
         if (submitBtn) {
             submitBtn.disabled = true;
@@ -980,17 +995,44 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("auth-modal")?.classList.add("hidden");
             document.getElementById("btn-auth")?.classList.add("hidden");
             document.getElementById("profile-badge")?.classList.remove("hidden");
-            document.getElementById("username-display").textContent = appState.user;
+            const usernameDisplay = document.getElementById("username-display");
+            if (usernameDisplay) usernameDisplay.textContent = appState.user;
             
-            applyWorkspaceMode("online", true);
+            applyWorkspaceMode("online");
+            scrollToSection("upload-section");
             showToast(`Đăng nhập Google thành công: ${appState.user}`, "success");
         } catch (err) {
-            showToast(err.message, "error");
+            showToast(err.message || "Đăng nhập Google thất bại", "error");
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.textContent = "Đăng nhập";
+                submitBtn.textContent = "Đăng nhập vào Cloud";
             }
         }
     };
+
+    window.handleCredentialResponse = window._processGoogleLogin;
+
+    // Khởi tạo/tái liên kết Google Identity Services
+    function initGoogleAuth() {
+        if (window.google?.accounts?.id) {
+            try {
+                window.google.accounts.id.initialize({
+                    client_id: "520371049518-9pu7p17g7susaqavcqtj7vfo7e0u2ipf.apps.googleusercontent.com",
+                    callback: window.handleCredentialResponse
+                });
+            } catch (e) {
+                console.warn("GIS initialize notice:", e);
+            }
+        }
+    }
+    initGoogleAuth();
+    window.addEventListener("load", initGoogleAuth);
+
+    // Xử lý thông tin đăng nhập Google nếu người dùng xác thực trước khi DOM load xong
+    if (window._pendingGoogleCredential) {
+        const pendingCred = window._pendingGoogleCredential;
+        window._pendingGoogleCredential = null;
+        window._processGoogleLogin(pendingCred);
+    }
 });

@@ -1,4 +1,17 @@
-const API_BASE_URL = "http://localhost:8000/api";
+// Base URL động theo origin hiện tại (tương thích tuyệt đối cả 127.0.0.1 và localhost)
+const API_HOST = (window.location && window.location.hostname && window.location.hostname !== "") ? window.location.hostname : "127.0.0.1";
+const API_PROTOCOL = (window.location && window.location.protocol && window.location.protocol.startsWith("http")) ? window.location.protocol : "http:";
+const API_BASE_URL = `${API_PROTOCOL}//${API_HOST}:8000/api`;
+
+// Helper: Tự động đính kèm Authorization Bearer token nếu có trong localStorage
+export function getAuthHeaders(extraHeaders = {}) {
+    const headers = { ...extraHeaders };
+    const token = localStorage.getItem("authToken");
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+    return headers;
+}
 
 // --- LUỒNG CỐT LÕI (CORE PIPELINE) ---
 
@@ -8,6 +21,8 @@ export async function uploadDatasetAPI(file) {
     formData.append("file", file);
     const response = await fetch(`${API_BASE_URL}/upload`, {
         method: "POST",
+        headers: getAuthHeaders(),
+        credentials: "include",
         body: formData
     });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Upload failed"));
@@ -16,14 +31,20 @@ export async function uploadDatasetAPI(file) {
 
 // 2. Khám bệnh dữ liệu toàn cục
 export async function fetchDatasetProfileAPI(fileId) {
-    const response = await fetch(`${API_BASE_URL}/profile/${encodeURIComponent(fileId)}`);
+    const response = await fetch(`${API_BASE_URL}/profile/${encodeURIComponent(fileId)}`, {
+        headers: getAuthHeaders(),
+        credentials: "include"
+    });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Profiling failed"));
     return await response.json();
 }
 
 // 3. Khám bệnh chuyên sâu 1 cột (Lazy Load)
 export async function fetchColumnDetailAPI(fileId, colName) {
-    const response = await fetch(`${API_BASE_URL}/profile/${encodeURIComponent(fileId)}/${encodeURIComponent(colName)}`);
+    const response = await fetch(`${API_BASE_URL}/profile/${encodeURIComponent(fileId)}/${encodeURIComponent(colName)}`, {
+        headers: getAuthHeaders(),
+        credentials: "include"
+    });
     if (!response.ok) throw new Error(await getErrorMsg(response, `Cannot load details for ${colName}`));
     return await response.json();
 }
@@ -42,7 +63,7 @@ export async function executePipelineAPI(fileId, pipeline, purpose, trainSplit) 
 
     const response = await fetch(`${API_BASE_URL}/clean`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         credentials: "include",
         body: JSON.stringify(payload)
     });
@@ -63,6 +84,7 @@ export function downloadExportFileAPI(fileId, format = "csv", suffix = "") {
 export async function loadSampleDatasetAPI(sampleId) {
     const response = await fetch(`${API_BASE_URL}/samples/${encodeURIComponent(sampleId)}/load`, {
         method: "POST",
+        headers: getAuthHeaders(),
         credentials: "include"
     });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Failed to load sample dataset"));
@@ -73,7 +95,7 @@ export async function loadSampleDatasetAPI(sampleId) {
 export async function saveRecipeAPI(name, steps) {
     const response = await fetch(`${API_BASE_URL}/recipes`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders({ "Content-Type": "application/json" }),
         credentials: "include",
         body: JSON.stringify({ name: name, steps: steps })
     });
@@ -83,7 +105,10 @@ export async function saveRecipeAPI(name, steps) {
 
 // Chấm điểm ML-Readiness
 export async function benchmarkAIAPI(fileId) {
-    const response = await fetch(`${API_BASE_URL}/benchmark/${encodeURIComponent(fileId)}`);
+    const response = await fetch(`${API_BASE_URL}/benchmark/${encodeURIComponent(fileId)}`, {
+        headers: getAuthHeaders(),
+        credentials: "include"
+    });
     if (!response.ok) throw new Error(await getErrorMsg(response, "AI Benchmark failed"));
     return await response.json();
 }
@@ -115,6 +140,7 @@ export async function registerAPI(username, email, password) {
 export async function logoutAPI() {
     const response = await fetch(`${API_BASE_URL}/auth/logout`, {
         method: "POST",
+        headers: getAuthHeaders(),
         credentials: "include"
     });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Đăng xuất thất bại"));
@@ -125,6 +151,7 @@ export async function getMeAPI() {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/me`, {
             method: "GET",
+            headers: getAuthHeaders(),
             credentials: "include"
         });
         if (!response.ok) return null;
@@ -137,6 +164,7 @@ export async function getMeAPI() {
 export async function fetchHistoryAPI() {
     const response = await fetch(`${API_BASE_URL}/history`, {
         method: "GET",
+        headers: getAuthHeaders(),
         credentials: "include"
     });
     if (!response.ok) return [];
@@ -152,6 +180,7 @@ export function downloadHistoryFileAPI(historyId, format = "csv") {
 export async function deleteHistoryItemAPI(historyId) {
     const response = await fetch(`${API_BASE_URL}/history/${encodeURIComponent(historyId)}`, {
         method: "DELETE",
+        headers: getAuthHeaders(),
         credentials: "include"
     });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Không thể xóa lịch sử"));
@@ -159,17 +188,12 @@ export async function deleteHistoryItemAPI(historyId) {
 }
 
 // Helper: Trích xuất lỗi từ FastAPI Pydantic
-// Helper: Trích xuất lỗi từ FastAPI Pydantic
 async function getErrorMsg(response, fallback) {
     try {
         const errData = await response.json();
-        // Kiểm tra xem errData.detail có phải là chuỗi không
         if (typeof errData.detail === 'string') {
             return errData.detail;
-        } 
-        // Nếu errData.detail là một mảng (thường xảy ra với lỗi validation của FastAPI)
-        else if (Array.isArray(errData.detail)) {
-            // Lấy thông báo lỗi đầu tiên trong mảng
+        } else if (Array.isArray(errData.detail)) {
             return errData.detail[0].msg || fallback;
         }
         return response.statusText || fallback;
@@ -178,16 +202,14 @@ async function getErrorMsg(response, fallback) {
     }
 }
 
-// --- LUỒNG XÁC THỰC (AUTHENTICATION) ---
-
+// --- LUỒNG XÁC THỰC GOOGLE IDENTITY SERVICES ---
 
 // Đăng nhập bằng Google
 export async function googleLoginAPI(googleToken) {
     const response = await fetch(`${API_BASE_URL}/auth/google`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // <-- Thêm đúng 1 dòng này
-        // Gửi token nhận được từ Google sang cho Backend xác minh
+        credentials: "include",
         body: JSON.stringify({ token: googleToken })
     });
     if (!response.ok) throw new Error(await getErrorMsg(response, "Đăng nhập Google thất bại"));
