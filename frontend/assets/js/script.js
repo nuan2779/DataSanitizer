@@ -1,4 +1,4 @@
-import { appState, saveStateToStorage, clearSavedState, loadStateFromStorage } from "./state.js";
+import { appState, saveStateToStorage, clearSavedState, loadStateFromStorage, clearAllUserState } from "./state.js";
 import { 
     uploadDatasetAPI, 
     fetchDatasetProfileAPI, 
@@ -18,12 +18,16 @@ import {
 } from "./api.js";
 import { renderProfileData, updateStepIndicator } from "./ui-profiler.js";
 import { handleStepTypeChange, addStepToPipeline, renderPipelineQueue, renderAuditResult, updateColumnAvailability } from "./ui-pipeline.js";
-import { showToast } from "./dom-safe.js";
+import { showToast, escapeHtml } from "./dom-safe.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 0. KHÔI PHỤC TRẠNG THÁI ĐĂNG NHẬP NGAY LẬP TỨC
+    // 0. KHÔI PHỤC TRẠNG THÁI ĐĂNG NHẬP & CHẾ ĐỘ LÀM VIỆC
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("authToken");
+    const storedMode = localStorage.getItem("datasanitizer_mode");
+    if (storedMode) {
+        appState.mode = storedMode;
+    }
 
     if (storedUser && storedToken) {
         appState.user = storedUser;
@@ -37,27 +41,96 @@ document.addEventListener("DOMContentLoaded", () => {
         if (profileBadge) profileBadge.classList.remove("hidden");
         if (usernameDisplay) usernameDisplay.textContent = storedUser;
     }
-    
-    // --- 1. KIỂM TRA & KHÔI PHỤC PHIÊN LÀM VIỆC (F5 PERSISTENCE) ---
-    const restored = loadStateFromStorage();
-    if (restored) {
-        document.getElementById("selected-file-name").textContent = `Active Session: ${appState.filename}`;
-        document.getElementById("btn-upload").textContent = "Tiếp tục phân tích";
-        document.getElementById("btn-upload").disabled = false;
+
+    // Helper: Reset giao diện Workspace về trạng thái sạch sẽ
+    function resetWorkspaceUI() {
+        // 1. Xóa banner khôi phục phiên nếu tồn tại
+        document.getElementById("session-restore-banner")?.remove();
         
-        // Hiện banner khôi phục thay vì toast
+        // 2. Reset các trường tải tệp ở Bước 1
+        const fileInput = document.getElementById("file-input");
+        if (fileInput) fileInput.value = "";
+        
+        const selectedFileName = document.getElementById("selected-file-name");
+        if (selectedFileName) selectedFileName.textContent = "";
+        
+        const uploadBtn = document.getElementById("btn-upload");
+        if (uploadBtn) {
+            uploadBtn.textContent = "Bắt đầu phân tích dữ liệu";
+            uploadBtn.disabled = true;
+        }
+
+        const nextBtn = document.querySelector("#upload-section .btn-nav.next");
+        if (nextBtn) nextBtn.disabled = true;
+        
+        // 3. Ẩn và reset các bước sau (Bước 2, 3, 4)
+        document.getElementById("profile-section")?.classList.add("hidden");
+        document.getElementById("pipeline-section")?.classList.add("hidden");
+        document.getElementById("result-section")?.classList.add("hidden");
+
+        const summaryFilename = document.getElementById("summary-filename");
+        if (summaryFilename) summaryFilename.textContent = "-";
+        const summaryFileId = document.getElementById("summary-fileid");
+        if (summaryFileId) summaryFileId.textContent = "-";
+        const summaryRows = document.getElementById("summary-rows");
+        if (summaryRows) summaryRows.textContent = "0";
+        const summaryCols = document.getElementById("summary-cols");
+        if (summaryCols) summaryCols.textContent = "0";
+        
+        const profileTbody = document.getElementById("profile-tbody");
+        if (profileTbody) profileTbody.innerHTML = "";
+        
+        const queueList = document.getElementById("pipeline-queue");
+        if (queueList) {
+            queueList.innerHTML = `<li class="queue-empty">Chưa có thao tác xử lý nào trong hàng đợi</li>`;
+        }
+
+        // 4. Khóa các tab điều hướng
+        const profileTab = document.querySelector('.step-indicator[data-target="profile-section"]');
+        if (profileTab) profileTab.disabled = true;
+        const pipelineTab = document.querySelector('.step-indicator[data-target="pipeline-section"]');
+        if (pipelineTab) pipelineTab.disabled = true;
+        const resultTab = document.querySelector('.step-indicator[data-target="result-section"]');
+        if (resultTab) resultTab.disabled = true;
+
+        updateStepIndicator("upload-section");
+    }
+
+    // Helper: Khôi phục giao diện từ State đã nạp
+    function restoreSessionUI() {
+        if (!appState.currentFileId) return;
+
+        // Xóa banner cũ nếu có trước khi thêm mới để tránh trùng lặp
+        document.getElementById("session-restore-banner")?.remove();
+
+        const selectedFileName = document.getElementById("selected-file-name");
+        if (selectedFileName) {
+            selectedFileName.textContent = `Active Session: ${appState.filename}`;
+        }
+
+        const uploadBtn = document.getElementById("btn-upload");
+        if (uploadBtn) {
+            uploadBtn.textContent = "Tiếp tục phân tích";
+            uploadBtn.disabled = false;
+        }
+
+        const nextBtn = document.querySelector("#upload-section .btn-nav.next");
+        if (nextBtn) nextBtn.disabled = false;
+        
+        // Hiện banner khôi phục với id chuẩn
         const sessionBanner = document.createElement("div");
+        sessionBanner.id = "session-restore-banner";
         sessionBanner.className = "alert alert-warning";
         sessionBanner.style.display = "flex";
         sessionBanner.style.justifyContent = "space-between";
         sessionBanner.style.alignItems = "center";
         sessionBanner.innerHTML = `
-            <span>Đã khôi phục phiên làm việc: <strong>${appState.filename}</strong></span>
+            <span>Đã khôi phục phiên làm việc: <strong>${escapeHtml(appState.filename)}</strong></span>
             <button id="btn-new-session" class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;">Bắt đầu phiên mới</button>
         `;
-        document.getElementById("upload-section").querySelector(".card-body").prepend(sessionBanner);
+        document.getElementById("upload-section")?.querySelector(".card-body")?.prepend(sessionBanner);
         
-        // Khôi phục giao diện
+        // Khôi phục giao diện các bước tiếp theo
         renderProfileData({
             file_id: appState.currentFileId,
             filename: appState.filename,
@@ -71,35 +144,30 @@ document.addEventListener("DOMContentLoaded", () => {
         const purposeRadio = document.querySelector(`input[name="data-purpose"][value="${appState.purpose}"]`);
         if (purposeRadio) purposeRadio.checked = true;
         
-        document.getElementById("train-split").value = appState.trainSplit;
-        document.getElementById("split-display").textContent = `Train: ${appState.trainSplit}% | Test: ${100 - appState.trainSplit}%`;
+        const trainSplitInput = document.getElementById("train-split");
+        if (trainSplitInput) trainSplitInput.value = appState.trainSplit;
+
+        const splitDisplay = document.getElementById("split-display");
+        if (splitDisplay) {
+            splitDisplay.textContent = `Train: ${appState.trainSplit}% | Test: ${100 - appState.trainSplit}%`;
+        }
         
         // Mở khóa Bước 3 nếu có column
-        document.getElementById("pipeline-section").classList.remove("hidden");
+        document.getElementById("pipeline-section")?.classList.remove("hidden");
     }
 
-    // Sự kiện "Bắt đầu phiên mới" được đặt ở NGOÀI if(restored)
+    // --- 1. KIỂM TRA & KHÔI PHỤC PHIÊN LÀM VIỆC (F5 PERSISTENCE) ---
+    const restored = loadStateFromStorage();
+    if (restored) {
+        restoreSessionUI();
+    }
+
+    // Sự kiện "Bắt đầu phiên mới": Xóa sạch session của tài khoản này
     document.addEventListener("click", (e) => {
         if (e.target && e.target.id === "btn-new-session") {
-            // 1. Sao lưu tài khoản
-            const activeUser = localStorage.getItem("user") || appState.user;
-            const activeToken = localStorage.getItem("authToken") || appState.authToken;
-            
-            // 2. Gọi hàm xóa của bạn
-            clearSavedState();
-            
-            // 3. Phục hồi ngay lập tức
-            if (activeUser) {
-                localStorage.setItem("user", activeUser);
-                appState.user = activeUser;
-            }
-            if (activeToken) {
-                localStorage.setItem("authToken", activeToken);
-                appState.authToken = activeToken;
-            }
-            
-            // 4. Reload trang
-            location.reload();
+            clearSavedState(true);
+            resetWorkspaceUI();
+            showToast("Đã bắt đầu phiên làm việc mới", "info");
         }
     });
 
@@ -218,8 +286,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const data = await loginAPI(identifier, password);
-            appState.user = data.user.username;
-            saveStateToStorage();
+            const newUsername = data.user.username;
+            
+            // Dọn dẹp sạch UI trước khi nạp user mới (cách ly phiên tuyệt đối)
+            resetWorkspaceUI();
+
+            appState.user = newUsername;
+            appState.authToken = data.access_token;
+            
+            // Nạp phiên làm việc riêng của user này nếu có
+            const userRestored = loadStateFromStorage();
+            if (userRestored) {
+                restoreSessionUI();
+            } else {
+                saveStateToStorage();
+            }
+
             loginForm.reset();
             applyWorkspaceMode("online");
             showToast(`Đăng nhập thành công: ${appState.user}`, "success");
@@ -260,7 +342,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const data = await registerAPI(username, email, password);
+            
+            // Tài khoản mới tạo PHẢI luôn bắt đầu từ workspace sạch sẽ 100%
+            clearSavedState(true);
+            resetWorkspaceUI();
+
             appState.user = data.user.username;
+            appState.authToken = data.access_token;
             saveStateToStorage();
             
             registerForm.reset();
@@ -284,11 +372,20 @@ document.addEventListener("DOMContentLoaded", () => {
     if (appState.mode === 'online') {
         getMeAPI().then(me => {
             if (me && me.user) {
-                appState.user = me.user.username;
+                const verifiedUser = me.user.username;
+                if (appState.user !== verifiedUser) {
+                    appState.user = verifiedUser;
+                    resetWorkspaceUI();
+                    if (loadStateFromStorage()) {
+                        restoreSessionUI();
+                    }
+                }
                 saveStateToStorage();
-            } else if (!appState.user) {
-                appState.user = null;
-                saveStateToStorage();
+            } else {
+                if (appState.user) {
+                    clearAllUserState();
+                    resetWorkspaceUI();
+                }
             }
             applyWorkspaceMode(appState.mode, true);
         }).catch(() => {
@@ -344,6 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
         uploadBtn.disabled = true;
         try {
             clearSavedState(); // Xóa phiên cũ
+            document.getElementById("session-restore-banner")?.remove();
             uploadBtn.textContent = "Đang tải file lên...";
             const uploadRes = await uploadDatasetAPI(fileInput.files[0]);
             const fileId = uploadRes.file_id;
@@ -382,6 +480,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             clearSavedState();
+            document.getElementById("session-restore-banner")?.remove();
             const uploadRes = await loadSampleDatasetAPI(sampleId);
             appState.filename = uploadRes.filename;
             
@@ -729,7 +828,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (isLogin) {
                     // Chế độ Đăng nhập
                     data = await loginAPI(identifier, pass);
-                    appState.user = data.user?.username || identifier;
+                    const newUsername = data.user?.username || identifier;
+                    resetWorkspaceUI();
+
+                    appState.user = newUsername;
+                    appState.authToken = data.access_token;
+
+                    const userRestored = loadStateFromStorage();
+                    if (userRestored) {
+                        restoreSessionUI();
+                    } else {
+                        saveStateToStorage();
+                    }
+
                     showToast(`Đăng nhập thành công: ${appState.user}`, "success");
                 } else {
                     // Chế độ Đăng ký
@@ -739,12 +850,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                     const dynamicEmail = `${identifier}@datasanitizer.local`;
                     data = await registerAPI(identifier, dynamicEmail, pass);
+                    
+                    clearSavedState(true);
+                    resetWorkspaceUI();
+
                     appState.user = data.user?.username || identifier;
+                    appState.authToken = data.access_token;
+                    saveStateToStorage();
+
                     showToast(`Đăng ký thành công! Chào mừng ${appState.user}`, "success");
                 }
-                
-                appState.authToken = data.access_token;
-                saveStateToStorage();
                 
                 document.getElementById("auth-modal").classList.add("hidden");
                 document.getElementById("btn-auth").classList.add("hidden");
@@ -752,6 +867,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 document.getElementById("username-display").textContent = appState.user;
                 
                 authForm.reset();
+                applyWorkspaceMode(appState.mode, true);
             } catch (err) {
                 showToast(err.message || (isLogin ? "Đăng nhập thất bại" : "Đăng ký thất bại"), "error");
             } finally {
@@ -770,8 +886,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {
             console.warn("Logout error:", e);
         }
-        appState.user = null;
-        saveStateToStorage();
+        clearAllUserState();
+        resetWorkspaceUI();
+
         const historyList = document.getElementById("history-list");
         if (historyList) historyList.innerHTML = `<li class="empty-state">Chưa có lịch sử xử lý nào.</li>`;
         applyWorkspaceMode(appState.mode, true);
@@ -846,16 +963,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         try {
             const data = await googleLoginAPI(response.credential);
-            appState.user = data.user?.username || data.user?.email || "Google User";
+            const newUsername = data.user?.username || data.user?.email || "Google User";
+            
+            resetWorkspaceUI();
+
+            appState.user = newUsername;
             appState.authToken = data.access_token;
+
+            const userRestored = loadStateFromStorage();
+            if (userRestored) {
+                restoreSessionUI();
+            } else {
+                saveStateToStorage();
+            }
 
             document.getElementById("auth-modal")?.classList.add("hidden");
             document.getElementById("btn-auth")?.classList.add("hidden");
             document.getElementById("profile-badge")?.classList.remove("hidden");
             document.getElementById("username-display").textContent = appState.user;
             
-            saveStateToStorage();
-            applyWorkspaceMode(appState.mode, true);
+            applyWorkspaceMode("online", true);
             showToast(`Đăng nhập Google thành công: ${appState.user}`, "success");
         } catch (err) {
             showToast(err.message, "error");

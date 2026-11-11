@@ -45,6 +45,10 @@ export function renderProfileData(profileData) {
     document.querySelector('.step-indicator[data-target="profile-section"]').disabled = false;
     document.querySelector('.step-indicator[data-target="pipeline-section"]').disabled = false;
     
+    // Mở khóa nút Tiếp tục ở bước 1 nếu có
+    const uploadNextBtn = document.querySelector("#upload-section .btn-nav.next");
+    if (uploadNextBtn) uploadNextBtn.disabled = false;
+    
     updateStepIndicator("profile-section");
     saveStateToStorage();
 }
