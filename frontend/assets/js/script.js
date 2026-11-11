@@ -228,9 +228,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 loginErr.textContent = err.message || "Tên đăng nhập hoặc mật khẩu không chính xác.";
                 loginErr.classList.remove("hidden");
             }
-        
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Đăng nhập vào Cloud";
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Đăng nhập vào Cloud";
+            }
         }
     });
 
@@ -735,7 +737,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (pass !== confirmPass) {
                         throw new Error("Mật khẩu xác nhận không khớp.");
                     }
-                    data = await registerAPI(identifier, "no-email@local.com", pass);
+                    const dynamicEmail = `${identifier}@datasanitizer.local`;
+                    data = await registerAPI(identifier, dynamicEmail, pass);
                     appState.user = data.user?.username || identifier;
                     showToast(`Đăng ký thành công! Chào mừng ${appState.user}`, "success");
                 }
