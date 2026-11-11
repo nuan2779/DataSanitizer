@@ -8,7 +8,7 @@
 
 % ---------------------------- REPORT INFORMATION ---------------------
 \reporttitle{DataSanitizer: Automated Web-Based Data Profiling and Cleaning Engine}
-\reportsubtitle{An Interactive Pipeline Architecture for Tabular Preprocessing and Machine Learning Readiness}
+\reportsubtitle{An Interactive Pipeline Architecture for Tabular Preprocessing, Anti-Data Leakage, and Machine Learning Readiness}
 \course{Web Design and Programming}
 \coursecode{WDP2026}
 \classname{FDA66}
@@ -22,8 +22,8 @@
 % Each row: No. & Full name & Student ID & Role \\
 \members{
   1 & Nguyen Huu Luan & 11247191 & Team Leader, Data Engine \& Architecture \\
-  2 & Dao Trung Phuc  & 11242354 & Back-end API \& Pipeline Runner \\
-  3 & Hoang Hai Van   & 11240301 & Front-end UI/UX \& Client-side Logic \\
+  2 & Dao Trung Phuc  & 11247215 & Back-end API \& Pipeline Runner \\
+  3 & Hoang Hai Van   & 11247244 & Front-end UI/UX \& Client-side Logic \\
 }
 
 \begin{document}
@@ -33,7 +33,7 @@
 % ---------------------------- DECLARATION ----------------------------
 \section*{Declaration}
 We declare that this report is the result of our group's own work for the course
-\emph{\@course}. All sources (literature, source code, images, AI tools) are cited
+\emph{Web Design and Programming (WDP2026)}. All sources (literature, source code, images, AI tools) are cited
 explicitly. We take full responsibility for the submitted content.
 
 % ---------------------------- CONTRIBUTIONS --------------------------
@@ -44,9 +44,9 @@ explicitly. We take full responsibility for the submitted content.
 \toprule
 \textbf{Member} & \textbf{Work done} & \textbf{Contribution (\%)}\\
 \midrule
-Nguyen Huu Luan & DataCleaner core engine, statistical profiler, IQR/Z-score algorithms, encoding, system architecture & 34\\
-Dao Trung Phuc  & FastAPI RESTful endpoints (/upload, /profile, /clean, /download), PipelineRunner orchestrator, Pydantic validation, Pytest suite & 33\\
-Hoang Hai Van   & Single-page interface (SPA), responsive CSS, reactive DOM updates, context-aware type guard, error alert handling & 33\\
+Nguyen Huu Luan & DataCleaner core engine, Anti-Data Leakage ML architecture (Train/Test 80/20 split \& stateful fit-transform), statistical profiler, Data Quality Health Score benchmark (EDA/BI), end-to-end system architecture & 34\\
+Dao Trung Phuc  & SQLite database schema \& multi-tenant session/history isolation, RESTful API routers (/auth, /recipes, /history, /samples), Google OAuth 2.0 back-end token verification, 50-test Pytest verification suite & 33\\
+Hoang Hai Van   & Single-page interface (SPA) corporate redesign (strict 60-30-10 palette, zero icons), Google Identity Services (GIS) front-end integration, Cloud Workspace auth gate, dynamic context-aware type guard, smart session resume & 33\\
 \midrule
 \multicolumn{2}{r}{\textbf{Total}} & \textbf{100}\\
 \bottomrule

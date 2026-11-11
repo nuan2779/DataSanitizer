@@ -1,34 +1,96 @@
 \section{Implementation}
 
 \subsection{Project Structure}
-The DataSanitizer codebase is strictly structured into modular components, cleanly separating client presentation, REST routing, data engineering logic, and automated verification suites:
+The DataSanitizer codebase is strictly structured into modular components, cleanly separating client presentation, REST routing, data engineering logic, relational persistence, and automated verification suites:
 
 \begin{lstlisting}[language=bash,numbers=none]
 DataSanitizer/
 |-- backend/
-|   |-- main.py              # FastAPI application, CORS middleware & route registration
-|   |-- schemas.py           # Pydantic v2 data models & request contracts
-|   |-- routers/             # Endpoint routers: upload, profile, clean, download
+|   |-- main.py              # FastAPI ASGI app, CORS middleware & router dispatch
+|   |-- schemas.py           # Pydantic v2 data models, request/response contracts
+|   |-- database.py          # SQLite schema, connection pooling & DAO layer
+|   |-- security.py          # Bcrypt password hashing & session token management
+|   |-- routers/             # Specialized REST endpoint routers
+|   |   |-- auth.py          # Local register/login & Google OAuth 2.0 verification
+|   |   |-- upload.py        # Multipart file ingestion with MIME/size validation
+|   |   |-- samples.py       # Kaggle Benchmark Data Hub catalog & loader
+|   |   |-- profile.py       # Global & deep column statistical profiler
+|   |   |-- benchmark.py     # 100-point Data Quality Health Score evaluator
+|   |   |-- clean.py         # Pipeline execution dispatcher (EDA vs ML mode)
+|   |   |-- recipes.py       # Preset & private custom recipe CRUD operations
+|   |   |-- history.py       # Isolated user pipeline execution history
+|   |   `-- download.py      # Single clean CSV/JSON & Train/Test split streaming
 |   `-- services/
-|       |-- cleaner.py       # DataCleaner: In-memory mathematical transformation engine
+|       |-- cleaner.py       # DataCleaner: In-memory vectorized transformation engine
 |       |-- profiler.py      # Statistical profiling & Pearson correlation scanner
-|       |-- pipeline_runner.py # Strict pipeline validation & regex currency conversion
-|       `-- adapter.py       # Backward-compatibility legacy adapter
+|       |-- benchmark.py     # 4-dimensional health score & diagnostic generator
+|       |-- pipeline_runner.py # Anti-Data Leakage orchestrator & regex currency parser
+|       `-- adapter.py       # Backward-compatibility legacy pipeline adapter
 |-- frontend/
-|   |-- index.html           # Single-Page Application (SPA) structure
+|   |-- index.html           # SPA structure with Cloud Auth card & Data Hub
 |   `-- assets/
-|       |-- css/             # Component styles: base, components, sections, modal
-|       `-- js/              # Vanilla ES6 modules: script, state, api, ui-*, dom-safe
-|-- tests/                   # 6 automated test modules (19 test cases)
-|-- data/                    # Local cache directory: raw/ and processed/
+|       |-- css/             # Styles: base, components, sections, modal, style.css
+|       `-- js/              # ES6 modules: script, state, api, ui-*, dom-safe
+|-- tests/                   # 14 automated test modules (50 test cases, 100% pass)
+|-- data/                    # Persistent storage: datasanitizer.db, raw/, processed/
 |-- requirements.txt         # Pinned Python package dependencies
-`-- README.md                # System documentation and operational instructions
+`-- README.md                # System documentation and deployment instructions
 \end{lstlisting}
 
 \subsection{User Interface Implementation}
-The front-end client is constructed entirely using standard **Vanilla ES6 JavaScript Modules** without bulky third-party frontend frameworks, ensuring near-instant load times and zero dependency overhead. 
+The front-end client is constructed entirely using standard **Vanilla ES6 JavaScript Modules** without bulky third-party frontend frameworks, ensuring near-instant load times and zero dependency overhead.
 
-State management is centralized within \texttt{frontend/assets/js/state.js}, exposing an observable \texttt{appState} object that synchronizes the active \texttt{file\_id}, parsed column schema, and ordered \texttt{pipelineSteps} array across all UI views. Crucially, to prevent unhandled runtime errors when users submit requests, the client implements a \textbf{Dynamic Context-Aware Type Guard} in \texttt{ui-pipeline.js}, shown in Listing~\ref{lst:typeguard}.
+State management is centralized within \texttt{frontend/assets/js/state.js}, exposing an observable \texttt{appState} object that synchronizes the active \texttt{file\_id}, execution mode (\texttt{"eda"} vs \texttt{"ml"}), workspace mode (\texttt{"offline"} vs \texttt{"online"}), parsed column schema, authenticated user context, and ordered \texttt{pipelineSteps} array across all UI views.
+
+\subsubsection{Dual-Mode DOM Reactivity and Mandatory Authentication Gating}
+The transition between Offline Mode and Online Cloud Workspace is orchestrated reactively through \texttt{applyWorkspaceMode(mode)} in \texttt{frontend/assets/js/script.js}, shown in Listing~\ref{lst:workspacemode}.
+
+\begin{lstlisting}[language=JavaScript,caption={Reactive workspace mode switching and auth gating in script.js.},label={lst:workspacemode}]
+function applyWorkspaceMode(mode, silent = false) {
+  appState.mode = mode;
+  saveStateToStorage();
+  
+  if (mode === 'online') {
+    offlineBadge.classList.add("hidden");
+    btnAuth.classList.add("hidden");
+
+    if (!appState.user) {
+      // Unauthenticated: Strictly hide file upload and functional cards
+      onlineAuthSection.classList.remove("hidden");
+      uploadSection.classList.add("hidden");
+      profileSection.classList.add("hidden");
+      pipelineSection.classList.add("hidden");
+      resultSection.classList.add("hidden");
+      kaggleHub.classList.add("hidden");
+      btnHistory.classList.add("hidden");
+      profileBadge.classList.add("hidden");
+      if (!silent) showToast("Vui lòng đăng nhập để sử dụng Cloud Workspace", "info");
+    } else {
+      // Authenticated: Dynamically unlock complete Cloud Workspace
+      onlineAuthSection.classList.add("hidden");
+      uploadSection.classList.remove("hidden");
+      kaggleHub.classList.remove("hidden");
+      profileBadge.classList.remove("hidden");
+      btnHistory.classList.remove("hidden");
+      usernameDisplay.textContent = appState.user;
+    }
+  } else {
+    // Offline Mode: Immediate anonymous local processing, zero audit logging
+    onlineAuthSection.classList.add("hidden");
+    offlineBadge.classList.remove("hidden");
+    uploadSection.classList.remove("hidden");
+    kaggleHub.classList.remove("hidden");
+  }
+}
+\end{lstlisting}
+
+As demonstrated in Listing~\ref{lst:workspacemode}, when switching to Online Mode without an authenticated session, the application enforces a strict security perimeter by dynamically hiding the file ingestion target, the Kaggle Hub, and the pipeline builder (``bỏ hỏi đưa file''). Instead, the view exclusively presents the centered Cloud Workspace Authentication Card. Only upon successful authentication does the system reveal the full functional suite and mount the user's isolated Processing History Drawer. Conversely, when operating in Offline Mode, all authentication requirements are bypassed, granting instant local analysis without recording database audit logs.
+
+\subsubsection{Google Identity Services (GIS) Integration and Auth Switching}
+To provide seamless single sign-on, the client integrates Google Identity Services SDK via \texttt{<script src="https://accounts.google.com/gsi/client" async defer>}. Inside the Cloud Workspace login card, an automated prompt container (\texttt{\#g\_id\_onload}) registers a global callback handler \texttt{handleCredentialResponse(response)}. When a user authorizes via the Google popup, the returned credential JWT is transmitted to the back-end \texttt{POST /api/auth/google} endpoint via \texttt{fetch} with \texttt{credentials: "include"}. The session cookie is stored by the browser, \texttt{appState.user} is populated, and the full workspace is dynamically revealed.
+
+\subsubsection{Dynamic Context-Aware Type Guarding}
+To prevent unhandled runtime errors when users submit requests, the client implements a \textbf{Dynamic Context-Aware Type Guard} in \texttt{ui-pipeline.js}, shown in Listing~\ref{lst:typeguard}.
 
 \begin{lstlisting}[language=JavaScript,caption={Context-aware dynamic type-guarding in ui-pipeline.js.},label={lst:typeguard}]
 export function updateColumnAvailability() {
@@ -62,17 +124,79 @@ export function updateColumnAvailability() {
 }
 \end{lstlisting}
 
-As demonstrated in Listing~\ref{lst:typeguard}, whenever a user switches the active cleaning tool or alters the missing-value strategy (e.g., from \texttt{"mode"} to \texttt{"mean"}), the interface dynamically recalculates column eligibility. Incompatible checkboxes are instantly disabled, unchecked, faded, and annotated with explanatory warning badges. Furthermore, the ``Select All'' button is programmed to target only active elements using the CSS selector \texttt{.col-checkbox:not(:disabled)}, guaranteeing that non-numeric columns are never inadvertently packaged into mathematical operations.
+Whenever a user switches the active cleaning tool or alters the missing-value strategy, the interface dynamically recalculates column eligibility. Incompatible checkboxes are instantly disabled, unchecked, faded, and annotated with explanatory warning badges. Furthermore, the ``Select All'' button targets only active elements using \texttt{.col-checkbox:not(:disabled)}, guaranteeing that non-numeric columns are never inadvertently packaged into mathematical operations.
 
-\subsection{Server-Side Logic and Data Engine}
-The server-side computational backbone is centered on two specialized modules: \texttt{DataCleaner} and \texttt{PipelineRunner}.
+\subsection{Server-Side Logic and Algorithmic Engine}
+The server-side computational backbone is centered on specialized services coordinating mathematical transformations, anti-leakage orchestration, quality scoring, and multi-tenant security.
+
+\subsubsection{Anti-Data Leakage Architecture in Machine Learning Mode}
+The most significant architectural innovation in DataSanitizer 2.0 is the \textbf{Anti-Data Leakage Engine} implemented in \texttt{backend/services/pipeline\_runner.py}. In standard machine learning workflows, fitting feature scalers, categorical encoders, or imputation constants on the combined dataset allows statistical properties of the test distribution (e.g., test mean, variance, or unseen category frequencies) to influence the training representations.
+
+To prevent this information leakage, when \texttt{mode == "ml"} is specified, \texttt{PipelineRunner} partitions the raw DataFrame into an 80\% training split and a 20\% testing split ($N_{\text{train}} = \lfloor 0.8 \times N \rfloor$, $N_{\text{test}} = N - N_{\text{train}}$) using deterministic pseudo-random stratification before any stateful operation is executed, as shown in Listing~\ref{lst:antileakage}.
+
+\begin{lstlisting}[language=Python,caption={Anti-Data Leakage split-first transformation logic in pipeline\_runner.py.},label={lst:antileakage}]
+def run_pipeline(file_path: str, steps: list[dict], mode: str = "eda") -> dict:
+    df = pd.read_csv(file_path) if file_path.endswith(".csv") else pd.read_excel(file_path)
+    
+    if mode == "ml":
+        # Strict Anti-Data Leakage: Pre-split 80/20 train and test sets
+        train_df, test_df = train_test_split(df, test_size=0.20, random_state=42)
+        train_cleaner = DataCleaner(train_df)
+        test_cleaner = DataCleaner(test_df)
+        
+        for step in steps:
+            action = step.get("step_type")
+            cfg = step.get("config", {})
+            # Fit stateful parameters strictly on train; transform test
+            if action == "scaling":
+                scaler_type = cfg.get("method", "standard")
+                cols = cfg.get("columns", [])
+                fitted_scaler = train_cleaner.fit_scaler(cols, method=scaler_type)
+                test_cleaner.transform_scaler(cols, fitted_scaler)
+            elif action == "encoding":
+                fitted_encoder = train_cleaner.fit_encoder(cols, method=cfg.get("method"))
+                test_cleaner.transform_encoder(cols, fitted_encoder)
+            else:
+                # Deterministic or row-wise transformations applied independently
+                train_cleaner.apply_step(action, cfg)
+                test_cleaner.apply_step(action, cfg)
+                
+        # Persist both split partitions and merged clean dataset
+        save_split_datasets(file_id, train_cleaner.df, test_cleaner.df)
+\end{lstlisting}
+
+As demonstrated in Listing~\ref{lst:antileakage}, feature scalers (StandardScaler, MinMaxScaler, RobustScaler) and categorical encoders (One-Hot, Label) are fitted exclusively on the training partition. The fitted transformer parameters are subsequently projected onto the testing partition. If unseen categories appear in the test partition, One-Hot encoding safely ignores them without throwing dimensional mismatch errors. Both partitions are persisted as \texttt{\{file\_id\}\_train\_cleaned.csv} and \texttt{\{file\_id\}\_test\_cleaned.csv}, guaranteeing 100\% leak-free machine learning pipelines.
+
+\subsubsection{Data Quality Health Score Benchmark Algorithm}
+To quantify dataset health before and after cleaning, \texttt{backend/services/benchmark.py} computes an objective 100-point Data Quality Health Score $S_{\text{total}} \in [0, 100]$ based on four weighted dimensions:
+\begin{equation}
+S_{\text{total}} = S_{\text{comp}} + S_{\text{dedup}} + S_{\text{unif}} + S_{\text{ret}}
+\end{equation}
+where:
+\begin{enumerate}
+  \item \textbf{Completeness ($S_{\text{comp}} \in [0, 30]$):} Measures global non-null cell density:
+  \begin{equation}
+  S_{\text{comp}} = 30 \times \left(1 - \frac{N_{\text{missing}}}{N_{\text{rows}} \times N_{\text{cols}}}\right)
+  \end{equation}
+  \item \textbf{Deduplication ($S_{\text{dedup}} \in [0, 20]$):} Measures uniqueness of observation rows:
+  \begin{equation}
+  S_{\text{dedup}} = 20 \times \left(1 - \frac{N_{\text{duplicate\_rows}}}{N_{\text{rows}}}\right)
+  \end{equation}
+  \item \textbf{Uniformity ($S_{\text{unif}} \in [0, 25]$):} Measures consistency of parsed data types across numeric and categorical features:
+  \begin{equation}
+  S_{\text{unif}} = 25 \times \frac{N_{\text{valid\_typed\_cols}}}{N_{\text{total\_cols}}}
+  \end{equation}
+  \item \textbf{Row Retention ($S_{\text{ret}} \in [0, 25]$):} Tracks sample preservation following outlier pruning or row-dropping operations ($S_{\text{ret}} = 25 \times \min(1.0, N_{\text{final}} / N_{\text{initial}})$).
+\end{enumerate}
+
+The benchmark engine simultaneously inspects high-cardinality textual features ($> 50$ unique categories), extreme skewness ($|\gamma_1| > 2.0$), and high multicollinearity ($|r| \ge 0.85$), emitting actionable corporate diagnostics to guide pipeline design.
 
 \subsubsection{Robust Currency and Numeric Sanitization}
 Textual columns frequently embed monetary symbols, thousand-separator commas, or regional currency tags. To prevent corrupting valid data, \texttt{pipeline\_runner.py} employs compiled regular expressions (\texttt{\_MONEY}) that safely parse non-ambiguous currency formats while strictly rejecting ambiguous notations (such as decimal-separated thousand markers like \texttt{"1.500 đ"}), as shown in Listing~\ref{lst:money}.
 
 \begin{lstlisting}[language=Python,caption={Safe currency conversion logic in pipeline\_runner.py.},label={lst:money}]
 _MONEY = re.compile(
-    r"^\s*([+-]?)\s*\$?\s*((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)\s*(?:đ|₫|vnd|vnđ)?\s*$",
+    r"^\s*([+-]?)\s*\$?\s*((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?)\s*(?:vnd|usd|\$)?\s*$",
     re.IGNORECASE,
 )
 
@@ -92,31 +216,35 @@ def _convert_numeric_column(series: pd.Series, col_name: str) -> pd.Series:
     return pd.Series(converted, index=series.index, dtype="float64")
 \end{lstlisting}
 
-\subsubsection{Outlier Handling via IQR Winsorization}
-Rather than naively deleting outlier rows—which causes catastrophic sample loss in small datasets—the \texttt{DataCleaner.handle\_outliers()} method offers a non-destructive capping mechanism (\emph{Winsorization}). By computing the Interquartile Range ($\text{IQR} = Q_3 - Q_1$), values lying beyond $[Q_1 - 1.5 \times \text{IQR}, Q_3 + 1.5 \times \text{IQR}]$ are clamped directly to the boundary thresholds using NumPy's vectorized \texttt{np.clip(self.df[col], lower, upper)} function. This ensures outliers are moderated to the upper and lower bounds at vectorized $O(1)$ memory speed while inherently preserving missing \texttt{NaN} values.
+\subsubsection{Outlier Handling and Categorical Dummy Variable Trap Prevention}
+Rather than naively deleting outlier rows, \texttt{DataCleaner.handle\_outliers()} offers non-destructive capping (Winsorization). By computing the Interquartile Range ($\text{IQR} = Q_3 - Q_1$), values lying beyond $[Q_1 - 1.5 \times \text{IQR}, Q_3 + 1.5 \times \text{IQR}]$ are clamped directly to the boundary thresholds using NumPy's vectorized \texttt{np.clip(self.df[col], lower, upper)}. When encoding categorical variables via One-Hot encoding, \texttt{DataCleaner} sets \texttt{drop\_first=True}, dropping the initial dummy level to eliminate the \emph{Dummy Variable Trap} (perfect collinearity with the intercept).
 
-\subsubsection{Categorical Encoding and Collinearity Prevention}
-When transforming categorical features into binary indicator vectors via One-Hot Encoding, \texttt{DataCleaner} explicitly enables \texttt{drop\_first=True}. This practice drops the first dummy level for each nominal feature, preventing the \emph{Dummy Variable Trap} (perfect multicollinearity where the sum of indicator variables equals the constant intercept vector).
+\subsubsection{Secure Authentication, Google OAuth, and Session Isolation}
+User security is governed by \texttt{backend/security.py} and \texttt{backend/routers/auth.py}:
+\begin{itemize}
+  \item \textbf{Password Hashing:} User passwords are encrypted using Bcrypt via Passlib with automatic salt generation (\texttt{pwd\_context = CryptContext(schemes=["bcrypt"], deprecated="auto")}), ensuring that plain-text passwords are never stored in the database.
+  \item \textbf{Google OAuth 2.0 Verification:} When an ID token is received from the front-end Google Identity Services popup, the back-end issues a secure query to Google's public token endpoint (\texttt{https://oauth2.googleapis.com/tokeninfo?id\_token=\{token\}}). Upon successful signature verification, the user's verified email and full name are extracted. If the user does not exist, an account is automatically provisioned with a secure random hash.
+  \item \textbf{Session Cookie Management:} Successful authentication generates a cryptographically secure 256-bit token stored in the \texttt{user\_sessions} table with a 7-day expiration. The token is transmitted via an HTTP-only, SameSite-protected session cookie, securing API calls against Cross-Site Scripting (XSS) credential theft.
+  \item \textbf{Multi-Tenant Isolation:} All recipe and history endpoints enforce authentication checks and filter queries strictly by \texttt{WHERE user\_id = current\_user.id}.
+\end{itemize}
 
 \subsection{Source Control and Teamwork}
-The project was developed collaboratively on GitHub using a disciplined feature-branching workflow. 
+The project was developed collaboratively on GitHub using a disciplined feature-branching workflow.
 \begin{itemize}
-  \item \textbf{Branching Strategy:} The \texttt{main} branch was protected, serving as the stable production baseline. Features were developed on dedicated branches (e.g., \texttt{feature/phuc-backend}, \texttt{frontend}, \texttt{fix/group-integration}).
-  \item \textbf{Pull Requests and Code Reviews:} Merges were executed through Pull Requests (PR \#4 for back-end routing, PR \#8 for pipeline adapter integration, and PR \#9 for frontend type-guards). Team members conducted thorough code reviews and verified test suites before merging.
-  \item \textbf{Commit Hygiene:} Commit messages followed the Conventional Commits specification (e.g., \texttt{feat(frontend): ...}, \texttt{fix(api): ...}, \texttt{chore: ...}), ensuring transparent traceability across the development history.
+  \item \textbf{Branching Strategy:} The \texttt{main} branch was protected, serving as the stable production baseline. Features were developed on dedicated branches: \texttt{feature/phuc-backend} (API, DB, and Pytest suite), \texttt{frontend} (UI/UX corporate redesign and Google SSO), and \texttt{feature/data-quality-and-hub-redesign} (Anti-Leakage engine, benchmark scorer, and Kaggle Hub).
+  \item \textbf{Pull Requests and Code Reviews:} Merges were executed through peer-reviewed Pull Requests (PR \#4 for back-end routing, PR \#8 for pipeline adapter, PR \#9 for frontend type-guards, PR \#13 for Google authentication, and PR \#16 for benchmark quality scoring).
+  \item \textbf{Commit Hygiene:} Commit messages strictly followed the Conventional Commits specification (e.g., \texttt{feat(auth): ...}, \texttt{fix(ui): ...}, \texttt{chore(test): ...}), ensuring complete traceability across the version history.
 \end{itemize}
 
 \subsection{Deployment}
-\textbf{Local Execution Architecture:}
-During development and academic review, the application is executed locally using two concurrent processes:
+\textbf{Local Execution Architecture:} During development and academic review, the application is executed locally using two concurrent processes:
 \begin{enumerate}
   \item Back-end ASGI Server: \texttt{python -m uvicorn backend.main:app --reload --port 8000}
   \item Front-end Static Server: \texttt{python -m http.server 5500 -d frontend}
 \end{enumerate}
 
-\textbf{Cloud Deployment Readiness:}
-The system is architected for zero-configuration cloud hosting:
+\textbf{Cloud Deployment Readiness:} The system is architected for zero-configuration cloud hosting:
 \begin{itemize}
-  \item \textbf{Back-end (Render / Railway):} Packaged via \texttt{requirements.txt} and launched via Gunicorn/Uvicorn workers with automated SSL provisioning.
-  \item \textbf{Front-end (Vercel / GitHub Pages):} The static assets in \texttt{frontend/} deploy seamlessly to Vercel edge networks. An adaptive \texttt{isLocal} protocol check in \texttt{api.js} dynamically routes API requests to the cloud back-end when hosted externally.
+  \item \textbf{Back-end (Render / Railway):} Packaged via \texttt{requirements.txt} and launched via Uvicorn/Gunicorn workers with automated SSL provisioning.
+  \item \textbf{Front-end (Vercel / GitHub Pages):} The static assets in \texttt{frontend/} deploy seamlessly to Vercel edge networks. An adaptive protocol check in \texttt{api.js} dynamically routes API requests to the cloud back-end when hosted externally.
 \end{itemize}

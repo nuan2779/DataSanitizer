@@ -10,36 +10,42 @@ Real-world tabular datasets—originating from heterogeneous sources such as tra
   \item \textbf{Outliers and Distributional Skewness:} Extreme observations and recording errors severely distort sample variance, sample means, and normal distributions required by parametric models.
   \item \textbf{Multicollinearity and Redundancy:} High correlation between predictive features ($|r| \ge 0.85$) destabilizes matrix inversion in linear estimators and inflates standard errors.
   \item \textbf{Unencoded Categorical Data:} Non-numerical variables cannot be directly supplied to tensor operations without robust categorical encoding, which itself risks the dummy variable trap.
+  \item \textbf{Critical Risk of Data Leakage in Machine Learning:} In supervised machine learning pipelines, applying stateful transformations (such as feature scaling, mean imputation, or target/one-hot encoding) across the entire dataset before partitioning into train and test sets constitutes a catastrophic methodological flaw known as \emph{Data Leakage}. Statistics from the unseen test partition leak into the training fold, yielding overly optimistic evaluation metrics during development but catastrophic failures in production inference \cite{pedregosa2011}.
 \end{enumerate}
 
-Traditional workarounds rely heavily on ad-hoc Jupyter Notebook scripts written in Python or R. While flexible, this approach demands repetitive boilerplate code, lacks systematic reproducibility, and presents steep barriers to non-programming domain experts. Conversely, commercial solutions and emerging cloud-based Generative AI tools introduce severe data confidentiality vulnerabilities, high latency, non-deterministic transformations (hallucinations), and vendor lock-in.
+Traditional workarounds rely heavily on ad-hoc Jupyter Notebook scripts written in Python or R. While flexible, this approach demands repetitive boilerplate code, lacks systematic reproducibility, and presents steep barriers to non-programming domain experts. Furthermore, scripts written by inexperienced practitioners frequently commit subtle data leakage errors by fitting encoders and scalers globally. Conversely, commercial solutions and emerging cloud-based Generative AI tools introduce severe data confidentiality vulnerabilities, high latency, non-deterministic transformations (hallucinations), and vendor lock-in.
 
-To address these critical challenges, our group conceived and developed \textbf{DataSanitizer}—a high-performance, browser-accessible, deterministic data sanitization and profiling studio. By unifying an asynchronous FastAPI back-end with a reactive vanilla JavaScript Single-Page Application (SPA), DataSanitizer provides intuitive automated data health diagnosis and an interactive, ordered transformation pipeline engine.
+To address these critical challenges, our group conceived and developed \textbf{DataSanitizer 2.0}—a high-performance, browser-accessible, deterministic data sanitization, benchmark profiling, and machine learning preparation studio. By unifying an asynchronous FastAPI back-end with a reactive vanilla JavaScript Single-Page Application (SPA) and an embedded SQLite relational database, DataSanitizer provides automated dataset health diagnosis, a strict anti-data leakage transformation engine, multi-tenant session isolation, and Google OAuth 2.0 single sign-on.
 
 \subsection{Objectives}
-The primary objective of the DataSanitizer project is to deliver a reliable, lightweight, and auditable web platform for automated tabular data preprocessing. Specifically, the project establishes four measurable technical milestones:
+The primary objective of the DataSanitizer project is to deliver a reliable, lightweight, and auditable web platform for automated tabular data preprocessing and machine learning readiness. Specifically, the project establishes five measurable technical milestones:
 \begin{itemize}
-  \item \textbf{Objective 1 (Automated Health Profiling):} Construct an automated dataset profiling service capable of ingesting tabular files (\texttt{.csv} and \texttt{.xlsx} up to 10~MB) and computing comprehensive statistical diagnostics—including sorted null-percentage distributions, duplicated row counts, unique cardinality, and pairwise multicollinearity warnings ($|r| \ge 0.85$)—within 2.0 seconds.
-  \item \textbf{Objective 2 (Ordered Enterprise Pipeline Execution):} Implement an in-memory transformation engine based on Pandas \cite{mckinney2010} and Scikit-learn \cite{pedregosa2011} that executes user-composed, ordered preprocessing pipelines featuring missing value imputation, robust outlier handling (IQR and Z-score winsorization/removal), categorical encoding (Label and One-Hot with collinearity avoidance), feature scaling, currency extraction, and floating-point rounding.
-  \item \textbf{Objective 3 (Defensive Client-Side Validation):} Design a reactive user interface featuring context-aware dynamic type guarding that automatically inspects data types and prevents users from executing mathematically impermissible operations (e.g., executing numeric scaling on text columns), eliminating unhandled HTTP 400 server rejections.
-  \item \textbf{Objective 4 (Transparent Auditability and Export):} Establish a verifiable audit logging mechanism that records pre- and post-processing row and column differentials alongside step-by-step transformation receipts, facilitating clean dataset downloads in standard CSV and JSON formats.
+  \item \textbf{Objective 1 (Automated Health Profiling \& Benchmark Quality Scoring):} Construct an automated dataset profiling service capable of ingesting tabular files (\texttt{.csv} and \texttt{.xlsx} up to 10~MB) and computing comprehensive statistical diagnostics—including sorted null-percentage distributions, duplicated row counts, unique cardinality, and pairwise multicollinearity warnings ($|r| \ge 0.85$)—within 2.0 seconds. Furthermore, formulate a standardized 100-point Data Quality Health Score evaluated across four international standards: Completeness (30 pts), Deduplication (20 pts), Uniformity (25 pts), and Row Retention (25 pts), augmented by automated heuristic diagnostics.
+  \item \textbf{Objective 2 (Anti-Data Leakage Machine Learning Pipeline Engine):} Implement an in-memory transformation engine based on Pandas \cite{mckinney2010} and Scikit-learn \cite{pedregosa2011} that supports both standard Exploratory Data Analysis (EDA) mode and a strict Machine Learning (ML) mode. In ML mode, the system strictly bifurcates the dataset into an 80/20 Train/Test partition prior to executing stateful operations, guaranteeing that imputation parameters, outlier thresholds, categorical encoders, and feature scalers are fitted exclusively on the training partition and subsequently transformed across the test partition.
+  \item \textbf{Objective 3 (Preset Recipes \& Benchmark Data Hub):} Provide instantaneous workflow acceleration through built-in standardized recipes (EDA Baseline, ML Train-Ready, and Strict Deduplication) and an integrated Kaggle Benchmark Data Hub preloaded with four classic datasets (Melbourne Housing, Titanic, Heart Disease, and Credit Card Default) for immediate exploratory analysis without manual file ingestion.
+  \item \textbf{Objective 4 (Cloud Workspace, Multi-Tenant Isolation \& Google OAuth):} Architect a dual-mode operational paradigm: an anonymous, privacy-first Offline Mode for zero-footprint local processing, and an authenticated Online Cloud Workspace. The Cloud Workspace enforces mandatory authentication via local Bcrypt-hashed credentials or Google OAuth 2.0 Single Sign-On (Google Identity Services), providing persistent custom recipe management and strictly isolated, per-user pipeline processing history in an embedded SQLite database.
+  \item \textbf{Objective 5 (Defensive Client-Side Validation \& Auditable Multi-File Export):} Design a reactive user interface featuring context-aware dynamic type guarding that automatically inspects data types and prevents users from executing mathematically impermissible operations (e.g., executing numeric scaling on text columns). Maintain an immutable audit ledger of every transformation step and provide flexible export options: single merged cleaned CSVs or dual partitioned packages (\texttt{train\_cleaned.csv} and \texttt{test\_cleaned.csv}).
 \end{itemize}
 
 \subsection{Scope and Target Users}
 \textbf{Target Users:}
-DataSanitizer is engineered for data analysts, academic researchers, machine learning practitioners, and business intelligence specialists who require rapid, deterministic data preparation without constructing bespoke preprocessing scripts for every incoming dataset.
+DataSanitizer is engineered for data analysts, academic researchers, machine learning practitioners, and business intelligence specialists who require rapid, deterministic data preparation and leak-free machine learning preprocessing without constructing bespoke scripts for every incoming dataset.
 
 \textbf{In-Scope Features:}
 \begin{itemize}
-  \item Multipart file ingestion supporting CSV and modern Excel (XLSX) structures with strict size and MIME verification.
-  \item Full-table health inspection and lazy-loaded single-column deep statistical inspection (mean, median, standard deviation, quartiles, IQR outlier count).
-  \item Interactive construction, reordering, and removal of transformation pipeline steps.
+  \item Multipart file ingestion supporting CSV and modern Excel (XLSX) structures with strict size and MIME verification, alongside instant preloaded benchmark dataset loading from the Kaggle Data Hub.
+  \item Full-table health inspection, lazy-loaded single-column deep statistical inspection (mean, median, standard deviation, quartiles, IQR outlier count), and a 100-point Data Quality Health Score benchmark with automated anomaly warnings.
+  \item Interactive construction, reordering, and removal of transformation pipeline steps, augmented by preset recipes and private custom recipe persistence.
+  \item Dual-mode pipeline execution: standard Exploratory Data Analysis (EDA) mode and strict Anti-Data Leakage Machine Learning (ML) mode with 80/20 train/test pre-splitting and stateful fit-transform isolation.
+  \item Dual-mode workspace architecture: anonymous Offline Mode vs authenticated Online Cloud Workspace.
+  \item Secure multi-tenant authentication supporting local accounts (Bcrypt password hashing) and Google OAuth 2.0 Single Sign-On via Google Identity Services.
+  \item Persistent SQLite database storing user accounts, active sessions, saved custom recipes, and isolated personal processing history.
   \item Robust currency string stripping and numerical casting via compiled regular expressions.
-  \item Automated transformation audit summary generation and clean file export.
+  \item Automated transformation audit summary generation and dual-format download (single cleaned CSV/JSON or split train/test CSVs).
 \end{itemize}
 
 \textbf{Out-of-Scope Features:}
-As an educational and departmental prototype, DataSanitizer currently excludes multi-tenant enterprise authentication (OAuth2/SSO), persistent relational database storage, long-term cloud object retention, and distributed cluster computation (e.g., Apache Spark).
+As an educational and departmental studio, DataSanitizer currently excludes distributed multi-node big data cluster computation (e.g., Apache Spark, Dask) and cross-region cloud object storage replication (e.g., AWS S3 multi-region). All data processing resides in-memory on the application host.
 
 \subsection{Technologies}
 The technology stack for DataSanitizer was selected based on strict requirements for high execution speed, mathematical precision, standards compliance, and lightweight deployment footprints without external framework bloat. Table~\ref{tab:tech} summarizes the core technologies utilized.
@@ -51,15 +57,17 @@ The technology stack for DataSanitizer was selected based on strict requirements
 \toprule
 \textbf{Layer / Component} & \textbf{Technology} & \textbf{Technical Purpose}\\
 \midrule
-\textbf{Front-end UI}       & HTML5, Modern CSS3      & Structural semantics, modern cards, and responsive grid layout\\
-\textbf{Front-end Logic}    & Vanilla JavaScript (ES6+) & Modular architecture, Fetch API, DOM manipulation, type guarding\\
-\textbf{Back-end Framework} & FastAPI (Python 3.10+)  & Asynchronous ASGI routing, OpenAPI documentation, CORS\\
+\textbf{Front-end UI}       & HTML5, Modern CSS3      & Semantic layout, strict 60-30-10 corporate palette, zero-icon design\\
+\textbf{Front-end Logic}    & Vanilla JavaScript (ES6+) & Modular architecture, Google Identity Services (GIS), Fetch API, type guard\\
+\textbf{Back-end Framework} & FastAPI (Python 3.10+)  & Asynchronous ASGI routing, OpenAPI Swagger documentation, CORS\\
 \textbf{Data Validation}    & Pydantic v2             & Strict typed schema parsing, HTTP 422 payload protection\\
+\textbf{Relational Database}& SQLite 3 (Python \texttt{sqlite3}) & Persistent storage for users, sessions, custom recipes, and isolated history\\
+\textbf{Authentication}     & Google OAuth 2.0 \& Passlib & Google token verification, Bcrypt salted hashing, HTTP-only session cookies\\
 \textbf{Analytical Core}    & Pandas \& NumPy         & Vectorized matrix manipulation, in-memory DataFrame transforms\\
-\textbf{Machine Learning}   & Scikit-learn            & Standard/MinMax feature scalers, Label and One-Hot encoders\\
+\textbf{Machine Learning}   & Scikit-learn            & Standard/MinMax/Robust scalers, Label/One-Hot encoders, train/test split\\
 \textbf{Spreadsheet Parser} & OpenPyXL \& Zipfile     & Excel file decompression, structure and MIME verification\\
-\textbf{Automated Testing}  & Pytest \& HTTPX         & Contract testing, pipeline verification, edge-case coverage\\
-\textbf{Version Control}    & Git \& GitHub           & Collaborative branching, issue tracking, and code reviews\\
+\textbf{Automated Testing}  & Pytest \& HTTPX         & 50 automated test cases across 14 modules, contract verification\\
+\textbf{Version Control}    & Git \& GitHub           & Collaborative branching, PR code reviews, conventional commit hygiene\\
 \bottomrule
 \end{tabular}
 \caption{Technologies utilized across the DataSanitizer platform.}
@@ -69,8 +77,8 @@ The technology stack for DataSanitizer was selected based on strict requirements
 \subsection{Report Structure}
 The remainder of this report is organized as follows:
 \begin{itemize}
-  \item \textbf{Section~2 (Analysis and Design):} Details functional and non-functional requirements, UI/UX interaction workflows, multi-tiered system architecture, data storage strategy, and RESTful API specifications.
-  \item \textbf{Section~3 (Implementation):} Explains project modularity, key client-side type-guarding mechanisms, server-side data processing algorithms, and teamwork workflows.
-  \item \textbf{Section~4 (Results and Conclusion):} Demonstrates automated test suite validation, evaluates objective fulfillment, discusses known constraints, and outlines future architectural improvements.
-  \item \textbf{Appendix:} Provides comprehensive local execution instructions, API payload contracts, and ethical declarations regarding AI assistance.
+  \item \textbf{Section~2 (Analysis and Design):} Details functional and non-functional requirements, UI/UX interaction workflows, multi-tiered system architecture, relational database entity-relationship design, and RESTful API specifications.
+  \item \textbf{Section~3 (Implementation):} Explains project modularity, client-side type-guarding and GIS integration, server-side anti-data leakage algorithms, Data Quality scoring mathematics, secure authentication workflows, and teamwork protocols.
+  \item \textbf{Section~4 (Results and Conclusion):} Demonstrates the 50-test automated verification suite, evaluates objective fulfillment, discusses resolved versus existing constraints, and outlines future architectural improvements.
+  \item \textbf{Appendix:} Provides comprehensive local deployment instructions, test execution outputs, API payload contracts, and ethical declarations regarding AI assistance.
 \end{itemize}

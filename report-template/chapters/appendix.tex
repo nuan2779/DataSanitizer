@@ -1,7 +1,7 @@
 \section{Appendix}
 
 \subsection{Setup and Run Instructions}
-The DataSanitizer project is designed for straightforward local deployment on modern Windows, macOS, or Linux systems with Python 3.10+ installed.
+DataSanitizer 2.0 is designed for straightforward local deployment on modern Windows, macOS, or Linux systems with Python 3.10+ installed.
 
 \begin{lstlisting}[language=bash,caption={Local setup commands for Windows PowerShell.},label={lst:setup}]
 # 1. Clone repository from GitHub
@@ -9,13 +9,13 @@ git clone https://github.com/nuan2779/DataSanitizer.git
 cd DataSanitizer
 
 # 2. Create and activate Python virtual environment
-py -3.11 -m venv .venv
+py -3.10 -m venv .venv
 .\.venv\Scripts\activate
 
 # 3. Install core dependencies
 pip install -r requirements.txt
 
-# 4. Ensure local staging directories exist
+# 4. Ensure local staging directories exist (SQLite DB initializes automatically)
 New-Item -ItemType Directory -Force -Path '.\data\raw', '.\data\processed' | Out-Null
 
 # 5. Launch Back-end Server (Terminal 1)
@@ -32,20 +32,75 @@ Once both servers are running:
 \end{itemize}
 
 \subsection{Verification and Test Execution}
-To verify the complete mathematical integrity and API contract compliance of the project, execute the automated test suite using \texttt{pytest}:
+To verify the complete mathematical integrity, anti-leakage guards, and API contract compliance of the project, execute the automated test suite using \texttt{pytest}:
 
 \begin{lstlisting}[language=bash,caption={Automated test execution command.},label={lst:testrun}]
 pytest tests -v
 \end{lstlisting}
 
-The test harness evaluates 19 distinct unit and integration test scenarios across 6 test modules, confirming that all endpoints, validators, and transformation pipelines execute with zero failures.
+The test harness evaluates 50 distinct unit and integration test scenarios across 14 test modules, confirming that all endpoints, validators, anti-leakage partitions, database DAOs, and transformation pipelines execute with zero failures:
+
+\begin{lstlisting}[language=bash,caption={Pytest execution summary log (50 passed).},label={lst:testlog}]
+tests/test_api.py::test_home PASSED
+tests/test_api.py::test_invalid_upload PASSED
+tests/test_api.py::test_invalid_clean_method PASSED
+tests/test_api.py::test_file_not_found PASSED
+tests/test_auth.py::test_register_login_me_and_logout PASSED
+tests/test_auth.py::test_register_rejects_duplicate_and_weak_password PASSED
+tests/test_auth.py::test_password_is_stored_as_hash PASSED
+tests/test_auth.py::test_google_auth_new_and_existing_user PASSED
+tests/test_auth.py::test_google_auth_rejects_missing_token PASSED
+tests/test_benchmark.py::test_data_quality_score_clean_data PASSED
+tests/test_benchmark.py::test_data_quality_score_with_nulls_and_duplicates PASSED
+tests/test_benchmark.py::test_data_quality_score_empty_data PASSED
+tests/test_benchmark.py::test_data_quality_score_diagnostics PASSED
+tests/test_end_to_end.py::test_full_pipeline PASSED
+tests/test_frontend_backend_integration.py::test_kaggle_samples_api PASSED
+tests/test_frontend_backend_integration.py::test_ml_mode_pipeline_execution_and_split_download PASSED
+tests/test_frontend_backend_integration.py::test_benchmark_api_compatibility PASSED
+tests/test_frontend_backend_integration.py::test_eda_mode_pipeline_execution_and_quality_health_benchmark PASSED
+tests/test_frontend_pipeline_contract.py::test_frontend_mean_produces_mean_not_default_median PASSED
+tests/test_frontend_pipeline_contract.py::test_multi_step_encoding_audit_and_download PASSED
+tests/test_frontend_pipeline_contract.py::test_selected_currency_and_profile PASSED
+tests/test_frontend_pipeline_contract.py::test_reject_invalid_pipeline_without_corrupting_data PASSED
+tests/test_frontend_pipeline_contract.py::test_interpolation_legacy_alias PASSED
+tests/test_frontend_pipeline_contract.py::test_numeric_currency_negative_preserves_sign_and_rejects_text PASSED
+tests/test_frontend_pipeline_contract.py::test_profile_column_details_and_missing_name PASSED
+tests/test_frontend_pipeline_contract.py::test_pipeline_no_selection_autoselect_numeric_for_mean PASSED
+tests/test_history.py::test_clean_is_saved_to_authenticated_user_history PASSED
+tests/test_history.py::test_anonymous_clean_does_not_create_personal_history PASSED
+tests/test_history.py::test_user_cannot_read_another_users_history PASSED
+tests/test_invalid_data.py::test_empty_csv PASSED
+tests/test_invalid_data.py::test_invalid_excel PASSED
+tests/test_leakage_guard.py::test_split_train_test_proportions PASSED
+tests/test_leakage_guard.py::test_onehot_encoding_anti_data_leakage_unseen_category PASSED
+tests/test_leakage_guard.py::test_label_encoding_anti_data_leakage_unseen_category PASSED
+tests/test_leakage_guard.py::test_scaling_anti_data_leakage PASSED
+tests/test_leakage_guard.py::test_pipeline_runner_ml_mode PASSED
+tests/test_pipeline_runner_update.py::test_ml_mode_splits_even_when_pipeline_only_imputes_missing_values PASSED
+tests/test_pipeline_runner_update.py::test_ml_mode_always_returns_split_for_deterministic_only_pipeline PASSED
+tests/test_pipeline_runner_update.py::test_builtin_recipe_style_empty_column_selection_is_resolved PASSED
+tests/test_real_pipeline.py::test_real_cleaning_pipeline PASSED
+tests/test_recipes.py::test_recipes_require_login PASSED
+tests/test_recipes.py::test_list_create_apply_update_and_delete_recipe PASSED
+tests/test_recipe_is_private_to_its_owner PASSED
+tests/test_recipes.py::test_builtin_recipe_can_be_applied_and_run PASSED
+tests/test_samples.py::test_sample_catalog_lists_four_available_datasets PASSED
+tests/test_samples.py::test_load_sample_creates_unique_raw_file_and_metadata PASSED
+tests/test_samples.py::test_unknown_or_missing_sample_returns_404 PASSED
+tests/test_upload_validation.py::test_empty_upload PASSED
+tests/test_upload_validation.py::test_fake_excel PASSED
+tests/test_upload_validation.py::test_large_upload PASSED
+============================== 50 passed in 2.84s ==============================
+\end{lstlisting}
 
 \subsection{Representative JSON Pipeline Payloads}
 
-\subsubsection{Sample Pipeline Execution Request (\texttt{POST /api/clean})}
-\begin{lstlisting}[language=JavaScript,caption={Sample request body submitted to /api/clean.},label={lst:payload}]
+\subsubsection{Sample ML Mode Pipeline Request (\texttt{POST /api/clean})}
+\begin{lstlisting}[language=JavaScript,caption={Sample request body executing anti-leakage ML pipeline.},label={lst:payload}]
 {
   "file_id": "92f7cba4-b9a5-4edd-b6da-57a0fe9b9b46",
+  "mode": "ml",
   "pipeline": [
     { "step_type": "standardize_nulls", "config": {} },
     { "step_type": "clean_numeric", "config": { "columns": ["Price"] } },
@@ -57,34 +112,35 @@ The test harness evaluates 19 distinct unit and integration test scenarios acros
 }
 \end{lstlisting}
 
-\subsubsection{Sample Audit Summary Response}
-\begin{lstlisting}[language=JavaScript,caption={Sample audit summary returned by /api/clean.},label={lst:auditresp}]
+\subsubsection{Sample Google OAuth 2.0 Request (\texttt{POST /api/auth/google})}
+\begin{lstlisting}[language=JavaScript,caption={Sample Google authentication request.},label={lst:googlepayload}]
 {
-  "message": "Dataset processed and saved",
+  "token": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFhMmIzYy..."
+}
+\end{lstlisting}
+
+\subsubsection{Sample Data Quality Health Score Response (\texttt{GET /api/benchmark/\{file\_id\}})}
+\begin{lstlisting}[language=JavaScript,caption={Sample Data Quality Health Score response.},label={lst:healthresp}]
+{
   "file_id": "92f7cba4-b9a5-4edd-b6da-57a0fe9b9b46",
-  "audit_summary": {
-    "initial_rows": 13580,
-    "final_rows": 13580,
-    "rows_removed": 0,
-    "initial_columns": 21,
-    "final_columns": 28,
-    "columns_added_or_removed": 7,
-    "total_steps": 6,
-    "history": [
-      { "step": 1, "action": "standardize_nulls", "description": "Standardized dirty markers (?, N/A, null) to NaN." },
-      { "step": 2, "action": "clean_numeric", "description": "Converted currency/numeric strings in ['Price'] to float64." },
-      { "step": 3, "action": "missing_values", "description": "Imputed missing values in ['Price', 'Distance'] using mean." },
-      { "step": 4, "action": "outlier", "description": "Capped outliers in ['Price'] using IQR (threshold=1.5)." },
-      { "step": 5, "action": "encoding", "description": "Applied One-Hot Encoding to ['Type', 'Method'] (drop_first=True)." },
-      { "step": 6, "action": "scaling", "description": "Standardized features ['Price', 'Distance'] using StandardScaler." }
-    ]
-  }
+  "overall_score": 83.2,
+  "rating": "Good (ML & BI Ready)",
+  "components": {
+    "completeness": { "score": 28.6, "max_score": 30.0, "null_percentage": 4.66 },
+    "deduplication": { "score": 20.0, "max_score": 20.0, "duplicate_rate": 0.0 },
+    "uniformity": { "score": 15.5, "max_score": 25.0, "ratio": "13/21 columns valid" },
+    "retention": { "score": 19.1, "max_score": 25.0, "retention_rate": 76.6 }
+  },
+  "diagnostics": [
+    "Column 'Suburb' has high cardinality (>50 distinct categories). Consider encoding or pruning.",
+    "Column 'Address' has high cardinality (>50 distinct categories)."
+  ]
 }
 \end{lstlisting}
 
 \subsection{Use of Artificial Intelligence (AI) Tools}
 In compliance with academic integrity guidelines established by the Faculty of Data Science and Artificial Intelligence (NEU), the team explicitly declares the utilization of AI assistance during project execution:
 \begin{itemize}
-  \item \textbf{Antigravity AI (Google DeepMind):} Employed as an interactive pair-programming assistant for debugging regex boundary edge-cases in currency string parsing, advising on two-tier defensive type validation in JavaScript, assisting in generating edge-case Pytest unit tests, and structuring the report within the institutional \texttt{fdareport.cls} XeLaTeX template.
-  \item \textbf{Verification and Authorship:} All algorithmic logic, architectural designs, API implementations, and written analytical content were reviewed, verified, tested, and validated by the team members. No AI-generated hallucinated content or unverified external code was incorporated into the production codebase.
+  \item \textbf{Antigravity AI (Google DeepMind):} Employed as an interactive pair-programming assistant for debugging regex boundary edge-cases in currency string parsing, designing the two-tier defensive validation architecture in JavaScript, implementing stateful fit-transform anti-leakage splitting, expanding the Pytest automated testing suite to 50 comprehensive test cases, and formatting the technical report within the institutional \texttt{fdareport.cls} XeLaTeX template.
+  \item \textbf{Verification and Authorship:} All algorithmic logic, architectural designs, API implementations, database schemas, and written analytical content were reviewed, verified, tested, and validated by the team members. No AI-generated hallucinated content or unverified external code was incorporated into the production codebase.
 \end{itemize}

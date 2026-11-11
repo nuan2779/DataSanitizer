@@ -3,32 +3,66 @@
 \subsection{Requirements}
 
 \subsubsection{Functional Requirements}
-The functional architecture of DataSanitizer is categorized into seven principal requirement blocks:
+The functional architecture of DataSanitizer is categorized into nine principal requirement blocks:
 \begin{enumerate}[label=\textbf{FR\arabic*.}]
-  \item \textbf{Dataset Ingestion and Type Validation:} The system must accept tabular files via multipart HTTP form uploads. Permissible formats are restricted to Comma-Separated Values (\texttt{.csv}) and OpenXML Excel spreadsheets (\texttt{.xlsx}). Files exceeding 10~MB or containing zero bytes must be rejected with appropriate HTTP status codes (413 and 400). Excel files must be verified for valid ZIP container structure.
-  \item \textbf{Automated Global Profiling:} Upon ingestion, the system must parse the dataset and compute comprehensive dataset-level diagnostics: total row count, column count, exact duplicate row count, sorted null-value frequency per column, sample values, and pairwise Pearson correlation coefficients ($|r| \ge 0.85$) to alert users of potential multicollinearity.
-  \item \textbf{On-Demand Column Deep Profiling (Lazy Loading):} To optimize network bandwidth and server computation, detailed distribution metrics (mean, median, standard deviation, minimum, maximum, and IQR outlier count) must be computed only upon explicit user request for individual columns.
-  \item \textbf{Ordered Pipeline Construction:} Users must be empowered to compose an ordered multi-step cleaning recipe containing operations such as null standardization, currency regex extraction, missing value imputation, outlier winsorization or deletion, categorical encoding, feature scaling, and feature rounding.
+  \item \textbf{Dataset Ingestion and Benchmark Data Hub:} The system must accept tabular files via multipart HTTP form uploads. Permissible formats are restricted to Comma-Separated Values (\texttt{.csv}) and OpenXML Excel spreadsheets (\texttt{.xlsx}). Files exceeding 10~MB or containing zero bytes must be rejected with appropriate HTTP status codes (413 and 400). Excel files must be verified for valid ZIP container structure. Additionally, the system must provide an integrated Benchmark Data Hub allowing instant preloading of standard datasets (Melbourne Housing, Titanic, Heart Disease, and Credit Card Default) without local file uploads.
+  \item \textbf{Automated Global and Deep Column Profiling:} Upon ingestion, the system must parse the dataset and compute comprehensive dataset-level diagnostics: total row count, column count, exact duplicate row count, sorted null-value frequency per column, sample values, and pairwise Pearson correlation coefficients ($|r| \ge 0.85$) to alert users of potential multicollinearity. Detailed distribution metrics (mean, median, standard deviation, quartiles, IQR outlier count) are lazy-loaded upon explicit user request for individual columns.
+  \item \textbf{Data Quality Health Score Benchmark (EDA / BI):} The system must compute an automated 100-point Data Quality Health Score evaluated across four international data hygiene standards:
+  \begin{itemize}
+    \item \emph{Completeness (30 pts):} Evaluates global cell non-null proportion ($30 \times (1 - \text{null\_ratio})$).
+    \item \emph{Deduplication (20 pts):} Penalizes redundant rows ($20 \times (1 - \text{dup\_ratio})$).
+    \item \emph{Uniformity (25 pts):} Measures consistency of parsed data types across features ($25 \times (\text{valid\_typed\_cols} / \text{total\_cols})$).
+    \item \emph{Row Retention (25 pts):} Evaluates sample preservation after row-dropping transformations ($25 \times (\text{final\_rows} / \text{initial\_rows})$).
+  \end{itemize}
+  The health module must also output actionable diagnostic warnings (e.g., high-cardinality text columns, extreme skewness).
+  \item \textbf{Ordered Pipeline Construction and Preset Recipes:} Users must be empowered to compose an ordered multi-step cleaning recipe containing operations such as null standardization, currency regex extraction, missing value imputation, outlier winsorization or deletion, categorical encoding, feature scaling, and feature rounding. Users can also load built-in preset recipes (EDA Baseline, ML Train-Ready, Strict Deduplication) or save private custom recipes to their account.
+  \item \textbf{Anti-Data Leakage Machine Learning Pipeline (ML Mode):} When executing in Machine Learning mode, the system must enforce strict statistical isolation between training and testing data. The dataset must be bifurcated into an 80/20 Train/Test split \emph{before} applying stateful transformations. Imputation parameters, scaling statistics (mean, variance, min, max), and categorical encoders must be fitted strictly on the training partition and subsequently applied to transform the test partition, eliminating information contamination.
+  \item \textbf{Dual-Mode Operation (Offline vs. Online Cloud Workspace):} The application must provide two distinct operating modes:
+  \begin{itemize}
+    \item \emph{Offline Mode:} Fully functional anonymous data processing operating locally without account creation, prioritizing strict data privacy and zero retention.
+    \item \emph{Online Cloud Workspace:} Mandatory authentication gate requiring users to log in before accessing cloud datasets and workspace tools. Supports local account registration (Bcrypt salted hashing) and Google OAuth 2.0 Single Sign-On (Google Identity Services).
+  \end{itemize}
+  \item \textbf{Multi-Tenant Isolated Processing History:} Every pipeline execution performed by an authenticated user must be logged to a persistent database record linked strictly to their \texttt{user\_id}. Users can review past runs in an off-canvas drawer, inspect transformation receipts, re-download cleaned files, or delete individual history entries without data cross-visibility.
   \item \textbf{Dynamic Context-Aware Type Guarding:} The user interface must dynamically disable and visibly flag columns incompatible with the chosen operation (e.g., locking string/text columns when numeric operations such as StandardScaler, IQR outliers, or mean imputation are selected).
-  \item \textbf{Audit Logging and Transformation Metrics:} The back-end engine must track every transformation step in an immutable audit ledger, computing initial versus final row/column counts, rows dropped, and granular descriptions of each action executed.
-  \item \textbf{Processed Dataset Export:} Users must be able to download the final cleaned dataset in either standard CSV format or serialized JSON format on demand.
+  \item \textbf{Auditable Multi-Format Dataset Export:} Users must be able to download the final cleaned dataset in either standard CSV format or serialized JSON format. In ML mode, the system must provide direct downloads for either the merged clean dataset or individual partitioned sets (\texttt{train\_cleaned.csv} and \texttt{test\_cleaned.csv}).
 \end{enumerate}
 
 \subsubsection{Non-Functional Requirements}
 \begin{itemize}
   \item \textbf{Performance and Latency:} Processing and profiling of tabular datasets up to 10~MB (exceeding 20,000 rows and 30 columns) must complete in under 2.0 seconds. All pipeline transformations must be executed strictly in RAM using vectorized Pandas operations to prevent disk I/O bottlenecks.
-  \item \textbf{Security and Integrity:} The server must guard against Path Traversal vulnerabilities by isolating file identifiers behind cryptographically random UUID v4 tokens. Uploaded filenames are never directly evaluated by the underlying operating system file handlers. User inputs rendered in the DOM are sanitized against Cross-Site Scripting (XSS) attacks.
+  \item \textbf{Security and Integrity:} The server must guard against Path Traversal vulnerabilities by isolating file identifiers behind cryptographically random UUID v4 tokens. Uploaded filenames are never directly evaluated by the underlying operating system file handlers. User passwords must be stored using industry-standard Bcrypt salted hashes. Google OAuth tokens must be cryptographically verified against Google Identity endpoints. Multi-tenant database records must be strictly isolated by authenticated \texttt{user\_id}.
   \item \textbf{Reliability and Robustness:} The application employs two-tier defensive validation: client-side pre-flight checks prevent invalid submissions, while server-side Pydantic models and algorithmic guards reject malformed requests with descriptive HTTP 400 or 422 JSON payloads without crashing the server process.
-  \item \textbf{Usability and Accessibility:} The web interface must present an intuitive, single-page progressive disclosure workflow (Upload $\rightarrow$ Profile $\rightarrow$ Pipeline $\rightarrow$ Result) that guides users through complex data engineering concepts without requiring programming expertise.
+  \item \textbf{Usability and Accessibility:} The web interface must present an intuitive, single-page progressive disclosure workflow (Auth Gate $\rightarrow$ Hub/Upload $\rightarrow$ Profile $\rightarrow$ Pipeline $\rightarrow$ Result) following strict corporate design aesthetics: a 60-30-10 color balance, zero emojis/icons, and primary ocean blue progress indicators.
+\end{itemize}
+
+\subsection{Dual-Mode Architecture: Offline Privacy vs. Online Cloud Workspace}
+A core architectural innovation in DataSanitizer is the \textbf{Dual-Mode Operational Paradigm}, explicitly engineered to reconcile enterprise data confidentiality with modern collaborative cloud conveniences. Users toggle between modes via the navigation bar switch, triggering instant client-side state reconfigurations:
+
+\subsubsection{Offline Mode: Zero-Retention Privacy-First Studio}
+\begin{itemize}
+  \item \textbf{Target Scenario:} Designed for quantitative researchers and enterprise analysts working with strictly confidential datasets (e.g., proprietary financial ledgers, sensitive clinical patient records) that must never be linked to an online user profile or retained in persistent database tables.
+  \item \textbf{Operational Characteristics:} Operates without requiring account creation or login. Users enjoy instant access to file ingestion, exploratory profiling, and pipeline construction.
+  \item \textbf{Zero Audit Retention:} While the active session is maintained in local RAM, executions performed in Offline Mode \textbf{never record entries into the \texttt{pipeline\_history} relational table}. Once the user downloads the cleaned dataset or closes the browser tab, intermediate artifacts are discarded, ensuring complete data privacy and zero data exhaust.
+\end{itemize}
+
+\subsubsection{Online Mode: Cloud Workspace with Mandatory Authentication Gate}
+\begin{itemize}
+  \item \textbf{Target Scenario:} Engineered for collaborative team projects, longitudinal data pipelines, and power users who require persistent tracking of preprocessing runs and reusable pipeline recipes.
+  \item \textbf{Mandatory Authentication Gate:} When the user toggles to Online Mode, the application enforces a strict security gate. All functional sections (file dropzone, Kaggle hub, profiler, and pipeline builder) are **immediately hidden from the viewport** (``bỏ hỏi đưa file'').
+  \item \textbf{Focused Authentication Screen:} The interface renders \textbf{strictly a centered Cloud Workspace Authentication Card} featuring tabbed local login/registration and one-click Google OAuth 2.0 Single Sign-On via Google Identity Services.
+  \item \textbf{Dynamic Workspace Unlocking:} Only upon verified authentication does the application reveal the full workspace suite, activating the user profile badge, personal custom recipe storage, and the isolated Processing History Drawer.
+  \item \textbf{Isolated Multi-Tenant History:} In Online Mode, every pipeline run is automatically committed to SQLite with foreign-key linkage to \texttt{user\_id}. Users can open the off-canvas drawer to inspect timestamped logs, review health scores, re-download cleaned CSVs, or delete history records with complete tenant boundary isolation.
 \end{itemize}
 
 \subsection{Interface Design (UI/UX)}
-The DataSanitizer user interface is designed according to the principles of \emph{Progressive Disclosure} and \emph{Direct Manipulation}. The single-page application is structured into four distinct visual sections organized chronologically:
+The DataSanitizer user interface is designed according to the principles of \emph{Progressive Disclosure}, \emph{Direct Manipulation}, and \emph{Strict Corporate Minimalism}. The single-page application is structured into sequential visual sections:
 \begin{enumerate}
-  \item \textbf{Step 1: Dataset Ingestion Zone:} Features a minimalist drag-and-drop file target with dynamic file selection feedback and a direct upload submission trigger.
-  \item \textbf{Step 2: Exploratory Health Dashboard:} Presents high-level metric cards (Total Rows, Columns, File Identifier) alongside a real-time searchable profiling table. Columns are sorted by default in descending order of missingness, allowing users to rapidly identify polluted features. Each row includes an interactive ``View Details'' trigger that opens a focused statistical modal.
-  \item \textbf{Step 3: Pipeline Builder and Real-Time Queue:} Employs a dual-column layout. The left column provides an interactive configuration panel where users select cleaning operations, adjust hyperparameters (e.g., IQR thresholds, encoding styles), and select target features. The right column renders a live, ordered execution queue displaying the exact sequence of transformations with individual deletion controls.
-  \item \textbf{Step 4: Audit Summary and Export Hub:} Surfaces the final evaluation report, comparing baseline and final row/column metrics, detailing the step-by-step history ledger, and offering instant export triggers for CSV and JSON formats.
+  \item \textbf{Cloud Workspace Authentication Card:} When Online Mode is selected without an active session, this dedicated card acts as the sole visible component, offering local credential forms and Google OAuth single sign-on.
+  \item \textbf{Step 1: Ingestion Zone and Benchmark Data Hub:} Features a clean drag-and-drop file target alongside a quick-access Kaggle Data Hub card with preloaded benchmark datasets (Melbourne Housing, Titanic, Heart Disease, Credit Default) for zero-friction evaluation.
+  \item \textbf{Step 2: Exploratory Health Dashboard \& Quality Benchmark:} Displays high-level metric cards (Total Rows, Columns, File Identifier) and the 100-point Data Quality Health Score with 4 sub-standard progress bars (Completeness, Deduplication, Uniformity, Retention) in primary ocean blue (\texttt{\#2563eb}), accompanied by actionable anomaly warnings. Below, an interactive table lists column missingness and lazy-loaded statistical modals.
+  \item \textbf{Step 3: Pipeline Builder, Preset Recipes, and Real-Time Queue:} Employs a dual-column layout. The left column provides an interactive configuration panel with a Preset Recipe selector (EDA Baseline, ML Train-Ready, Strict Deduplication) and custom recipe save triggers. The right column renders a live, ordered execution queue displaying the exact sequence of transformations with individual deletion controls.
+  \item \textbf{Step 4: Audit Summary and Export Hub:} Surfaces the final evaluation report, comparing baseline and final row/column metrics, detailing the step-by-step history ledger, and offering instant export triggers for standard CSV, serialized JSON, and split Train/Test CSV packages.
+  \item \textbf{Off-Canvas History Drawer:} Accessible from the navigation bar for authenticated users, displaying timestamped past cleaning runs with direct file re-download and deletion actions.
 \end{enumerate}
 
 \begin{figure}[ht]
@@ -39,75 +73,112 @@ The DataSanitizer user interface is designed according to the principles of \emp
 \end{figure}
 
 \textbf{Color Palette and Typography:}
-The application employs a curated corporate palette grounded in professional data analytics aesthetics:
+The application adheres strictly to the 60-30-10 corporate UI design rule:
 \begin{itemize}
-  \item \textbf{Primary Brand / Structure:} Deep Slate (\texttt{\#0f172a}) and Prussian Blue (\texttt{\#1e293b}) provide authoritative contrast for navigation and typography.
-  \item \textbf{Interactive Actions:} Vibrant Royal Blue (\texttt{\#2563eb}) identifies primary buttons and active indicators.
-  \item \textbf{Success / Verification:} Emerald Green (\texttt{\#10b981}) signals completed transformations and safe states.
-  \item \textbf{Warning / Defensive Lock:} Amber (\texttt{\#f59e0b}) and Crimson (\texttt{\#ef4444}) indicate multicollinearity risks and disabled incompatible columns.
+  \item \textbf{60\% Dominant Canvas:} Crisp Slate Gray (\texttt{\#f8fafc}) and pure white card containers (\texttt{\#ffffff}) providing clean visual hierarchy.
+  \item \textbf{30\% Structural / Secondary:} Deep Slate (\texttt{\#0f172a}) and Prussian Blue (\texttt{\#1e293b}) providing high-contrast typography, borders, and navigation.
+  \item \textbf{10\% Interactive Accent:} Vibrant Ocean Blue (\texttt{\#2563eb}) reserved exclusively for primary interactive buttons, active tab indicators, and health score progress bars.
+  \item \textbf{Zero-Icon Policy:} All emojis, decorative icons, and pictorial symbols have been completely eliminated from cards, badges, and preset recipes in favor of clean typographic labels.
 \end{itemize}
 Typography is driven by the modern sans-serif system stack (\texttt{-apple-system, Segoe UI, Roboto, Helvetica Neue}), calibrated with an 8pt baseline grid and 1.3 line-height for high numerical legibility.
 
 \subsection{System Architecture}
-DataSanitizer adopts a decoupled \textbf{Client-Server Service-Oriented Architecture (SOA)} adhering to RESTful principles \cite{fielding2000}. The architecture comprises five distinct logical tiers, as illustrated in Figure~\ref{fig:arch-flow}.
+DataSanitizer adopts a decoupled \textbf{Client-Server Service-Oriented Architecture (SOA)} adhering to RESTful principles \cite{fielding2000}. The architecture comprises six distinct logical tiers, as illustrated in Figure~\ref{fig:arch-flow}.
 
 \begin{figure}[ht]
 \centering
 \begin{tikzpicture}[
-    box/.style={rectangle, draw=PrussianBlue, fill=Solitude, thick, rounded corners=3pt, minimum width=9cm, minimum height=0.85cm, align=center, font=\sffamily\footnotesize}
+    box/.style={rectangle, draw=PrussianBlue, fill=Solitude, thick, rounded corners=3pt, minimum width=9.2cm, minimum height=0.82cm, align=center, font=\sffamily\footnotesize}
 ]
 
-  % Tiers with explicit vertical coordinates (no dependency on positioning library)
-  \node[box] (ui) at (0, 0) {\textbf{Presentation Tier (SPA)}\\HTML5 / Modern CSS3 / Vanilla ES6 JavaScript};
-  \node[box] (api) at (0, -1.45) {\textbf{API Gateway / Routing Tier}\\FastAPI Router, CORS Middleware, Pydantic Schemas};
-  \node[box] (runner) at (0, -2.90) {\textbf{Pipeline Orchestration Tier}\\\texttt{pipeline\_runner.py} (Defensive Validation \& Regex Currency Parser)};
-  \node[box] (engine) at (0, -4.35) {\textbf{Algorithmic Engine Tier}\\\texttt{cleaner.py} (DataCleaner) \& \texttt{profiler.py}};
-  \node[box] (storage) at (0, -5.80) {\textbf{File System Cache Tier}\\\texttt{data/raw/\{file\_id\}.csv} \& \texttt{data/processed/\{file\_id\}.csv}};
+  % 6 Tiers
+  \node[box] (ui) at (0, 0) {\textbf{Presentation Tier (Single-Page Application)}\\HTML5 / Modern CSS3 / Vanilla ES6 / Google Identity Services (GIS)};
+  \node[box] (api) at (0, -1.35) {\textbf{API Gateway \& Security Tier}\\FastAPI Router, CORS Middleware, Google OAuth \& Bcrypt Session Guard};
+  \node[box] (runner) at (0, -2.70) {\textbf{Pipeline Orchestration \& Anti-Leakage Tier}\\\texttt{pipeline\_runner.py} (Train/Test 80/20 Split \& Stateful Fit-Transform Isolation)};
+  \node[box] (engine) at (0, -4.05) {\textbf{Algorithmic Engine Tier}\\\texttt{cleaner.py} (DataCleaner), \texttt{profiler.py}, \& \texttt{benchmark.py} (Health Score)};
+  \node[box] (db) at (0, -5.40) {\textbf{Relational Persistence Tier (SQLite 3)}\\\texttt{data/datasanitizer.db} (\texttt{users}, \texttt{user\_sessions}, \texttt{recipes}, \texttt{pipeline\_history})};
+  \node[box] (storage) at (0, -6.75) {\textbf{File System Cache Tier}\\\texttt{data/raw/\{file\_id\}.csv} \& \texttt{data/processed/\{file\_id\}.csv}};
 
-  % Arrows with clear labels on the right
-  \draw[->, thick, FDABlue] (ui) -- node[right, font=\tiny\sffamily, text=Astronaut] {HTTP REST / JSON Payload} (api);
-  \draw[->, thick, FDABlue] (api) -- node[right, font=\tiny\sffamily, text=Astronaut] {Typed DTO / UUID Dispatch} (runner);
-  \draw[->, thick, FDABlue] (runner) -- node[right, font=\tiny\sffamily, text=Astronaut] {In-Memory Pandas DataFrame} (engine);
-  \draw[->, thick, FDABlue] (engine) -- node[right, font=\tiny\sffamily, text=Astronaut] {Disk Read / Write} (storage);
+  % Connections
+  \draw[->, thick, FDABlue] (ui) -- node[right, font=\tiny\sffamily, text=Astronaut] {HTTP REST / JSON / GIS JWT} (api);
+  \draw[->, thick, FDABlue] (api) -- node[right, font=\tiny\sffamily, text=Astronaut] {Typed Request DTO / Execution Mode} (runner);
+  \draw[->, thick, FDABlue] (runner) -- node[right, font=\tiny\sffamily, text=Astronaut] {In-Memory Train/Test DataFrames} (engine);
+  \draw[->, thick, FDABlue] (engine) -- node[right, font=\tiny\sffamily, text=Astronaut] {Persist Pipeline Run \& History} (db);
+  \draw[->, thick, FDABlue] (db) -- node[right, font=\tiny\sffamily, text=Astronaut] {Cleaned CSV / JSON File Cache} (storage);
 
 \end{tikzpicture}
-\caption{Five-tier system architecture and end-to-end data processing flow.}
+\caption{Six-tier system architecture and end-to-end data processing flow.}
 \label{fig:arch-flow}
 \end{figure}
 
 \begin{enumerate}
-  \item \textbf{Presentation Tier:} Operates entirely within the user's browser, executing reactive state management, asynchronous REST communication via \texttt{fetch}, and DOM sanitization.
-  \item \textbf{API Gateway / Routing Tier:} Managed by FastAPI, enforcing schema validation via Pydantic models, terminating CORS preflight requests, and dispatching tasks to background services.
-  \item \textbf{Pipeline Orchestration Tier:} Intercepts pipeline arrays, validates column eligibility against real-time DataFrame dtypes, and manages regular expression currency stripping.
-  \item \textbf{Algorithmic Engine Tier:} Encapsulates mathematical transformations within the vectorized \texttt{DataCleaner} and statistical profiling in \texttt{profiler.py}.
+  \item \textbf{Presentation Tier:} Operates entirely within the browser, handling reactive state management, asynchronous REST communication via \texttt{fetch}, Google Identity Services SDK popup authentication, and DOM sanitization.
+  \item \textbf{API Gateway \& Security Tier:} Managed by FastAPI, enforcing Pydantic schema validation, managing CORS headers, validating Google OAuth ID tokens with Google's public tokeninfo service, generating secure 7-day session cookies, and injecting authenticated user context into request handlers.
+  \item \textbf{Pipeline Orchestration \& Anti-Leakage Tier:} Intercepts pipeline arrays, validates column eligibility, and in Machine Learning mode partitions datasets into 80/20 train/test splits, fitting stateful transformers strictly on the train partition and transforming the test partition.
+  \item \textbf{Algorithmic Engine Tier:} Encapsulates mathematical transformations within the vectorized \texttt{DataCleaner}, statistical profiling in \texttt{profiler.py}, and 100-point data quality evaluation in \texttt{benchmark.py}.
+  \item \textbf{Relational Persistence Tier:} Powered by SQLite 3, providing ACID-compliant multi-tenant data storage for user accounts, authenticated sessions, saved recipes, and personal processing history.
   \item \textbf{File System Cache Tier:} Persists staged raw and processed tabular files under isolated UUID paths in \texttt{data/raw/} and \texttt{data/processed/}.
 \end{enumerate}
 
-\subsection{Data Storage and Lifecycle Management}
-Rather than imposing the overhead of an external relational database management system (RDBMS) for ad-hoc tabular processing, DataSanitizer utilizes a high-efficiency \textbf{Stateless File System Cache}:
+\subsection{Data Storage and Relational Database Design}
+DataSanitizer implements a hybrid persistence strategy combining an embedded relational database with a high-efficiency file system cache:
+
+\subsubsection{Relational Database Schema (SQLite)}
+The relational database (\texttt{data/datasanitizer.db}) maintains four normalized tables:
+\begin{enumerate}
+  \item \textbf{\texttt{users}:} Stores user accounts. Attributes: \texttt{id} (INTEGER PRIMARY KEY), \texttt{username} (TEXT UNIQUE), \texttt{email} (TEXT UNIQUE), \texttt{password\_hash} (TEXT), \texttt{salt} (TEXT), \texttt{created\_at} (TIMESTAMP).
+  \item \textbf{\texttt{user\_sessions}:} Tracks active login sessions. Attributes: \texttt{token} (TEXT PRIMARY KEY), \texttt{user\_id} (INTEGER REFERENCES users(id)), \texttt{expires\_at} (TIMESTAMP), \texttt{created\_at} (TIMESTAMP).
+  \item \textbf{\texttt{recipes}:} Manages preset and private custom pipeline recipes. Attributes: \texttt{id} (INTEGER PRIMARY KEY), \texttt{user\_id} (INTEGER REFERENCES users(id) or NULL for built-in recipes), \texttt{name} (TEXT), \texttt{description} (TEXT), \texttt{pipeline\_json} (TEXT), \texttt{is\_builtin} (BOOLEAN), \texttt{created\_at} (TIMESTAMP), \texttt{updated\_at} (TIMESTAMP).
+  \item \textbf{\texttt{pipeline\_history}:} Records every executed pipeline strictly scoped to the owner. Attributes: \texttt{id} (INTEGER PRIMARY KEY), \texttt{user\_id} (INTEGER REFERENCES users(id)), \texttt{file\_id} (TEXT), \texttt{filename} (TEXT), \texttt{row\_count} (INTEGER), \texttt{col\_count} (INTEGER), \texttt{health\_score} (FLOAT), \texttt{pipeline\_json} (TEXT), \texttt{audit\_json} (TEXT), \texttt{created\_at} (TIMESTAMP).
+\end{enumerate}
+
+\subsubsection{File System Cache Management}
 \begin{itemize}
-  \item \textbf{Raw Dataset Staging:} Uploaded files are immediately assigned a version-4 Universally Unique Identifier (UUID) and written directly to \texttt{data/raw/\{file\_id\}.csv} (or \texttt{.xlsx}). This guarantees constant-time $O(1)$ random access by identifier while completely eliminating filename collisions.
-  \item \textbf{In-Memory State Manipulation:} During pipeline execution, the dataset is loaded into system RAM as a Pandas \texttt{DataFrame}. Transformations are applied in-place or sequentially across array pointers, avoiding repetitive, slow disk write cycles.
-  \item \textbf{Processed Dataset Cache:} Upon successful pipeline completion, the clean DataFrame is serialized to \texttt{data/processed/\{file\_id\}.csv}, ready for instantaneous streaming via the download endpoints.
+  \item \textbf{Raw Dataset Staging:} Uploaded files are assigned a version-4 Universally Unique Identifier (UUID) and stored at \texttt{data/raw/\{file\_id\}.csv} (or \texttt{.xlsx}). This guarantees constant-time $O(1)$ random access while completely preventing filename collisions and path traversal attacks.
+  \item \textbf{Processed Dataset Cache:} Upon successful pipeline completion, the clean DataFrame is serialized to \texttt{data/processed/\{file\_id\}.csv}. In ML mode, split partitions are additionally persisted as \texttt{train\_cleaned.csv} and \texttt{test\_cleaned.csv} under the assigned UUID.
 \end{itemize}
 
 \subsection{API Design}
-The DataSanitizer API strictly adheres to RESTful resource-oriented conventions, utilizing standard HTTP verbs, path variables, query parameters, and standardized status codes (200, 400, 404, 413, 422, 500). Table~\ref{tab:api} details the core endpoints.
+The DataSanitizer API strictly adheres to RESTful resource-oriented conventions, utilizing standard HTTP verbs, path variables, query parameters, and standardized status codes (200, 201, 400, 401, 403, 404, 413, 422, 500). Table~\ref{tab:api} details the complete endpoint specification.
 
 \begin{table}[ht]
 \centering\small
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{@{}llp{5.8cm}c@{}}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}llp{6.2cm}c@{}}
 \toprule
-\textbf{Method} & \textbf{Endpoint} & \textbf{Functional Purpose} & \textbf{Success Code}\\
+\textbf{Method} & \textbf{Endpoint} & \textbf{Functional Purpose} & \textbf{Status}\\
 \midrule
-\texttt{POST} & \texttt{/api/upload} & Ingests file multipart; verifies size and extension; returns assigned \texttt{file\_id}. & 200 OK\\
-\texttt{GET}  & \texttt{/api/profile/\{file\_id\}} & Computes full dataset health profile, duplicate rows, missingness, and high correlations. & 200 OK\\
-\texttt{GET}  & \texttt{/api/profile/\{file\_id\}/\{col\}} & Lazy-loads deep statistical distribution and IQR outlier count for a single column. & 200 OK\\
-\texttt{POST} & \texttt{/api/clean} & Accepts ordered pipeline recipe; applies transformations; returns audit summary ledger. & 200 OK\\
-\texttt{GET}  & \texttt{/api/download/\{file\_id\}} & Streams processed dataset as attachment in requested format (\texttt{?file\_format=csv|json}). & 200 OK\\
+\multicolumn{4}{@{}l}{\textbf{Authentication Router (\texttt{/api/auth})}}\\
+POST & \texttt{/api/auth/register} & Register new account (username, email, password); hashes with Bcrypt & 201\\
+POST & \texttt{/api/auth/login} & Authenticate local credentials; issues 7-day session cookie & 200\\
+POST & \texttt{/api/auth/google} & Verify Google OAuth ID token with Google API; auto-registers user & 200\\
+GET  & \texttt{/api/auth/me} & Retrieve active user profile from session cookie & 200\\
+POST & \texttt{/api/auth/logout} & Revoke session token and clear HTTP-only cookie & 200\\
+\midrule
+\multicolumn{4}{@{}l}{\textbf{Ingestion \& Benchmark Data Hub (\texttt{/api/upload}, \texttt{/api/samples})}}\\
+POST & \texttt{/api/upload} & Multipart file upload (.csv/.xlsx, $\le$10~MB); returns assigned \texttt{file\_id} & 200\\
+GET  & \texttt{/api/samples} & List preloaded Kaggle benchmark datasets (Housing, Titanic, etc.) & 200\\
+POST & \texttt{/api/samples/\{id\}/load} & Instantiate isolated working copy of sample dataset for current user & 200\\
+\midrule
+\multicolumn{4}{@{}l}{\textbf{Profiling \& Quality Benchmark (\texttt{/api/profile}, \texttt{/api/benchmark})}}\\
+GET  & \texttt{/api/profile/\{file\_id\}} & Global profile: null frequencies, duplicate count, correlation matrix & 200\\
+GET  & \texttt{/api/profile/\{id\}/\{col\}} & Lazy-load single-column distribution statistics and IQR outlier count & 200\\
+GET  & \texttt{/api/benchmark/\{file\_id\}} & Compute 100-pt Data Quality Health Score and diagnostic warnings & 200\\
+\midrule
+\multicolumn{4}{@{}l}{\textbf{Pipeline Transformation \& Recipes (\texttt{/api/clean}, \texttt{/api/recipes})}}\\
+POST & \texttt{/api/clean} & Execute pipeline in \texttt{eda} or \texttt{ml} mode (anti-leakage split); returns audit & 200\\
+GET  & \texttt{/api/recipes} & List built-in presets and user's private custom recipes & 200\\
+POST & \texttt{/api/recipes} & Save new custom pipeline recipe linked to authenticated user & 201\\
+PUT  & \texttt{/api/recipes/\{id\}} & Update existing custom recipe definition & 200\\
+DELETE & \texttt{/api/recipes/\{id\}} & Delete custom recipe (enforces owner permission check) & 200\\
+\midrule
+\multicolumn{4}{@{}l}{\textbf{History \& Dataset Export (\texttt{/api/history}, \texttt{/api/download})}}\\
+GET  & \texttt{/api/history} & List user's isolated execution history with health scores & 200\\
+DELETE & \texttt{/api/history/\{id\}} & Delete specific execution history record & 200\\
+GET  & \texttt{/api/download/\{file\_id\}} & Stream cleaned dataset attachment (\texttt{?file\_format=csv|json}) & 200\\
+GET  & \texttt{/api/download/\{id\}/split/\{t\}} & Download split partition (\texttt{train} or \texttt{test} cleaned CSV) & 200\\
 \bottomrule
 \end{tabular}
-\caption{Formal RESTful API contract specifications.}
+\caption{Formal RESTful API contract specifications for DataSanitizer.}
 \label{tab:api}
 \end{table}
