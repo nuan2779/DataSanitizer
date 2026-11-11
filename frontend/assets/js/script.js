@@ -901,6 +901,14 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (e) {
             console.warn("Logout error:", e);
         }
+        // Vô hiệu hóa tính năng tự động ghi nhớ tài khoản Google để người dùng có thể chọn tài khoản khác
+        if (window.google?.accounts?.id?.disableAutoSelect) {
+            try {
+                window.google.accounts.id.disableAutoSelect();
+            } catch (e) {
+                console.warn("Google disableAutoSelect:", e);
+            }
+        }
         clearAllUserState();
         resetWorkspaceUI();
 
@@ -914,6 +922,9 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-close-history").addEventListener("click", () => document.getElementById("history-drawer").classList.add("hidden"));
     document.getElementById("btn-history").addEventListener("click", async () => {
         document.getElementById("history-drawer").classList.remove("hidden");
+        const userNameElem = document.getElementById("history-user-name");
+        if (userNameElem) userNameElem.textContent = appState.user || "Chưa xác định";
+
         const list = document.getElementById("history-list");
         list.innerHTML = `<li class="empty-state">Đang tải lịch sử của tài khoản ${appState.user || ""}...</li>`;
         
@@ -1019,7 +1030,8 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 window.google.accounts.id.initialize({
                     client_id: "520371049518-9pu7p17g7susaqavcqtj7vfo7e0u2ipf.apps.googleusercontent.com",
-                    callback: window.handleCredentialResponse
+                    callback: window.handleCredentialResponse,
+                    auto_select: false
                 });
             } catch (e) {
                 console.warn("GIS initialize notice:", e);

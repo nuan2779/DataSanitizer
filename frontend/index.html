@@ -117,7 +117,8 @@
                             data-context="signin"
                             data-ux_mode="popup"
                             data-callback="handleCredentialResponse"
-                            data-auto_prompt="false">
+                            data-auto_prompt="false"
+                            data-auto_select="false">
                         </div>
                     <!-- Nút hiển thị thực tế -->
                         <div class="g_id_signin"
@@ -787,7 +788,10 @@
     <!-- LỊCH SỬ DRAWER -->
     <div id="history-drawer" class="drawer hidden">
         <div class="drawer-header">
-            <h3>Lịch sử xử lý</h3>
+            <div>
+                <h3>Lịch sử xử lý</h3>
+                <p id="history-user-info" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Tài khoản: <strong id="history-user-name">-</strong></p>
+            </div>
             <button id="btn-close-history" class="btn-close">&times;</button>
         </div>
         <div class="drawer-body">
