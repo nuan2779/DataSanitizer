@@ -14,10 +14,10 @@ To verify system correctness, robustness, and architectural contract compliance,
   \item \texttt{test\_history.py} (3 tests): Verifies that authenticated cleaning executions are logged to personal history, anonymous/offline cleans do not generate history records, and asserts strict multi-tenant isolation (user A cannot access user B's history).
   \item \texttt{test\_samples.py} (3 tests): Verifies the Kaggle Benchmark Data Hub catalog listing 4 datasets, asserts that loading a sample allocates a unique UUID and metadata copy, and tests 404 handling for unknown samples.
   \item \texttt{test\_frontend\_backend\_integration.py} (4 tests): Tests end-to-end frontend-backend integration including Kaggle sample loading, ML mode execution with split file downloads, and EDA mode quality benchmarking.
-  \item \texttt{test\_frontend\_pipeline\_contract.py} (7 tests): Asserts exact contract alignment with frontend JSON payloads, verifying mean vs median imputation, multi-step encoding audits, currency stripping, and automatic column selection.
+  \item \texttt{test\_frontend\_pipeline\_contract.py} (8 tests): Asserts exact contract alignment with frontend JSON payloads, verifying mean vs median imputation, multi-step encoding audits, currency stripping, and automatic column selection.
   \item \texttt{test\_real\_pipeline.py} (1 test): Tests end-to-end execution of a realistic 6-step transformation chain on the real-world Melbourne Housing dataset.
   \item \texttt{test\_invalid\_data.py} (2 tests): Asserts graceful rejection of empty CSVs and corrupted Excel files without server crashes.
-  \item \texttt{test\_end\_to\_end.py} (2 tests): Exercises complete user journeys from ingestion to export.
+  \item \texttt{test\_end\_to\_end.py} (1 test): Exercises complete user journeys from ingestion to export.
 \end{enumerate}
 
 Table~\ref{tab:test} details representative test scenarios from the continuous quality verification suite.
