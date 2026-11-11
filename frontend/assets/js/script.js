@@ -13,13 +13,30 @@ import {
     getMeAPI,
     fetchHistoryAPI,
     downloadHistoryFileAPI,
-    deleteHistoryItemAPI
+    deleteHistoryItemAPI,
+    googleLoginAPI
 } from "./api.js";
 import { renderProfileData, updateStepIndicator } from "./ui-profiler.js";
 import { handleStepTypeChange, addStepToPipeline, renderPipelineQueue, renderAuditResult, updateColumnAvailability } from "./ui-pipeline.js";
 import { showToast } from "./dom-safe.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+    // 0. KHÔI PHỤC TRẠNG THÁI ĐĂNG NHẬP NGAY LẬP TỨC
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("authToken");
+
+    if (storedUser && storedToken) {
+        appState.user = storedUser;
+        appState.authToken = storedToken;
+        
+        const btnAuth = document.getElementById("btn-auth");
+        const profileBadge = document.getElementById("profile-badge");
+        const usernameDisplay = document.getElementById("username-display");
+
+        if (btnAuth) btnAuth.classList.add("hidden");
+        if (profileBadge) profileBadge.classList.remove("hidden");
+        if (usernameDisplay) usernameDisplay.textContent = storedUser;
+    }
     
     // --- 1. KIỂM TRA & KHÔI PHỤC PHIÊN LÀM VIỆC (F5 PERSISTENCE) ---
     const restored = loadStateFromStorage();
@@ -40,17 +57,12 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         document.getElementById("upload-section").querySelector(".card-body").prepend(sessionBanner);
         
-        document.getElementById("btn-new-session").addEventListener("click", () => {
-            clearSavedState();
-            location.reload();
-        });
-
         // Khôi phục giao diện
         renderProfileData({
             file_id: appState.currentFileId,
             filename: appState.filename,
             columns: appState.columns,
-            total_rows: appState.totalRows || "?", // Lấy từ state
+            total_rows: appState.totalRows || "?",
             total_columns: appState.columns.length
         });
         
@@ -65,6 +77,31 @@ document.addEventListener("DOMContentLoaded", () => {
         // Mở khóa Bước 3 nếu có column
         document.getElementById("pipeline-section").classList.remove("hidden");
     }
+
+    // Sự kiện "Bắt đầu phiên mới" được đặt ở NGOÀI if(restored)
+    document.addEventListener("click", (e) => {
+        if (e.target && e.target.id === "btn-new-session") {
+            // 1. Sao lưu tài khoản
+            const activeUser = localStorage.getItem("user") || appState.user;
+            const activeToken = localStorage.getItem("authToken") || appState.authToken;
+            
+            // 2. Gọi hàm xóa của bạn
+            clearSavedState();
+            
+            // 3. Phục hồi ngay lập tức
+            if (activeUser) {
+                localStorage.setItem("user", activeUser);
+                appState.user = activeUser;
+            }
+            if (activeToken) {
+                localStorage.setItem("authToken", activeToken);
+                appState.authToken = activeToken;
+            }
+            
+            // 4. Reload trang
+            location.reload();
+        }
+    });
 
     // --- 2. QUẢN LÝ CHẾ ĐỘ OFFLINE / ONLINE & XÁC THỰC BẮT BUỘC TRÊN CLOUD ---
     function applyWorkspaceMode(mode, silent = false) {
@@ -192,8 +229,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 loginErr.classList.remove("hidden");
             }
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Đăng nhập vào Cloud";
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Đăng nhập vào Cloud";
+            }
         }
     });
 
@@ -223,17 +262,21 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await registerAPI(username, email, password);
             appState.user = data.user.username;
             saveStateToStorage();
+            
             registerForm.reset();
             applyWorkspaceMode("online");
             showToast(`Đăng ký tài khoản thành công! Chào mừng ${appState.user}`, "success");
+            
         } catch (err) {
             if (regErr) {
                 regErr.textContent = err.message || "Đăng ký không thành công. Vui lòng kiểm tra lại thông tin.";
                 regErr.classList.remove("hidden");
             }
         } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = "Tạo tài khoản";
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Tạo tài khoản";
+            }
         }
     });
 
@@ -286,32 +329,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
     uploadBtn.addEventListener("click", async (e) => {
         e.preventDefault();
+        
+        // 1. Trường hợp bấm nút khi đang ở phiên cũ (không chọn file mới)
+        if (fileInput.files.length === 0 && appState.currentFileId) {
+            scrollToSection("profile-section");
+            showToast("Tiếp tục phiên làm việc hiện tại", "success");
+            return;
+        }
+        
+        // Nếu không có file mới và cũng không có phiên cũ -> thoát
         if (fileInput.files.length === 0 && !appState.currentFileId) return;
 
+        // 2. Trường hợp thực sự tải file mới lên
         uploadBtn.disabled = true;
         try {
-            let fileId = appState.currentFileId;
-            if (fileInput.files.length > 0) {
-                clearSavedState();
-                uploadBtn.textContent = "Đang tải file lên...";
-                const uploadRes = await uploadDatasetAPI(fileInput.files[0]);
-                fileId = uploadRes.file_id;
-                appState.filename = uploadRes.filename || fileInput.files[0].name;
-            }
+            clearSavedState(); // Xóa phiên cũ
+            uploadBtn.textContent = "Đang tải file lên...";
+            const uploadRes = await uploadDatasetAPI(fileInput.files[0]);
+            const fileId = uploadRes.file_id;
+            appState.filename = uploadRes.filename || fileInput.files[0].name;
 
             uploadBtn.textContent = "Đang khám bệnh dữ liệu...";
             const profileData = await fetchDatasetProfileAPI(fileId);
             
+            // CHỈ KHI TẢI FILE MỚI THÌ MỚI XÓA PIPELINE
             appState.pipelineSteps = [];
             renderPipelineQueue();
             document.getElementById("result-section").classList.add("hidden");
             
-            appState.totalRows = profileData.total_rows; // Lưu total rows
+            appState.totalRows = profileData.total_rows;
             renderProfileData(profileData);
             updateColumnAvailability();
             
             selectedFileName.textContent = `Hoàn tất: ${appState.filename}`;
-            showToast("Tải và phân tích dữ liệu thành công");
+            showToast("Tải và phân tích dữ liệu thành công", "success");
             scrollToSection("profile-section");
         } catch (err) {
             showToast(err.message, "error");
@@ -367,7 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".btn-sample").forEach(btn => {
         btn.addEventListener("click", (e) => {
-            e.stopPropagation(); // Ngăn double-click từ thẻ cha kaggle-card
+            e.stopPropagation();
             const sampleId = btn.dataset.id;
             if (sampleId) handleLoadSample(sampleId, btn);
         });
@@ -632,17 +683,85 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("btn-close-auth").addEventListener("click", () => document.getElementById("auth-modal").classList.add("hidden"));
     document.getElementById("btn-auth").addEventListener("click", () => document.getElementById("auth-modal").classList.remove("hidden"));
     
-    // Sửa lỗi #1: PreventDefault cho form đăng nhập
-    document.getElementById("auth-form").addEventListener("submit", (e) => {
-        e.preventDefault(); 
-        appState.user = document.getElementById("auth-username").value;
-        document.getElementById("auth-modal").classList.add("hidden");
-        document.getElementById("btn-auth").classList.add("hidden");
-        document.getElementById("profile-badge").classList.remove("hidden");
-        document.getElementById("username-display").textContent = appState.user;
-        showToast(`Đăng nhập thành công: ${appState.user}`, "success");
-        saveStateToStorage();
+    let isLogin = true; // Trạng thái mặc định là Đăng nhập
+
+    // Xử lý nút Chuyển đổi Đăng nhập / Đăng ký
+    document.getElementById("toggle-auth-mode").addEventListener("click", (e) => {
+        e.preventDefault();
+        isLogin = !isLogin;
+        
+        // Cập nhật Giao diện
+        document.getElementById("auth-title").textContent = isLogin ? "Đăng nhập hệ thống" : "Tạo tài khoản mới";
+        document.getElementById("auth-submit-btn").textContent = isLogin ? "Đăng nhập" : "Đăng ký";
+        e.target.textContent = isLogin ? "Đăng ký ngay" : "Đăng nhập";
+        
+        // Ẩn/Hiện khối Xác nhận mật khẩu & Điều khoản
+        const regFields = document.getElementById("register-fields");
+        const confirmPass = document.getElementById("auth-confirm-password");
+        const termsCheck = document.getElementById("auth-terms");
+        
+        if (isLogin) {
+            regFields.classList.add("hidden");
+            confirmPass.removeAttribute("required");
+            termsCheck.removeAttribute("required");
+        } else {
+            regFields.classList.remove("hidden");
+            confirmPass.setAttribute("required", "true");
+            termsCheck.setAttribute("required", "true");
+        }
     });
+
+    const authForm = document.getElementById("auth-form");
+    if (authForm) {
+        authForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const identifier = document.getElementById("auth-username").value.trim();
+            const pass = document.getElementById("auth-password").value;
+            const submitBtn = document.getElementById("auth-submit-btn");
+            
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Đang xử lý...";
+            }
+            
+            try {
+                let data;
+                if (isLogin) {
+                    // Chế độ Đăng nhập
+                    data = await loginAPI(identifier, pass);
+                    appState.user = data.user?.username || identifier;
+                    showToast(`Đăng nhập thành công: ${appState.user}`, "success");
+                } else {
+                    // Chế độ Đăng ký
+                    const confirmPass = document.getElementById("auth-confirm-password").value;
+                    if (pass !== confirmPass) {
+                        throw new Error("Mật khẩu xác nhận không khớp.");
+                    }
+                    const dynamicEmail = `${identifier}@datasanitizer.local`;
+                    data = await registerAPI(identifier, dynamicEmail, pass);
+                    appState.user = data.user?.username || identifier;
+                    showToast(`Đăng ký thành công! Chào mừng ${appState.user}`, "success");
+                }
+                
+                appState.authToken = data.access_token;
+                saveStateToStorage();
+                
+                document.getElementById("auth-modal").classList.add("hidden");
+                document.getElementById("btn-auth").classList.add("hidden");
+                document.getElementById("profile-badge").classList.remove("hidden");
+                document.getElementById("username-display").textContent = appState.user;
+                
+                authForm.reset();
+            } catch (err) {
+                showToast(err.message || (isLogin ? "Đăng nhập thất bại" : "Đăng ký thất bại"), "error");
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = isLogin ? "Đăng nhập" : "Đăng ký";
+                }
+            }
+        });
+    }
     
     // Sign Out khỏi hệ thống
     document.getElementById("btn-logout").addEventListener("click", async () => {
@@ -657,15 +776,6 @@ document.addEventListener("DOMContentLoaded", () => {
         if (historyList) historyList.innerHTML = `<li class="empty-state">Chưa có lịch sử xử lý nào.</li>`;
         applyWorkspaceMode(appState.mode, true);
         showToast("Đã đăng xuất khỏi Cloud Workspace", "info");
-    });
-    
-    let isLogin = true;
-    document.getElementById("toggle-auth-mode")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        isLogin = !isLogin;
-        document.getElementById("auth-title").textContent = isLogin ? "Đăng nhập hệ thống" : "Đăng ký tài khoản";
-        document.querySelector("#auth-form button[type='submit']").textContent = isLogin ? "Đăng nhập" : "Đăng ký";
-        e.target.textContent = isLogin ? "Đăng ký ngay" : "Đăng nhập";
     });
 
     // Drawer Lịch sử (Gọi API thật từ backend, lưu riêng biệt theo từng tài khoản)
@@ -726,4 +836,34 @@ document.addEventListener("DOMContentLoaded", () => {
             list.innerHTML = `<li class="empty-state">Không thể tải lịch sử: ${err.message}</li>`;
         }
     });
+
+    // Xử lý Đăng nhập bằng Google
+    window.handleCredentialResponse = async function(response) {
+        const submitBtn = document.getElementById("btn-submit-online-login");
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Đang xác thực Google...";
+        }
+        try {
+            const data = await googleLoginAPI(response.credential);
+            appState.user = data.user?.username || data.user?.email || "Google User";
+            appState.authToken = data.access_token;
+
+            document.getElementById("auth-modal")?.classList.add("hidden");
+            document.getElementById("btn-auth")?.classList.add("hidden");
+            document.getElementById("profile-badge")?.classList.remove("hidden");
+            document.getElementById("username-display").textContent = appState.user;
+            
+            saveStateToStorage();
+            applyWorkspaceMode(appState.mode, true);
+            showToast(`Đăng nhập Google thành công: ${appState.user}`, "success");
+        } catch (err) {
+            showToast(err.message, "error");
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Đăng nhập";
+            }
+        }
+    };
 });

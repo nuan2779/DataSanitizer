@@ -10,7 +10,7 @@ export const appState = {
     trainSplit: 80,
     user: null,
     authToken: null,
-    totalRows: 0 // Thêm trường này để fix lỗi hiện "?"
+    totalRows: 0
 };
 
 export function saveStateToStorage() {
@@ -23,10 +23,19 @@ export function saveStateToStorage() {
             pipelineSteps: appState.pipelineSteps,
             purpose: appState.purpose,
             trainSplit: appState.trainSplit,
-            totalRows: appState.totalRows, // Lưu vào localStorage
-            user: appState.user
+            totalRows: appState.totalRows,
+            user: appState.user,
+            authToken: appState.authToken // Đã thêm: Lưu lại token để không bị mất khi F5
         };
         localStorage.setItem('datasanitizer_state', JSON.stringify(stateToSave));
+
+        // Đồng bộ ra các key riêng lẻ để bảo đảm an toàn tuyệt đối cho luồng đăng nhập
+        if (appState.user) localStorage.setItem("user", appState.user);
+        else localStorage.removeItem("user");
+        
+        if (appState.authToken) localStorage.setItem("authToken", appState.authToken);
+        else localStorage.removeItem("authToken");
+
     } catch (e) {
         console.warn("Lỗi lưu state vào localStorage:", e);
     }
@@ -38,7 +47,11 @@ export function loadStateFromStorage() {
         if (saved) {
             const parsed = JSON.parse(saved);
             Object.assign(appState, parsed);
-            return true;
+            
+            // CHỈ coi là có "Phiên làm việc khôi phục" nếu thực sự ĐANG CÓ FILE
+            if (appState.currentFileId) {
+                return true;
+            }
         }
     } catch (e) {
         console.warn("Lỗi đọc state từ localStorage:", e);
@@ -47,7 +60,8 @@ export function loadStateFromStorage() {
 }
 
 export function clearSavedState() {
-    localStorage.removeItem('datasanitizer_state');
+    // KHÔNG XÓA sạch localStorage nữa! 
+    // Chỉ reset thông tin liên quan đến file dữ liệu (pipeline, columns, v.v...)
     appState.currentFileId = null;
     appState.filename = "";
     appState.columns = [];
@@ -55,4 +69,7 @@ export function clearSavedState() {
     appState.purpose = 'eda';
     appState.trainSplit = 80;
     appState.totalRows = 0;
+    
+    // Ghi đè lại State mới (đã xóa file, nhưng TÀI KHOẢN & TOKEN VẪN ĐƯỢC GIỮ LẠI)
+    saveStateToStorage();
 }

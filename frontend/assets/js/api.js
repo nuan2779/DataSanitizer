@@ -159,11 +159,37 @@ export async function deleteHistoryItemAPI(historyId) {
 }
 
 // Helper: Trích xuất lỗi từ FastAPI Pydantic
+// Helper: Trích xuất lỗi từ FastAPI Pydantic
 async function getErrorMsg(response, fallback) {
     try {
         const errData = await response.json();
-        return errData.detail || response.statusText || fallback;
+        // Kiểm tra xem errData.detail có phải là chuỗi không
+        if (typeof errData.detail === 'string') {
+            return errData.detail;
+        } 
+        // Nếu errData.detail là một mảng (thường xảy ra với lỗi validation của FastAPI)
+        else if (Array.isArray(errData.detail)) {
+            // Lấy thông báo lỗi đầu tiên trong mảng
+            return errData.detail[0].msg || fallback;
+        }
+        return response.statusText || fallback;
     } catch {
         return `${fallback} (${response.status})`;
     }
+}
+
+// --- LUỒNG XÁC THỰC (AUTHENTICATION) ---
+
+
+// Đăng nhập bằng Google
+export async function googleLoginAPI(googleToken) {
+    const response = await fetch(`${API_BASE_URL}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // <-- Thêm đúng 1 dòng này
+        // Gửi token nhận được từ Google sang cho Backend xác minh
+        body: JSON.stringify({ token: googleToken })
+    });
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Đăng nhập Google thất bại"));
+    return await response.json(); 
 }

@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -91,6 +92,33 @@
                     <button type="submit" id="btn-submit-online-login" class="btn btn-primary btn-full auth-submit-btn">
                         Đăng nhập vào Cloud
                     </button>
+                    <!-- BẮT ĐẦU: Khối Đăng nhập Google -->
+                    <div class="auth-divider" style="display: flex; align-items: center; text-align: center; margin: 20px 0; color: var(--text-muted); font-size: 13px;">
+                        <span style="flex: 1; border-bottom: 1px solid var(--border-color);"></span>
+                        <span style="padding: 0 10px;">Hoặc tiếp tục với</span>
+                        <span style="flex: 1; border-bottom: 1px solid var(--border-color);"></span>
+                    </div>
+
+                    <div style="display: flex; justify-content: center; margin-bottom: 16px; width: 100%;">
+                        <!-- Thẻ cài đặt cấu hình ngầm -->
+                         <div id="g_id_onload"
+                            data-client_id="520371049518-9pu7p17g7susaqavcqtj7vfo7e0u2ipf.apps.googleusercontent.com"
+                            data-context="signin"
+                            data-ux_mode="popup"
+                            data-callback="handleCredentialResponse"
+                            data-auto_prompt="false">
+                        </div>
+                    <!-- Nút hiển thị thực tế -->
+                        <div class="g_id_signin"
+                            data-type="standard"
+                            data-shape="rectangular"
+                            data-theme="outline"
+                            data-text="signin_with"
+                            data-size="large"
+                            data-logo_alignment="left"
+                            data-width="100%">
+                        </div>
+                    </div>
                 </form>
 
                 <!-- 2. Form Đăng ký -->
@@ -257,7 +285,6 @@
                 </div>
             </div>
             <div class="card-footer">
-                <button class="btn btn-nav next" data-target="profile-section" disabled>Tiếp tục bước sau →</button>
             </div>
         </section>
 
@@ -711,7 +738,7 @@
         <div class="modal-box auth-box">
             <div class="modal-header">
                 <h3 id="auth-title">Đăng nhập hệ thống</h3>
-                <button type="button" id="btn-close-auth" class="btn-close">&times;</button>
+                <button type="button" id="btn-close-auth" class="btn-close">×</button>
             </div>
             <div class="modal-body">
                 <form id="auth-form">
@@ -723,7 +750,22 @@
                         <label class="form-label">Mật khẩu</label>
                         <input type="password" id="auth-password" class="form-control" required>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-full">Đăng nhập</button>
+                    
+                    <!-- CÁC TRƯỜNG ẨN DÀNH RIÊNG CHO ĐĂNG KÝ -->
+                    <div id="register-fields" class="hidden">
+                        <div class="form-group">
+                            <label class="form-label">Xác nhận mật khẩu</label>
+                            <input type="password" id="auth-confirm-password" class="form-control">
+                        </div>
+                        <div class="form-group checkbox-inline" style="align-items: flex-start;">
+                            <input type="checkbox" id="auth-terms" style="margin-top: 4px;">
+                            <label for="auth-terms" style="font-size: 12px; line-height: 1.4; color: var(--text-muted);">
+                                Tôi đồng ý với <a href="#" style="color: var(--primary);">Điều khoản dịch vụ</a> và <a href="#" style="color: var(--primary);">Chính sách bảo mật dữ liệu</a> của DataSanitizer.
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-full">Đăng nhập</button>
                     <p class="auth-switch">Chưa có tài khoản? <a href="#" id="toggle-auth-mode">Đăng ký ngay</a></p>
                 </form>
             </div>
