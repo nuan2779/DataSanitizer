@@ -192,3 +192,44 @@
 .radio-label input[type="radio"] {
     cursor: pointer;
 }
+
+/* ==========================================================================
+   RESPONSIVE COMPONENT ADJUSTMENTS (TABLET & MOBILE)
+   ========================================================================== */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 16px;
+    }
+
+    .card-header, .card-footer {
+        padding: 12px 16px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-body {
+        padding: 14px;
+    }
+
+    .card-header h2 {
+        font-size: 14px;
+    }
+
+    .btn {
+        padding: 8px 14px;
+        font-size: 12.5px;
+    }
+
+    .btn-nav {
+        padding: 6px 10px;
+    }
+
+    .form-group {
+        margin-bottom: 12px;
+    }
+}

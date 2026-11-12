@@ -928,3 +928,149 @@ input[type=range] {
 .auth-switch-hint strong {
     color: #475569;
 }
+
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE RULES (ALL SECTIONS)
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* Thanh Kịch bản (Recipe Toolbar) */
+    .recipe-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .recipe-toolbar-title {
+        width: 100%;
+    }
+
+    .recipe-toolbar-form {
+        max-width: 100%;
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .recipe-toolbar-form select {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    .recipe-toolbar-form button {
+        flex: 1;
+        min-height: 38px;
+    }
+
+    /* Step 3: Mục đích làm sạch & Split slider */
+    .purpose-options {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .range-wrapper {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .range-wrapper input[type=range] {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    /* Step 2: Bộ lọc bảng Profiler */
+    .table-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .search-input {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    /* Step 4: Khung Xuất dữ liệu */
+    .export-box {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        padding: 16px;
+    }
+
+    .export-buttons {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .export-buttons button {
+        flex: 1 1 calc(50% - 6px);
+        min-height: 40px;
+        text-align: center;
+    }
+
+    /* Báo cáo sức khỏe dữ liệu (Data Quality Card) */
+    .dq-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .dq-title-group {
+        min-width: unset;
+        width: 100%;
+    }
+
+    .dq-score-summary {
+        width: 100%;
+    }
+
+    .dq-score-ring-box {
+        text-align: center;
+        width: 100%;
+        padding: 12px;
+    }
+
+    .dq-submeters-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Màn hình nhỏ (Smartphones) */
+    .upload-label {
+        padding: 24px 14px;
+    }
+
+    .summary-grid {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 10px 12px;
+    }
+
+    .stat-value {
+        font-size: 16px;
+    }
+
+    .online-auth-section {
+        padding: 16px 8px;
+    }
+
+    .online-auth-card {
+        padding: 24px 16px;
+        border-radius: 12px;
+    }
+
+    .online-auth-title {
+        font-size: 20px;
+    }
+
+    .export-buttons button {
+        flex: 1 1 100%;
+    }
+}

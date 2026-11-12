@@ -12,6 +12,8 @@
     align-items: center;
     z-index: 1000;
     backdrop-filter: blur(2px);
+    padding: 16px;
+    box-sizing: border-box;
 }
 
 /* Hộp Modal chung */
@@ -19,9 +21,12 @@
     background: var(--bg-card);
     width: 100%;
     max-width: 500px;
+    max-height: calc(100vh - 32px);
     border-radius: var(--radius-box);
     box-shadow: var(--shadow-md);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-header {
@@ -116,6 +121,7 @@
     top: 0;
     right: 0;
     width: 360px;
+    max-width: 100vw;
     height: 100vh;
     background-color: var(--bg-card);
     box-shadow: -4px 0 15px rgba(0, 0, 0, 0.05);
@@ -200,4 +206,48 @@
 @keyframes slideInRight {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
+}
+
+/* ==========================================================================
+   MODAL & DRAWER RESPONSIVE ADJUSTMENTS (MOBILE)
+   ========================================================================== */
+@media (max-width: 600px) {
+    .drawer {
+        width: 100vw;
+    }
+
+    .toast-container {
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .toast {
+        min-width: unset;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .modal-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .modal-body {
+        padding: 16px;
+        max-height: calc(100vh - 120px);
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        padding: 14px 16px;
+    }
+
+    .drawer-header {
+        padding: 14px 16px;
+    }
+
+    .drawer-body {
+        padding: 16px;
+    }
 }
