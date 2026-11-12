@@ -76,6 +76,18 @@ def test_recipe_is_private_to_its_owner(isolated_client):
     assert client.get(f"/api/recipes/{recipe_id}").status_code == 404
     assert client.delete(f"/api/recipes/{recipe_id}").status_code == 404
 
+    # Second user must not see first user's recipe in the list
+    second_recipes = client.get("/api/recipes").json()["recipes"]
+    assert not any(r["id"] == recipe_id for r in second_recipes)
+
+    # First user logs back in and sees their recipe isolated
+    client.post("/api/auth/logout")
+    client.post("/api/auth/login", json={"identifier": "first_user", "password": "RecipePass123"})
+    first_recipes = client.get("/api/recipes").json()["recipes"]
+    matching = [r for r in first_recipes if r["id"] == recipe_id]
+    assert len(matching) == 1
+    assert matching[0]["is_owner"] is True
+
 
 def test_builtin_recipe_can_be_applied_and_run(isolated_client):
     import pandas as pd

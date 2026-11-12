@@ -389,22 +389,20 @@
                 </div>
             </div>
 
-            <!-- THANH MẪU KỊCH BẢN CÓ SẴN (PRESET RECIPES) -->
+            <!-- THANH QUẢN LÝ KỊCH BẢN (RECIPES) -->
             <div id="recipe-library" class="recipe-toolbar hidden">
                 <div class="recipe-toolbar-title">
                     <div>
-                        <strong>Kịch bản mẫu chuẩn hóa (Preset Recipes):</strong>
-                        <p class="recipe-hint">Chọn một kịch bản có sẵn để nạp nhanh quy trình chuẩn vào danh sách</p>
+                        <strong id="recipe-toolbar-heading">Kịch bản làm sạch (Pipeline Recipes):</strong>
+                        <p id="recipe-toolbar-hint" class="recipe-hint">Nạp nhanh kịch bản cá nhân theo tài khoản hoặc kịch bản mẫu chuẩn</p>
                     </div>
                 </div>
                 <div class="recipe-toolbar-form">
                     <select id="recipe-select" class="form-control">
-                        <option value="">-- Chọn kịch bản mẫu có sẵn --</option>
-                        <option value="preset_1">1. Bộ lọc khuyết thiếu & Chuẩn hóa Null</option>
-                        <option value="preset_2">2. Xử lý nhiễu & Cắt lọc ngoại lai (IQR)</option>
-                        <option value="preset_3">3. Chuẩn hóa dữ liệu số và Categorical</option>
+                        <option value="">-- Đang nạp danh sách kịch bản... --</option>
                     </select>
-                    <button type="button" id="btn-apply-recipe" class="btn btn-outline">Áp dụng mẫu này</button>
+                    <button type="button" id="btn-apply-recipe" class="btn btn-outline">Áp dụng</button>
+                    <button type="button" id="btn-delete-recipe" class="btn btn-outline text-danger hidden" title="Xóa kịch bản cá nhân này khỏi tài khoản">Xóa</button>
                 </div>
             </div>
 

@@ -10,7 +10,8 @@ const STEP_NAMES = {
     outlier: "Phát hiện & Xử lý ngoại lai (Outliers)",
     encoding: "Mã hóa phân loại (Categorical Encoding)",
     scaling: "Chuẩn hóa thang đo (Feature Scaling)",
-    round: "Làm tròn số thập phân (Rounding)"
+    round: "Làm tròn số thập phân (Rounding)",
+    drop_duplicates: "Xóa dòng trùng lặp (Drop Duplicates)"
 };
 
 const MONEY_PATTERN = /^\s*[+-]?\s*\$?\s*(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?\s*(?:đ|₫|vnd|vnđ)?\s*$/i;

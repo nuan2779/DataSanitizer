@@ -104,14 +104,14 @@ def create_recipe(
     """Save an ordered cleaning pipeline for the authenticated user."""
     name = payload.name.strip()
     if not name:
-        raise HTTPException(status_code=422, detail="Recipe name cannot be empty")
+        raise HTTPException(status_code=422, detail="Tên kịch bản không được để trống")
 
     exists = fetch_one(
         "SELECT id FROM pipeline_recipes WHERE user_id = ? AND lower(name) = lower(?)",
         (int(user["id"]), name),
     )
     if exists:
-        raise HTTPException(status_code=409, detail="You already have a recipe with this name")
+        raise HTTPException(status_code=409, detail="Bạn đã có một kịch bản với tên này trong tài khoản. Vui lòng chọn tên khác.")
 
     steps = [step.model_dump(mode="json") for step in payload.steps]
     recipe_id = execute_query(

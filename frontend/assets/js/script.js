@@ -7,6 +7,8 @@ import {
     loadSampleDatasetAPI, 
     benchmarkAIAPI, 
     saveRecipeAPI,
+    fetchRecipesAPI,
+    deleteRecipeAPI,
     loginAPI,
     registerAPI,
     logoutAPI,
@@ -96,6 +98,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (queueList) {
             queueList.innerHTML = `<li class="queue-empty">Chưa có thao tác xử lý nào trong hàng đợi</li>`;
         }
+
+        const recipeSelect = document.getElementById("recipe-select");
+        if (recipeSelect) recipeSelect.value = "";
+        document.getElementById("btn-delete-recipe")?.classList.add("hidden");
 
         // 4. Khóa các tab điều hướng
         const profileTab = document.querySelector('.step-indicator[data-target="profile-section"]');
@@ -258,12 +264,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (btnHistory) btnHistory.classList.add("hidden");
             if (btnAuth) btnAuth.classList.add("hidden");
             if (profileBadge) profileBadge.classList.add("hidden");
-            if (recipeLib) recipeLib.classList.add("hidden");
+            if (recipeLib) recipeLib.classList.remove("hidden");
             if (btnSaveRecipe) btnSaveRecipe.classList.add("hidden");
             const mlBenchmark = document.getElementById("ml-benchmark");
             if (mlBenchmark) mlBenchmark.classList.add("hidden");
             if (!silent) showToast("Đã chuyển sang Chế độ Cục bộ (Offline)", "info");
         }
+
+        // Tự động làm mới danh sách kịch bản phù hợp theo chế độ và tài khoản
+        refreshRecipesDropdown().catch(e => console.warn("Lỗi tải kịch bản:", e));
     }
 
     if (modeToggle) {
@@ -594,27 +603,11 @@ document.addEventListener("DOMContentLoaded", () => {
         saveStateToStorage();
     });
     
-    // Sửa lỗi #2: Event listener cho nút Save/Apply Recipe
-    document.getElementById("btn-save-recipe").addEventListener("click", async () => {
-        if (appState.pipelineSteps.length === 0) {
-            showToast("Chưa có bước nào trong pipeline để lưu!", "error");
-            return;
-        }
-        const recipeName = prompt("Nhập tên cho Recipe này:", `Recipe - ${appState.filename}`);
-        if (!recipeName) return;
-        
-        try {
-            await saveRecipeAPI(recipeName, appState.pipelineSteps);
-            showToast("Đã lưu Recipe thành công!", "success");
-        } catch(err) {
-            showToast("Lỗi khi lưu Recipe. (Chưa kết nối API Backend)", "error");
-        }
-    });
-    
-    // Thư viện các kịch bản chuẩn mẫu (Preset Recipes)
+    // Thư viện kịch bản chuẩn mẫu dự phòng (Preset Recipes)
     const PRESET_RECIPES = {
         preset_1: {
             name: "Bộ lọc khuyết thiếu & Chuẩn hóa Null",
+            description: "Chuẩn hóa Null và điền khuyết thiếu Median",
             steps: [
                 { step_type: "standardize_nulls", config: {} },
                 { step_type: "missing_values", config: { columns: null, strategy: "median" } }
@@ -622,6 +615,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         preset_2: {
             name: "Xử lý nhiễu & Cắt lọc ngoại lai (IQR)",
+            description: "Chuẩn hóa Null và cắt tỉa ngoại lai IQR 1.5",
             steps: [
                 { step_type: "standardize_nulls", config: {} },
                 { step_type: "outlier", config: { columns: null, method: "iqr", threshold: 1.5, handling: "remove" } }
@@ -629,6 +623,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         preset_3: {
             name: "Chuẩn hóa dữ liệu số và Categorical",
+            description: "Làm sạch số, One-Hot Encoding và MinMax Scaling",
             steps: [
                 { step_type: "clean_numeric", config: { columns: null } },
                 { step_type: "encoding", config: { columns: null, method: "one_hot" } },
@@ -637,24 +632,198 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    document.getElementById("btn-apply-recipe").addEventListener("click", () => {
-        const selected = document.getElementById("recipe-select").value;
+    let currentLoadedRecipes = [];
+
+    // Helper: Đồng bộ và hiển thị danh sách Recipe theo tài khoản
+    async function refreshRecipesDropdown(selectedId = null) {
+        const recipeSelect = document.getElementById("recipe-select");
+        const btnDeleteRecipe = document.getElementById("btn-delete-recipe");
+        if (!recipeSelect) return;
+
+        if (btnDeleteRecipe) btnDeleteRecipe.classList.add("hidden");
+
+        const isOnlineWithUser = (appState.mode === "online" && !!appState.user);
+
+        if (isOnlineWithUser) {
+            try {
+                const data = await fetchRecipesAPI();
+                const recipes = Array.isArray(data?.recipes) ? data.recipes : [];
+                currentLoadedRecipes = recipes;
+
+                const personalRecipes = recipes.filter(r => r.is_owner);
+                const systemRecipes = recipes.filter(r => !r.is_owner || r.is_public);
+
+                let html = `<option value="">-- Chọn kịch bản xử lý --</option>`;
+
+                // Nhóm 1: Kịch bản cá nhân của tài khoản hiện tại
+                html += `<optgroup label="Kịch bản cá nhân (${escapeHtml(appState.user)})">`;
+                if (personalRecipes.length === 0) {
+                    html += `<option value="" disabled>(Chưa có kịch bản đã lưu)</option>`;
+                } else {
+                    personalRecipes.forEach(r => {
+                        const stepCount = Array.isArray(r.steps) ? r.steps.length : 0;
+                        html += `<option value="api_${r.id}">${escapeHtml(r.name)} (${stepCount} bước)</option>`;
+                    });
+                }
+                html += `</optgroup>`;
+
+                // Nhóm 2: Kịch bản mẫu hệ thống
+                html += `<optgroup label="Kịch bản mẫu hệ thống">`;
+                if (systemRecipes.length > 0) {
+                    systemRecipes.forEach(r => {
+                        const stepCount = Array.isArray(r.steps) ? r.steps.length : 0;
+                        html += `<option value="api_${r.id}">${escapeHtml(r.name)} (${stepCount} bước)</option>`;
+                    });
+                } else {
+                    Object.entries(PRESET_RECIPES).forEach(([key, preset]) => {
+                        html += `<option value="${key}">${escapeHtml(preset.name)} (${preset.steps.length} bước)</option>`;
+                    });
+                }
+                html += `</optgroup>`;
+
+                recipeSelect.innerHTML = html;
+
+                if (selectedId) {
+                    recipeSelect.value = selectedId;
+                }
+                recipeSelect.dispatchEvent(new Event("change"));
+                return;
+            } catch (err) {
+                console.warn("Không thể tải recipes từ API, dùng mẫu dự phòng:", err);
+            }
+        }
+
+        // Chế độ Offline hoặc chưa đăng nhập: Nạp danh sách mẫu chuẩn hệ thống
+        currentLoadedRecipes = [];
+        let html = `<option value="">-- Chọn kịch bản mẫu có sẵn --</option>`;
+        html += `<optgroup label="Kịch bản mẫu hệ thống">`;
+        Object.entries(PRESET_RECIPES).forEach(([key, preset]) => {
+            html += `<option value="${key}">${escapeHtml(preset.name)} (${preset.steps.length} bước)</option>`;
+        });
+        html += `</optgroup>`;
+        recipeSelect.innerHTML = html;
+
+        if (selectedId) {
+            recipeSelect.value = selectedId;
+        }
+        recipeSelect.dispatchEvent(new Event("change"));
+    }
+
+    // Lắng nghe thay đổi lựa chọn Recipe để bật/tắt nút Xóa kịch bản cá nhân
+    document.getElementById("recipe-select")?.addEventListener("change", (e) => {
+        const val = e.target.value;
+        const btnDeleteRecipe = document.getElementById("btn-delete-recipe");
+        if (!btnDeleteRecipe) return;
+
+        if (val && val.startsWith("api_")) {
+            const id = parseInt(val.replace("api_", ""), 10);
+            const recipe = currentLoadedRecipes.find(r => r.id === id);
+            if (recipe && recipe.is_owner) {
+                btnDeleteRecipe.classList.remove("hidden");
+                return;
+            }
+        }
+        btnDeleteRecipe.classList.add("hidden");
+    });
+
+    // Áp dụng Recipe được chọn vào Pipeline Queue
+    document.getElementById("btn-apply-recipe")?.addEventListener("click", () => {
+        const selected = document.getElementById("recipe-select")?.value;
         if (!selected) {
-            showToast("Vui lòng chọn 1 kịch bản mẫu từ danh sách", "error");
+            showToast("Vui lòng chọn 1 kịch bản từ danh sách", "error");
             return;
         }
 
-        const preset = PRESET_RECIPES[selected];
-        if (!preset) {
-            showToast("Kịch bản không tồn tại", "error");
+        let steps = null;
+        let name = "";
+
+        if (selected.startsWith("api_")) {
+            const id = parseInt(selected.replace("api_", ""), 10);
+            const found = currentLoadedRecipes.find(r => r.id === id);
+            if (found && Array.isArray(found.steps) && found.steps.length > 0) {
+                steps = found.steps;
+                name = found.name;
+            }
+        } else if (selected.startsWith("preset_")) {
+            const preset = PRESET_RECIPES[selected];
+            if (preset && Array.isArray(preset.steps) && preset.steps.length > 0) {
+                steps = preset.steps;
+                name = preset.name;
+            }
+        }
+
+        if (!steps || steps.length === 0) {
+            showToast("Kịch bản không tồn tại hoặc không chứa bước xử lý hợp lệ", "error");
             return;
         }
 
-        // Nạp đúng các bước tương ứng của công thức mẫu
-        appState.pipelineSteps = JSON.parse(JSON.stringify(preset.steps));
+        appState.pipelineSteps = JSON.parse(JSON.stringify(steps));
         renderPipelineQueue();
         saveStateToStorage();
-        showToast(`Đã áp dụng mẫu: "${preset.name}" (${preset.steps.length} bước)`, "success");
+        showToast(`Đã áp dụng kịch bản: "${name}" (${steps.length} bước)`, "success");
+    });
+
+    // Xóa Recipe cá nhân khỏi tài khoản
+    document.getElementById("btn-delete-recipe")?.addEventListener("click", async () => {
+        const selected = document.getElementById("recipe-select")?.value;
+        if (!selected || !selected.startsWith("api_")) return;
+
+        const id = parseInt(selected.replace("api_", ""), 10);
+        const found = currentLoadedRecipes.find(r => r.id === id);
+        if (!found || !found.is_owner) {
+            showToast("Không thể xóa kịch bản hệ thống!", "error");
+            return;
+        }
+
+        if (!confirm(`Bạn có chắc chắn muốn xóa kịch bản "${found.name}" khỏi tài khoản ${appState.user}?`)) {
+            return;
+        }
+
+        try {
+            await deleteRecipeAPI(id);
+            showToast(`Đã xóa kịch bản "${found.name}"`, "success");
+            await refreshRecipesDropdown();
+        } catch (err) {
+            showToast(err.message || "Lỗi khi xóa kịch bản", "error");
+        }
+    });
+
+    // Lưu Pipeline hiện tại thành Recipe cá nhân theo tài khoản
+    document.getElementById("btn-save-recipe")?.addEventListener("click", async () => {
+        if (!appState.pipelineSteps || appState.pipelineSteps.length === 0) {
+            showToast("Chưa có bước nào trong pipeline để lưu!", "error");
+            return;
+        }
+        if (appState.mode !== "online" || !appState.user) {
+            showToast("Vui lòng đăng nhập Cloud Workspace để lưu kịch bản vào tài khoản!", "error");
+            return;
+        }
+
+        const defaultName = appState.filename ? `Recipe - ${appState.filename}` : "Kịch bản làm sạch dữ liệu";
+        const recipeName = prompt("Nhập tên cho Recipe cá nhân này:", defaultName);
+        if (!recipeName || !recipeName.trim()) return;
+
+        const trimmedName = recipeName.trim();
+        const btnSave = document.getElementById("btn-save-recipe");
+        const originalText = btnSave ? btnSave.textContent : "";
+        if (btnSave) {
+            btnSave.textContent = "Đang lưu...";
+            btnSave.disabled = true;
+        }
+
+        try {
+            const data = await saveRecipeAPI(trimmedName, appState.pipelineSteps);
+            const newId = data?.recipe?.id ? `api_${data.recipe.id}` : null;
+            showToast(`Đã lưu kịch bản "${trimmedName}" vào tài khoản ${appState.user}!`, "success");
+            await refreshRecipesDropdown(newId);
+        } catch (err) {
+            showToast(err.message || "Lỗi khi lưu Recipe.", "error");
+        } finally {
+            if (btnSave) {
+                btnSave.textContent = originalText;
+                btnSave.disabled = false;
+            }
+        }
     });
 
     const executeBtn = document.getElementById("btn-execute-pipeline");

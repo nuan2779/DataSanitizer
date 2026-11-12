@@ -99,7 +99,28 @@ export async function saveRecipeAPI(name, steps) {
         credentials: "include",
         body: JSON.stringify({ name: name, steps: steps })
     });
-    if (!response.ok) throw new Error(await getErrorMsg(response, "Failed to save recipe"));
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Lưu kịch bản thất bại"));
+    return await response.json();
+}
+
+// Lấy danh sách Recipes (kịch bản hệ thống và kịch bản cá nhân của tài khoản đang đăng nhập)
+export async function fetchRecipesAPI() {
+    const response = await fetch(`${API_BASE_URL}/recipes`, {
+        headers: getAuthHeaders(),
+        credentials: "include"
+    });
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Không thể tải danh sách kịch bản"));
+    return await response.json();
+}
+
+// Xóa Recipe cá nhân
+export async function deleteRecipeAPI(recipeId) {
+    const response = await fetch(`${API_BASE_URL}/recipes/${encodeURIComponent(recipeId)}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+        credentials: "include"
+    });
+    if (!response.ok) throw new Error(await getErrorMsg(response, "Không thể xóa kịch bản"));
     return await response.json();
 }
 

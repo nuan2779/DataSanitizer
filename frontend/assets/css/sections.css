@@ -517,6 +517,16 @@ input[type=range] {
     font-weight: 600;
 }
 
+.recipe-toolbar-form button.text-danger {
+    border-color: #fca5a5;
+    color: #ef4444;
+}
+
+.recipe-toolbar-form button.text-danger:hover {
+    background-color: #fef2f2;
+    border-color: #ef4444;
+}
+
 /* 4. Universal Data Quality Health Card (EDA & ML) */
 .data-quality-card, .ml-benchmark {
     background-color: #ffffff;
